@@ -3,7 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace MTerminal.ViewModels;
 
-public partial class EditorTileViewModel : ObservableObject, IDisposable
+public partial class NoteTileViewModel : ObservableObject, IDisposable
 {
     [ObservableProperty]
     private string _text = string.Empty;
@@ -18,7 +18,7 @@ public partial class EditorTileViewModel : ObservableObject, IDisposable
 
     internal Control? CachedControl { get; set; }
 
-    public EditorTileViewModel(string filePath, string? fontFamily = null, double? fontSize = null)
+    public NoteTileViewModel(string filePath, string? fontFamily = null, double? fontSize = null)
     {
         _filePath = filePath;
         FontFamily = fontFamily ?? "Cascadia Mono, Consolas, monospace";
@@ -54,7 +54,7 @@ public partial class EditorTileViewModel : ObservableObject, IDisposable
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Trace.TraceWarning("EditorTile save failed: {0}", ex.Message);
+            System.Diagnostics.Trace.TraceWarning("NoteTile save failed: {0}", ex.Message);
         }
     }
 

@@ -15,6 +15,7 @@ dotnet run --project src/MTerminal
 - `Models/` — DTO i modele danych (Workspace, TileNode, AppSettings, ShellProfile, TerminalTheme)
 - `ViewModels/` — MVVM z CommunityToolkit.Mvvm (source generators)
 - `Views/` — Avalonia AXAML + code-behind
+- `Styles/` — design tokens (`AppTheme.axaml`) i globalne style kontrolek (`Controls.axaml`). Kolory UI wyłącznie przez `DynamicResource`, terminal ANSI colors osobno w `TerminalTheme`
 - `Services/` — persystencja JSON, detekcja shelli (ShellDetector), JsonDefaults
 
 ## Kluczowe biblioteki
@@ -49,6 +50,7 @@ Refleksja na `_ptyConnection.WriterStream` jest konieczna bo TerminalView nie ek
 ## Konwencje
 
 - **Workspace** (nie "project") — katalog roboczy z tile'ami terminali/edytorów
-- **Tile** (nie "pane"/"panel") — pojedynczy kafelek w workspace (terminal lub edytor), dzielony w drzewo binarne
+- **Tile** (nie "pane"/"panel") — pojedynczy kafelek w workspace (terminal lub notatka), dzielony w drzewo binarne
+- **Note** (nie "editor") — tile z edytorem tekstu (AvaloniaEdit), TileContentType.Note
 - ViewModele w `ViewModels/`, widoki w `Views/`
 - Brak DI container — ręczne wstrzykiwanie w `App.axaml.cs`

@@ -19,7 +19,7 @@ public partial class WorkspaceViewModel : ObservableObject, IDisposable
     public ObservableCollection<ShellProfile> AvailableShells { get; } = [];
 
     private int _terminalCount;
-    private int _editorCount;
+    private int _noteCount;
 
     public WorkspaceViewModel(Workspace workspace, PersistenceService persistenceService, SettingsService settingsService)
     {
@@ -43,7 +43,7 @@ public partial class WorkspaceViewModel : ObservableObject, IDisposable
     private void AddTerminal(ShellProfile? shell = null) => AddFirstTile(TileContentType.Terminal, shell);
 
     [RelayCommand]
-    private void AddEditor() => AddFirstTile(TileContentType.TextEditor);
+    private void AddNote() => AddFirstTile(TileContentType.Note);
 
     private void AddFirstTile(TileContentType type, ShellProfile? shell = null)
     {
@@ -90,7 +90,7 @@ public partial class WorkspaceViewModel : ObservableObject, IDisposable
     private string AllocateTileName(TileContentType type) => type switch
     {
         TileContentType.Terminal => $"Terminal #{++_terminalCount}",
-        TileContentType.TextEditor => $"Note #{++_editorCount}",
+        TileContentType.Note => $"Note #{++_noteCount}",
         _ => type.ToString()
     };
 
@@ -109,8 +109,8 @@ public partial class WorkspaceViewModel : ObservableObject, IDisposable
                     var num = int.Parse(match.Groups[1].Value);
                     if (node.ContentType == TileContentType.Terminal)
                         _terminalCount = Math.Max(_terminalCount, num);
-                    else if (node.ContentType == TileContentType.TextEditor)
-                        _editorCount = Math.Max(_editorCount, num);
+                    else if (node.ContentType == TileContentType.Note)
+                        _noteCount = Math.Max(_noteCount, num);
                 }
             }
         }
@@ -126,17 +126,17 @@ public partial class WorkspaceViewModel : ObservableObject, IDisposable
         return type switch
         {
             TileContentType.Terminal => new TerminalTileViewModel(workingDir, shell, _settingsService.Settings),
-            TileContentType.TextEditor => CreateEditorContent(workingDir),
+            TileContentType.Note => CreateNoteContent(workingDir),
             _ => throw new ArgumentOutOfRangeException(nameof(type))
         };
     }
 
-    private EditorTileViewModel CreateEditorContent(string workingDir)
+    private NoteTileViewModel CreateNoteContent(string workingDir)
     {
         var s = _settingsService.Settings;
         var notesDir = Path.Combine(workingDir, ".mterminal", "notes");
         var filePath = Path.Combine(notesDir, $"{Guid.NewGuid():N}.md");
-        return new EditorTileViewModel(filePath, s.EditorFontFamily, s.EditorFontSize);
+        return new NoteTileViewModel(filePath, s.NoteFontFamily, s.NoteFontSize);
     }
 
     private void ScheduleSave()
@@ -154,7 +154,7 @@ public partial class WorkspaceViewModel : ObservableObject, IDisposable
                 ContentType = leaf.ContentType,
                 TileName = leaf.TileName,
                 ShellName = (leaf.Content as TerminalTileViewModel)?.Shell.Name,
-                EditorFilePath = (leaf.Content as EditorTileViewModel)?.FilePath
+                NoteFilePath = (leaf.Content as NoteTileViewModel)?.FilePath
             },
             SplitTileNodeViewModel split => new TileNode
             {
@@ -173,10 +173,10 @@ public partial class WorkspaceViewModel : ObservableObject, IDisposable
         if (dto.IsLeaf)
         {
             ObservableObject content;
-            if (dto.ContentType == TileContentType.TextEditor && dto.EditorFilePath != null)
+            if (dto.ContentType == TileContentType.Note && dto.NoteFilePath != null)
             {
                 var s = _settingsService.Settings;
-                content = new EditorTileViewModel(dto.EditorFilePath, s.EditorFontFamily, s.EditorFontSize);
+                content = new NoteTileViewModel(dto.NoteFilePath, s.NoteFontFamily, s.NoteFontSize);
             }
             else
             {

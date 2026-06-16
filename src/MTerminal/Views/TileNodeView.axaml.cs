@@ -102,7 +102,7 @@ public partial class TileNodeView : UserControl
         var grid = new Grid();
         var splitter = new GridSplitter
         {
-            Background = new SolidColorBrush(Color.FromArgb(40, 255, 255, 255))
+            Background = this.FindBrush("BorderSubtle")
         };
         splitter.DragCompleted += (_, _) => UpdateSplitRatio(split, grid);
 

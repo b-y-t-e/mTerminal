@@ -1,4 +1,6 @@
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Media;
 
 namespace MTerminal.Views;
 
@@ -13,4 +15,9 @@ internal static class ControlHelper
         else if (control.Parent is Decorator dec)
             dec.Child = null;
     }
+
+    public static IBrush FindBrush(this StyledElement element, string key) =>
+        element.FindResource(key) as IBrush
+        ?? Application.Current?.FindResource(key) as IBrush
+        ?? Brushes.Magenta;
 }

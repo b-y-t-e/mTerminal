@@ -37,25 +37,30 @@ public partial class LeafTileNodeViewModel : TileNodeViewModel
     }
 
     [RelayCommand]
-    private void SplitHorizontalTerminal() => Split(Orientation.Horizontal, TileContentType.Terminal);
+    private void SplitHorizontal() => Split(Orientation.Horizontal);
 
     [RelayCommand]
-    private void SplitVerticalTerminal() => Split(Orientation.Vertical, TileContentType.Terminal);
+    private void SplitVertical() => Split(Orientation.Vertical);
 
     [RelayCommand]
-    private void SplitHorizontalEditor() => Split(Orientation.Horizontal, TileContentType.TextEditor);
-
-    [RelayCommand]
-    private void SplitVerticalEditor() => Split(Orientation.Vertical, TileContentType.TextEditor);
-
-    private void Split(Orientation orientation, TileContentType newTileType)
+    private void SelectContentType(TileContentType type)
     {
-        var newContent = _contentFactory?.Invoke(newTileType, _workingDirectory);
+        if (ContentType != TileContentType.Empty) return;
+
+        var newContent = _contentFactory?.Invoke(type, _workingDirectory);
         if (newContent == null) return;
 
-        var newLeaf = new LeafTileNodeViewModel(newTileType, newContent, _workingDirectory, _contentFactory, _nameFactory)
+        Content = newContent;
+        ContentType = type;
+        TileName = _nameFactory?.Invoke(type) ?? type.ToString();
+        NotifyLayoutChanged();
+    }
+
+    private void Split(Orientation orientation)
+    {
+        var newLeaf = new LeafTileNodeViewModel(TileContentType.Empty, null!, _workingDirectory, _contentFactory, _nameFactory)
         {
-            TileName = _nameFactory?.Invoke(newTileType) ?? newTileType.ToString(),
+            TileName = "",
             LayoutChanged = LayoutChanged,
             RootReplaced = RootReplaced,
             RootCleared = RootCleared

@@ -1,61 +1,32 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:MTerminal.ViewModels"
+             xmlns:m="using:MTerminal.Models"
              x:Class="MTerminal.Views.LeafTileView"
              x:DataType="vm:LeafTileNodeViewModel">
 
-    <UserControl.Styles>
-        <Style Selector="Button.tile-btn">
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="Foreground" Value="#6070a0" />
-            <Setter Property="Padding" Value="6,2" />
-            <Setter Property="CornerRadius" Value="3" />
-            <Setter Property="FontSize" Value="11" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="MinWidth" Value="24" />
-            <Setter Property="MinHeight" Value="20" />
-        </Style>
-        <Style Selector="Button.tile-btn:pointerover">
-            <Setter Property="Background" Value="#2a2a4a" />
-            <Setter Property="Foreground" Value="#b0b8d0" />
-        </Style>
-        <Style Selector="Button.tile-btn:pressed">
-            <Setter Property="Background" Value="#3a3a5a" />
-        </Style>
-        <Style Selector="TextBox.clearFocus:focus /template/ Border#PART_BorderElement">
-            <Setter Property="BorderBrush" Value="#3a3a5a" />
-            <Setter Property="BorderThickness" Value="1" />
-        </Style>
-    </UserControl.Styles>
-
-    <Border BorderBrush="#252540"
-            BorderThickness="1"
-            CornerRadius="3"
+    <Border BorderBrush="{DynamicResource BorderSubtle}"
+            BorderThickness="{DynamicResource BorderThin}"
+            CornerRadius="{DynamicResource RadiusSm}"
             ClipToBounds="True">
         <DockPanel>
             <!-- Tile toolbar -->
             <Border DockPanel.Dock="Top"
-                    Background="#16162a"
+                    Background="{DynamicResource BgSurface}"
                     Padding="6,0"
                     Height="26">
                 <DockPanel>
                     <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="1">
                         <Button Classes="tile-btn" ToolTip.Tip="Split tile">
                             <Button.Content>
-                                <TextBlock Text="+" FontSize="12" FontWeight="Bold" />
+                                <TextBlock Text="+" FontSize="{DynamicResource FontMd}" FontWeight="Bold" />
                             </Button.Content>
                             <Button.Flyout>
                                 <MenuFlyout Placement="BottomEdgeAlignedRight">
-                                    <MenuItem Header="Split Right - Terminal"
-                                              Command="{Binding SplitVerticalTerminalCommand}" />
-                                    <MenuItem Header="Split Right - Editor"
-                                              Command="{Binding SplitVerticalEditorCommand}" />
-                                    <Separator />
-                                    <MenuItem Header="Split Down - Terminal"
-                                              Command="{Binding SplitHorizontalTerminalCommand}" />
-                                    <MenuItem Header="Split Down - Editor"
-                                              Command="{Binding SplitHorizontalEditorCommand}" />
+                                    <MenuItem Header="Split Right"
+                                              Command="{Binding SplitVerticalCommand}" />
+                                    <MenuItem Header="Split Down"
+                                              Command="{Binding SplitHorizontalCommand}" />
                                 </MenuFlyout>
                             </Button.Flyout>
                         </Button>
@@ -63,38 +34,54 @@
                         <Button Classes="tile-btn"
                                 Command="{Binding CloseCommand}"
                                 ToolTip.Tip="Close tile">
-                            <TextBlock Text="x" FontSize="11" />
+                            <TextBlock Text="x" FontSize="{DynamicResource FontSm}" />
                         </Button>
                     </StackPanel>
 
                     <TextBlock x:Name="TileNameLabel"
                                Text="{Binding TileName}"
                                VerticalAlignment="Center"
-                               FontSize="10"
-                               Foreground="#4a5070"
+                               FontSize="{DynamicResource FontXs}"
+                               Foreground="{DynamicResource TextFaint}"
                                Margin="2,0"
                                Cursor="Hand"
                                DoubleTapped="TileNameLabel_DoubleTapped" />
                     <TextBox x:Name="TileNameEditor"
                              Text="{Binding TileName}"
                              IsVisible="False"
-                             FontSize="10"
-                             Foreground="#c0c8e0"
-                             Background="#252540"
-                             BorderBrush="#3a3a5a"
-                             BorderThickness="1"
-                             Classes="clearFocus"
-                             CornerRadius="2"
-                             Padding="4,1"
-                             Margin="2,0"
-                             Height="20"
-                             VerticalAlignment="Center"
-                             VerticalContentAlignment="Center"
-                             MinWidth="60"
+                             Classes="inline-editor"
                              LostFocus="TileNameEditor_Confirm"
                              KeyDown="TileNameEditor_KeyDown" />
                 </DockPanel>
             </Border>
+
+            <!-- Content type chooser: shown when tile is empty -->
+            <StackPanel x:Name="ContentChooser"
+                        IsVisible="False"
+                        Orientation="Vertical"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Spacing="8">
+                <TextBlock Text="Select tile type"
+                           HorizontalAlignment="Center"
+                           FontSize="{DynamicResource FontSm}"
+                           Foreground="{DynamicResource TextFaint}"
+                           Margin="0,0,0,4" />
+                <Button Classes="outlined"
+                        Command="{Binding SelectContentTypeCommand}"
+                        CommandParameter="{x:Static m:TileContentType.Terminal}"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center">
+                    Terminal
+                </Button>
+                <Button Classes="outlined"
+                        Command="{Binding SelectContentTypeCommand}"
+                        CommandParameter="{x:Static vm:TileContentTypeValues.Note}"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center">
+                    Note
+                </Button>
+            </StackPanel>
 
             <!-- Content area: managed in code-behind -->
             <Panel x:Name="ContentHost" />

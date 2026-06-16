@@ -9,7 +9,7 @@ public sealed class TileNode
     public TileContentType ContentType { get; set; }
     public string? TileName { get; set; }
     public string? ShellName { get; set; }
-    public string? EditorFilePath { get; set; }
+    public string? NoteFilePath { get; set; }
 
     public Orientation SplitOrientation { get; set; } = Orientation.Vertical;
     public double SplitRatio { get; set; } = 0.5;

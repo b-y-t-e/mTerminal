@@ -4,39 +4,6 @@
              x:Class="MTerminal.Views.SettingsView"
              x:DataType="vm:SettingsViewModel">
 
-    <UserControl.Styles>
-        <Style Selector="TextBlock.label">
-            <Setter Property="FontSize" Value="11" />
-            <Setter Property="Foreground" Value="#6070a0" />
-        </Style>
-        <Style Selector="TextBlock.section">
-            <Setter Property="FontSize" Value="11" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="#6070a0" />
-            <Setter Property="LetterSpacing" Value="1.5" />
-            <Setter Property="Margin" Value="0,8,0,0" />
-        </Style>
-        <Style Selector="TextBox.setting">
-            <Setter Property="FontSize" Value="12" />
-            <Setter Property="Background" Value="#16162a" />
-            <Setter Property="Foreground" Value="#c0c8e0" />
-            <Setter Property="CornerRadius" Value="4" />
-        </Style>
-        <Style Selector="ComboBox.setting">
-            <Setter Property="FontSize" Value="12" />
-            <Setter Property="Background" Value="#16162a" />
-            <Setter Property="Foreground" Value="#c0c8e0" />
-            <Setter Property="CornerRadius" Value="4" />
-            <Setter Property="HorizontalAlignment" Value="Stretch" />
-        </Style>
-        <Style Selector="NumericUpDown.setting">
-            <Setter Property="FontSize" Value="12" />
-            <Setter Property="Background" Value="#16162a" />
-            <Setter Property="Foreground" Value="#c0c8e0" />
-            <Setter Property="CornerRadius" Value="4" />
-        </Style>
-    </UserControl.Styles>
-
     <StackPanel Spacing="12" Margin="16">
         <!-- Default Shell -->
         <StackPanel Spacing="4">
@@ -70,16 +37,16 @@
                            Value="{Binding TerminalFontSize}" Minimum="8" Maximum="48" Increment="1" />
         </StackPanel>
 
-        <!-- Editor -->
-        <TextBlock Text="EDITOR" Classes="section" />
+        <!-- Note -->
+        <TextBlock Text="NOTE" Classes="section" />
         <StackPanel Spacing="4">
             <TextBlock Text="Font Family" Classes="label" />
             <TextBox Classes="setting"
-                     Text="{Binding EditorFontFamily}"
+                     Text="{Binding NoteFontFamily}"
                      PlaceholderText="Font family" />
             <TextBlock Text="Font Size" Classes="label" />
             <NumericUpDown Classes="setting"
-                           Value="{Binding EditorFontSize}" Minimum="8" Maximum="48" Increment="1" />
+                           Value="{Binding NoteFontSize}" Minimum="8" Maximum="48" Increment="1" />
         </StackPanel>
 
         <!-- Appearance -->

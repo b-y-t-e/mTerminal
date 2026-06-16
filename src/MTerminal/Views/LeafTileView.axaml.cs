@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Media;
 using MTerminal.ViewModels;
 
 namespace MTerminal.Views;
@@ -34,8 +35,17 @@ public partial class LeafTileView : UserControl
         UserControl view = contentVm switch
         {
             TerminalTileViewModel => new TerminalTileView { DataContext = contentVm },
-            EditorTileViewModel => new EditorTileView { DataContext = contentVm },
+            NoteTileViewModel => new NoteTileView { DataContext = contentVm },
             _ => throw new InvalidOperationException($"Unknown content type: {contentVm.GetType()}")
+        };
+
+        // TerminalControl renders a fixed character grid — leftover pixels below
+        // the last row stay empty. Match ContentHost bg to the content's own
+        // background so the gap is invisible.
+        ContentHost.Background = contentVm switch
+        {
+            TerminalTileViewModel t => new SolidColorBrush(Color.Parse(t.Theme.Background)),
+            _ => this.FindBrush("BgBase") as SolidColorBrush
         };
 
         ContentHost.Children.Add(view);

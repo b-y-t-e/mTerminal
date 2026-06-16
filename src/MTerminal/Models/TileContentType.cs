@@ -2,6 +2,7 @@ namespace MTerminal.Models;
 
 public enum TileContentType
 {
+    Empty,
     Terminal,
-    TextEditor
+    Note
 }

@@ -4,28 +4,23 @@
              xmlns:m="using:MTerminal.Models"
              x:Class="MTerminal.Views.WorkspacesPanelView"
              x:DataType="vm:WorkspacesPanelViewModel"
-             Background="#16162a">
+             Background="{DynamicResource BgSurface}">
 
     <DockPanel>
         <Border DockPanel.Dock="Top" Padding="14,10"
-                BorderBrush="#2a2a4a" BorderThickness="0,0,0,1">
-            <TextBlock Text="WORKSPACES" FontWeight="SemiBold" FontSize="11"
-                       Foreground="#6070a0" LetterSpacing="1.5" />
+                BorderBrush="{DynamicResource BorderSubtle}"
+                BorderThickness="{DynamicResource BorderBottom}">
+            <TextBlock Text="WORKSPACES" Classes="section" Margin="0" />
         </Border>
 
-        <Border DockPanel.Dock="Bottom" Padding="8" BorderBrush="#2a2a4a" BorderThickness="0,1,0,0">
+        <Border DockPanel.Dock="Bottom" Padding="8"
+                BorderBrush="{DynamicResource BorderSubtle}"
+                BorderThickness="{DynamicResource BorderTop}">
             <Button Content="+ Add Workspace"
+                    Classes="outlined"
                     Command="{Binding AddWorkspaceCommand}"
                     HorizontalAlignment="Stretch"
-                    HorizontalContentAlignment="Center"
-                    Background="#1e1e3a"
-                    Foreground="#8090b0"
-                    CornerRadius="6"
-                    Padding="8,6"
-                    FontSize="12"
-                    BorderThickness="1"
-                    BorderBrush="#2a2a4a"
-                    Cursor="Hand" />
+                    HorizontalContentAlignment="Center" />
         </Border>
 
         <ListBox x:Name="WorkspaceList"
@@ -37,35 +32,29 @@
                 <Style Selector="ListBoxItem">
                     <Setter Property="Padding" Value="10,6" />
                     <Setter Property="Margin" Value="4,1" />
-                    <Setter Property="CornerRadius" Value="6" />
+                    <Setter Property="CornerRadius" Value="{DynamicResource RadiusLg}" />
                 </Style>
                 <Style Selector="ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
-                    <Setter Property="Background" Value="#2a2a4a" />
+                    <Setter Property="Background" Value="{DynamicResource InteractiveHover}" />
                 </Style>
                 <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-                    <Setter Property="Background" Value="#222240" />
+                    <Setter Property="Background" Value="{DynamicResource InteractiveHover}" />
                 </Style>
             </ListBox.Styles>
             <ListBox.ItemTemplate>
                 <DataTemplate DataType="m:Workspace">
                     <DockPanel>
                         <Button DockPanel.Dock="Right"
-                                Content="x"
-                                FontSize="10"
-                                Background="Transparent"
-                                Foreground="#505070"
-                                Padding="4,2"
-                                BorderThickness="0"
-                                Cursor="Hand"
+                                Content="x" Classes="ghost"
+                                FontSize="{DynamicResource FontXs}"
                                 Command="{Binding #WorkspaceList.((vm:WorkspacesPanelViewModel)DataContext).RemoveWorkspaceCommand}"
                                 CommandParameter="{Binding}"
                                 ToolTip.Tip="Remove workspace" />
                         <StackPanel Spacing="1">
                             <TextBlock Text="{Binding Name}" FontWeight="Medium"
-                                       FontSize="12" Foreground="#c0c8e0" />
-                            <TextBlock Text="{Binding DirectoryPath}"
-                                       FontSize="10"
-                                       Foreground="#505070"
+                                       FontSize="{DynamicResource FontMd}"
+                                       Foreground="{DynamicResource TextPrimary}" />
+                            <TextBlock Text="{Binding DirectoryPath}" Classes="caption"
                                        TextTrimming="CharacterEllipsis" />
                         </StackPanel>
                     </DockPanel>

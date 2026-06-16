@@ -25,10 +25,10 @@ public partial class SettingsViewModel : ObservableObject
     private double _terminalFontSize;
 
     [ObservableProperty]
-    private string _editorFontFamily;
+    private string _noteFontFamily;
 
     [ObservableProperty]
-    private double _editorFontSize;
+    private double _noteFontSize;
 
     [ObservableProperty]
     private string _theme;
@@ -53,8 +53,8 @@ public partial class SettingsViewModel : ObservableObject
         _terminalThemeName = s.TerminalThemeName;
         _terminalFontFamily = s.TerminalFontFamily;
         _terminalFontSize = s.TerminalFontSize;
-        _editorFontFamily = s.EditorFontFamily;
-        _editorFontSize = s.EditorFontSize;
+        _noteFontFamily = s.NoteFontFamily;
+        _noteFontSize = s.NoteFontSize;
         _theme = s.Theme;
         _customShellPath = s.CustomShellPath;
         _customShellArgs = s.CustomShellArgs;
@@ -82,8 +82,8 @@ public partial class SettingsViewModel : ObservableObject
     partial void OnTerminalThemeNameChanged(string value) { _settingsService.Settings.TerminalThemeName = value; _settingsService.NotifyChanged(); }
     partial void OnTerminalFontFamilyChanged(string value) { _settingsService.Settings.TerminalFontFamily = value; _settingsService.NotifyChanged(); }
     partial void OnTerminalFontSizeChanged(double value) { _settingsService.Settings.TerminalFontSize = value; _settingsService.NotifyChanged(); }
-    partial void OnEditorFontFamilyChanged(string value) { _settingsService.Settings.EditorFontFamily = value; _settingsService.NotifyChanged(); }
-    partial void OnEditorFontSizeChanged(double value) { _settingsService.Settings.EditorFontSize = value; _settingsService.NotifyChanged(); }
+    partial void OnNoteFontFamilyChanged(string value) { _settingsService.Settings.NoteFontFamily = value; _settingsService.NotifyChanged(); }
+    partial void OnNoteFontSizeChanged(double value) { _settingsService.Settings.NoteFontSize = value; _settingsService.NotifyChanged(); }
     partial void OnThemeChanged(string value) { _settingsService.Settings.Theme = value; _settingsService.NotifyChanged(); }
 
     partial void OnSelectedShellChanged(string value)

@@ -5,7 +5,7 @@
              xmlns:views="using:MTerminal.Views"
              x:Class="MTerminal.Views.WorkspaceView"
              x:DataType="vm:WorkspaceViewModel"
-             Background="#1a1a2e">
+             Background="{DynamicResource BgBase}">
 
     <Panel>
         <!-- Empty workspace -->
@@ -14,13 +14,13 @@
                     VerticalAlignment="Center"
                     Spacing="16">
             <TextBlock Text="No tiles open"
-                       FontSize="16"
-                       Foreground="#3a3a5a"
+                       FontSize="{DynamicResource FontLg}"
+                       Foreground="{DynamicResource TextFaint}"
                        HorizontalAlignment="Center" />
 
             <TextBlock Text="Open a terminal or editor to get started"
-                       FontSize="12"
-                       Foreground="#2e2e4e"
+                       FontSize="{DynamicResource FontMd}"
+                       Foreground="{DynamicResource TextFaint}"
                        HorizontalAlignment="Center" />
 
             <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center"
@@ -42,8 +42,8 @@
                 </ItemsControl>
 
                 <Button Classes="accent"
-                        Content="# Editor"
-                        Command="{Binding AddEditorCommand}" />
+                        Content="# Note"
+                        Command="{Binding AddNoteCommand}" />
             </StackPanel>
         </StackPanel>
 

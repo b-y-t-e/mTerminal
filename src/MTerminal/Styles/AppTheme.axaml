@@ -1,0 +1,50 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ============================================================
+         DESIGN TOKENS — single source of truth for the app palette.
+         Terminal ANSI colors live in TerminalTheme (separate system).
+         ============================================================ -->
+
+    <!-- Backgrounds (3 tiers) -->
+    <SolidColorBrush x:Key="BgBase"      Color="#1a1a2e" />
+    <SolidColorBrush x:Key="BgSurface"   Color="#16162a" />
+    <SolidColorBrush x:Key="BgElevated"  Color="#1e1e3a" />
+
+    <!-- Borders (2 tiers) -->
+    <SolidColorBrush x:Key="BorderSubtle" Color="#2a2a4a" />
+    <SolidColorBrush x:Key="BorderStrong" Color="#3a3a5a" />
+
+    <!-- Text (4 tiers + 1 hover) -->
+    <SolidColorBrush x:Key="TextPrimary"   Color="#c0c8e0" />
+    <SolidColorBrush x:Key="TextSecondary" Color="#8090b0" />
+    <SolidColorBrush x:Key="TextMuted"     Color="#6070a0" />
+    <SolidColorBrush x:Key="TextFaint"     Color="#3a3a5a" />
+    <SolidColorBrush x:Key="TextHover"     Color="#e0e4f0" />
+
+    <!-- Interactive states -->
+    <SolidColorBrush x:Key="InteractiveHover"   Color="#2a2a4a" />
+    <SolidColorBrush x:Key="InteractivePressed"  Color="#3a3a5a" />
+    <SolidColorBrush x:Key="AccentDefault"       Color="#2d5a8a" />
+    <SolidColorBrush x:Key="AccentHover"         Color="#3a6fa0" />
+
+    <!-- Overlay -->
+    <SolidColorBrush x:Key="OverlayModal"   Color="#80000000" />
+
+    <!-- Typography sizes -->
+    <x:Double x:Key="FontLg">16</x:Double>
+    <x:Double x:Key="FontMd">12</x:Double>
+    <x:Double x:Key="FontSm">11</x:Double>
+    <x:Double x:Key="FontXs">10</x:Double>
+
+    <!-- Spacing -->
+    <CornerRadius x:Key="RadiusSm">3</CornerRadius>
+    <CornerRadius x:Key="RadiusMd">4</CornerRadius>
+    <CornerRadius x:Key="RadiusLg">6</CornerRadius>
+    <CornerRadius x:Key="RadiusXl">10</CornerRadius>
+
+    <Thickness x:Key="BorderThin">1</Thickness>
+    <Thickness x:Key="BorderBottom">0,0,0,1</Thickness>
+    <Thickness x:Key="BorderTop">0,1,0,0</Thickness>
+
+</ResourceDictionary>
