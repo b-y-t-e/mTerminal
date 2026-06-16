@@ -5,6 +5,7 @@
         x:Class="MTerminal.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="MTerminal"
+        Icon="/Assets/mterminal-icon.png"
         Background="{DynamicResource BgBase}">
 
     <DockPanel>
