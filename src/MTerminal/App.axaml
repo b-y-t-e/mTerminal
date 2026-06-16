@@ -1,0 +1,58 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:MTerminal.ViewModels"
+             xmlns:views="using:MTerminal.Views"
+             x:Class="MTerminal.App"
+             RequestedThemeVariant="Dark">
+    <Application.Styles>
+        <FluentTheme />
+
+        <!-- Global button styles -->
+        <Style Selector="Button.toolbar">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="#aab0c0" />
+            <Setter Property="Padding" Value="8,4" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.toolbar:pointerover">
+            <Setter Property="Background" Value="#2a2a4a" />
+            <Setter Property="Foreground" Value="#e0e4f0" />
+        </Style>
+        <Style Selector="Button.toolbar:pressed">
+            <Setter Property="Background" Value="#3a3a5a" />
+        </Style>
+        <Style Selector="Button.accent">
+            <Setter Property="Background" Value="#2d5a8a" />
+            <Setter Property="Foreground" Value="#e0e8f4" />
+            <Setter Property="Padding" Value="12,6" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.accent:pointerover">
+            <Setter Property="Background" Value="#3a6fa0" />
+        </Style>
+        <Style Selector="Button.accent:pressed">
+            <Setter Property="Background" Value="#4580b0" />
+        </Style>
+    </Application.Styles>
+
+    <Application.DataTemplates>
+        <DataTemplate DataType="vm:WorkspaceViewModel">
+            <views:WorkspaceView />
+        </DataTemplate>
+        <DataTemplate DataType="vm:TerminalPaneViewModel">
+            <views:TerminalPaneView />
+        </DataTemplate>
+        <DataTemplate DataType="vm:EditorPaneViewModel">
+            <views:EditorPaneView />
+        </DataTemplate>
+        <DataTemplate DataType="vm:SettingsViewModel">
+            <views:SettingsView />
+        </DataTemplate>
+    </Application.DataTemplates>
+</Application>

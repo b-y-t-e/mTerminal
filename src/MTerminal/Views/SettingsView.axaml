@@ -1,0 +1,57 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:MTerminal.ViewModels"
+             x:Class="MTerminal.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel"
+             Width="320">
+
+    <Border Background="#1e1e3a"
+            BorderBrush="#2a2a4a"
+            BorderThickness="1"
+            Padding="16"
+            CornerRadius="8"
+            BoxShadow="0 4 16 0 #40000000">
+        <StackPanel Spacing="14">
+            <TextBlock Text="SETTINGS" FontSize="11" FontWeight="SemiBold"
+                       Foreground="#6070a0" LetterSpacing="1.5" />
+
+            <StackPanel Spacing="4">
+                <TextBlock Text="Terminal Font" FontSize="11" Foreground="#6070a0" />
+                <TextBox Text="{Binding TerminalFontFamily}"
+                         PlaceholderText="Font family"
+                         FontSize="12"
+                         Background="#16162a"
+                         Foreground="#c0c8e0"
+                         CornerRadius="4" />
+                <NumericUpDown Value="{Binding TerminalFontSize}" Minimum="8" Maximum="48"
+                               Increment="1" FontSize="12"
+                               Background="#16162a" Foreground="#c0c8e0"
+                               CornerRadius="4" />
+            </StackPanel>
+
+            <StackPanel Spacing="4">
+                <TextBlock Text="Editor Font" FontSize="11" Foreground="#6070a0" />
+                <TextBox Text="{Binding EditorFontFamily}"
+                         PlaceholderText="Font family"
+                         FontSize="12"
+                         Background="#16162a"
+                         Foreground="#c0c8e0"
+                         CornerRadius="4" />
+                <NumericUpDown Value="{Binding EditorFontSize}" Minimum="8" Maximum="48"
+                               Increment="1" FontSize="12"
+                               Background="#16162a" Foreground="#c0c8e0"
+                               CornerRadius="4" />
+            </StackPanel>
+
+            <StackPanel Spacing="4">
+                <TextBlock Text="Theme" FontSize="11" Foreground="#6070a0" />
+                <ComboBox SelectedItem="{Binding Theme}"
+                          ItemsSource="{x:Static vm:SettingsViewModel.Themes}"
+                          FontSize="12"
+                          Background="#16162a"
+                          Foreground="#c0c8e0"
+                          CornerRadius="4" />
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</UserControl>

@@ -1,0 +1,142 @@
+using System.ComponentModel;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Media;
+using MTerminal.ViewModels;
+
+namespace MTerminal.Views;
+
+public partial class PaneNodeView : UserControl
+{
+    private PaneNodeViewModel? _vm;
+    private PaneNodeView? _firstChild;
+    private PaneNodeView? _secondChild;
+    private bool _isBuilding;
+
+    public PaneNodeView()
+    {
+        InitializeComponent();
+        DataContextChanged += OnDataContextChanged;
+    }
+
+    private void OnDataContextChanged(object? sender, EventArgs e)
+    {
+        if (_isBuilding) return;
+
+        Detach();
+        _vm = DataContext as PaneNodeViewModel;
+        Attach();
+        Rebuild();
+    }
+
+    private void Attach()
+    {
+        if (_vm != null)
+            _vm.PropertyChanged += OnVmChanged;
+    }
+
+    private void Detach()
+    {
+        if (_vm != null)
+            _vm.PropertyChanged -= OnVmChanged;
+    }
+
+    private void OnVmChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (_vm is SplitPaneNodeViewModel split &&
+            e.PropertyName is nameof(SplitPaneNodeViewModel.First)
+                or nameof(SplitPaneNodeViewModel.Second)
+                or nameof(SplitPaneNodeViewModel.Orientation))
+        {
+            Rebuild();
+        }
+    }
+
+    private void Rebuild()
+    {
+        if (_isBuilding) return;
+        _isBuilding = true;
+
+        try
+        {
+            if (_vm is LeafPaneNodeViewModel leaf)
+                ShowLeaf(leaf);
+            else if (_vm is SplitPaneNodeViewModel split)
+                ShowSplit(split);
+            else
+                Content = null;
+        }
+        finally
+        {
+            _isBuilding = false;
+        }
+    }
+
+    private void ShowLeaf(LeafPaneNodeViewModel leaf)
+    {
+        _firstChild = null;
+        _secondChild = null;
+
+        if (Content is LeafPaneView existing && existing.DataContext == leaf)
+            return;
+
+        Content = new LeafPaneView { DataContext = leaf };
+    }
+
+    private void ShowSplit(SplitPaneNodeViewModel split)
+    {
+        if (_firstChild == null) _firstChild = new PaneNodeView();
+        if (_secondChild == null) _secondChild = new PaneNodeView();
+
+        // Detach children from any existing parent
+        DetachFromParent(_firstChild);
+        DetachFromParent(_secondChild);
+
+        // Set DataContext BEFORE adding to grid to prevent inheritance issues
+        _firstChild.DataContext = split.First;
+        _secondChild.DataContext = split.Second;
+
+        var grid = new Grid();
+        var splitter = new GridSplitter
+        {
+            Background = new SolidColorBrush(Color.FromArgb(40, 255, 255, 255))
+        };
+
+        if (split.Orientation == Orientation.Vertical)
+        {
+            grid.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(split.SplitRatio, GridUnitType.Star)));
+            grid.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(3, GridUnitType.Pixel)));
+            grid.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(1 - split.SplitRatio, GridUnitType.Star)));
+
+            Grid.SetColumn(_firstChild, 0);
+            Grid.SetColumn(splitter, 1);
+            Grid.SetColumn(_secondChild, 2);
+        }
+        else
+        {
+            grid.RowDefinitions.Add(new RowDefinition(new GridLength(split.SplitRatio, GridUnitType.Star)));
+            grid.RowDefinitions.Add(new RowDefinition(new GridLength(3, GridUnitType.Pixel)));
+            grid.RowDefinitions.Add(new RowDefinition(new GridLength(1 - split.SplitRatio, GridUnitType.Star)));
+
+            Grid.SetRow(_firstChild, 0);
+            Grid.SetRow(splitter, 1);
+            Grid.SetRow(_secondChild, 2);
+        }
+
+        grid.Children.Add(_firstChild);
+        grid.Children.Add(splitter);
+        grid.Children.Add(_secondChild);
+
+        Content = grid;
+    }
+
+    private static void DetachFromParent(Control control)
+    {
+        if (control.Parent is Panel panel)
+            panel.Children.Remove(control);
+        else if (control.Parent is ContentControl cc)
+            cc.Content = null;
+        else if (control.Parent is Decorator dec)
+            dec.Child = null;
+    }
+}
