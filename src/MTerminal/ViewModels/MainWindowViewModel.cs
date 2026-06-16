@@ -50,6 +50,13 @@ public partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     private void ToggleSettings() => IsSettingsOpen = !IsSettingsOpen;
 
+    public void DisposeAll()
+    {
+        foreach (var vm in _workspaceCache.Values)
+            vm.Dispose();
+        _workspaceCache.Clear();
+    }
+
     private void SwitchToWorkspace(Workspace? workspace)
     {
         if (workspace == null)

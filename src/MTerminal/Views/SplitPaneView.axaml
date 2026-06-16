@@ -1,7 +1,0 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="using:MTerminal.ViewModels"
-             x:Class="MTerminal.Views.SplitPaneView"
-             x:DataType="vm:SplitPaneNodeViewModel">
-    <!-- Layout is built in code-behind based on Orientation -->
-</UserControl>

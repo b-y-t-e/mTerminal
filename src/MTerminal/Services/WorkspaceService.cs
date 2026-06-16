@@ -5,7 +5,6 @@ namespace MTerminal.Services;
 
 public sealed class WorkspaceService
 {
-    private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
     private readonly string _filePath;
     private List<Workspace> _workspaces = [];
 
@@ -25,7 +24,7 @@ public sealed class WorkspaceService
         try
         {
             var json = File.ReadAllText(_filePath);
-            _workspaces = JsonSerializer.Deserialize<List<Workspace>>(json, JsonOptions) ?? [];
+            _workspaces = JsonSerializer.Deserialize<List<Workspace>>(json, JsonDefaults.Options) ?? [];
         }
         catch
         {
@@ -53,7 +52,7 @@ public sealed class WorkspaceService
 
     public void Save()
     {
-        var json = JsonSerializer.Serialize(_workspaces, JsonOptions);
+        var json = JsonSerializer.Serialize(_workspaces, JsonDefaults.Options);
         File.WriteAllText(_filePath, json);
     }
 }

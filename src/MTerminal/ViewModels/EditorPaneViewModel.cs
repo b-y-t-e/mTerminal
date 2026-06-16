@@ -13,12 +13,16 @@ public partial class EditorPaneViewModel : ObservableObject, IDisposable
     private bool _isLoading;
 
     public string FilePath => _filePath;
+    public string FontFamily { get; }
+    public double FontSize { get; }
 
     internal Control? CachedControl { get; set; }
 
-    public EditorPaneViewModel(string filePath)
+    public EditorPaneViewModel(string filePath, string? fontFamily = null, double? fontSize = null)
     {
         _filePath = filePath;
+        FontFamily = fontFamily ?? "Cascadia Mono, Consolas, monospace";
+        FontSize = fontSize ?? 14;
         _isLoading = true;
         LoadFromFile();
         _isLoading = false;
@@ -27,7 +31,6 @@ public partial class EditorPaneViewModel : ObservableObject, IDisposable
     partial void OnTextChanged(string value)
     {
         if (_isLoading) return;
-        Console.WriteLine($"[EditorPane] Text changed, length={value.Length}, scheduling save...");
         _saveTimer?.Dispose();
         _saveTimer = new Timer(_ => SaveToFile(), null, 2000, Timeout.Infinite);
     }
@@ -48,11 +51,10 @@ public partial class EditorPaneViewModel : ObservableObject, IDisposable
             var dir = Path.GetDirectoryName(_filePath);
             if (dir != null) Directory.CreateDirectory(dir);
             File.WriteAllText(_filePath, Text);
-            Console.WriteLine($"[EditorPane] Saved {Text.Length} chars to {_filePath}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[EditorPane] Save failed: {ex.Message}");
+            System.Diagnostics.Trace.TraceWarning("EditorPane save failed: {0}", ex.Message);
         }
     }
 

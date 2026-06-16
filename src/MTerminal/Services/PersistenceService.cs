@@ -5,7 +5,6 @@ namespace MTerminal.Services;
 
 public sealed class PersistenceService
 {
-    private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
     private readonly string _workspacesDir;
     private Timer? _debounceTimer;
 
@@ -22,7 +21,7 @@ public sealed class PersistenceService
         try
         {
             var json = File.ReadAllText(filePath);
-            return JsonSerializer.Deserialize<WorkspaceState>(json, JsonOptions);
+            return JsonSerializer.Deserialize<WorkspaceState>(json, JsonDefaults.Options);
         }
         catch
         {
@@ -37,7 +36,7 @@ public sealed class PersistenceService
             WorkspaceId = workspaceId,
             RootPane = rootPane
         };
-        var json = JsonSerializer.Serialize(state, JsonOptions);
+        var json = JsonSerializer.Serialize(state, JsonDefaults.Options);
         File.WriteAllText(GetFilePath(workspaceId), json);
     }
 

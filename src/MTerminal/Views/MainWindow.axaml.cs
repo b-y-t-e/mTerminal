@@ -1,7 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
-using MTerminal.Models;
 using MTerminal.Services;
+using MTerminal.ViewModels;
 
 namespace MTerminal.Views;
 
@@ -43,6 +43,7 @@ public partial class MainWindow : Window
     {
         base.OnClosing(e);
         SaveWindowState();
+        (DataContext as MainWindowViewModel)?.DisposeAll();
     }
 
     private void SaveWindowState()

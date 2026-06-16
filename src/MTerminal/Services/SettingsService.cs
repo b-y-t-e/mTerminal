@@ -5,11 +5,6 @@ namespace MTerminal.Services;
 
 public sealed class SettingsService
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        WriteIndented = true,
-        NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowNamedFloatingPointLiterals
-    };
     private readonly string _filePath;
     private Timer? _debounceTimer;
 
@@ -31,7 +26,7 @@ public sealed class SettingsService
         try
         {
             var json = File.ReadAllText(_filePath);
-            Settings = JsonSerializer.Deserialize<AppSettings>(json, JsonOptions) ?? new AppSettings();
+            Settings = JsonSerializer.Deserialize<AppSettings>(json, JsonDefaults.Options) ?? new AppSettings();
         }
         catch
         {
@@ -41,7 +36,7 @@ public sealed class SettingsService
 
     public void Save()
     {
-        var json = JsonSerializer.Serialize(Settings, JsonOptions);
+        var json = JsonSerializer.Serialize(Settings, JsonDefaults.Options);
         File.WriteAllText(_filePath, json);
     }
 

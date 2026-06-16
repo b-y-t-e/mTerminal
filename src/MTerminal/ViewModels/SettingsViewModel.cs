@@ -58,7 +58,7 @@ public partial class SettingsViewModel : ObservableObject
         _customShellPath = s.CustomShellPath;
         _customShellArgs = s.CustomShellArgs;
 
-        var detected = ShellProfile.Detect();
+        var detected = ShellDetector.Detect();
         foreach (var shell in detected)
             ShellOptions.Add(shell.Name);
         ShellOptions.Add(CustomShellOption);

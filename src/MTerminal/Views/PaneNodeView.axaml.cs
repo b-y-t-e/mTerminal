@@ -91,8 +91,8 @@ public partial class PaneNodeView : UserControl
         if (_firstChild == null) _firstChild = new PaneNodeView();
         if (_secondChild == null) _secondChild = new PaneNodeView();
 
-        DetachFromParent(_firstChild);
-        DetachFromParent(_secondChild);
+        ControlHelper.DetachFromParent(_firstChild);
+        ControlHelper.DetachFromParent(_secondChild);
 
         if (_firstChild.DataContext != split.First)
             _firstChild.DataContext = split.First;
@@ -170,13 +170,4 @@ public partial class PaneNodeView : UserControl
         }
     }
 
-    private static void DetachFromParent(Control control)
-    {
-        if (control.Parent is Panel panel)
-            panel.Children.Remove(control);
-        else if (control.Parent is ContentControl cc)
-            cc.Content = null;
-        else if (control.Parent is Decorator dec)
-            dec.Child = null;
-    }
 }

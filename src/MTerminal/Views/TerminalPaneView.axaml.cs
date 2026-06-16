@@ -23,9 +23,7 @@ public partial class TerminalPaneView : UserControl
 
         if (vm.CachedControl is TerminalControl cached)
         {
-            if (cached.Parent is Panel p) p.Children.Remove(cached);
-            else if (cached.Parent is ContentControl cc) cc.Content = null;
-            else if (cached.Parent is Decorator d) d.Child = null;
+            ControlHelper.DetachFromParent(cached);
             Content = cached;
             return;
         }
@@ -33,8 +31,8 @@ public partial class TerminalPaneView : UserControl
         var theme = vm.Theme;
         var terminal = new TerminalControl
         {
-            FontFamily = new FontFamily("Cascadia Mono, Consolas, monospace"),
-            FontSize = 13,
+            FontFamily = new FontFamily(vm.FontFamily),
+            FontSize = vm.FontSize,
             BufferSize = 5000,
             Background = new SolidColorBrush(Color.Parse(theme.Background)),
             Foreground = new SolidColorBrush(Color.Parse(theme.Foreground)),

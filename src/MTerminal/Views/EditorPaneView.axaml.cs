@@ -21,17 +21,15 @@ public partial class EditorPaneView : UserControl
 
         if (vm.CachedControl is TextEditor cached)
         {
-            if (cached.Parent is Panel p) p.Children.Remove(cached);
-            else if (cached.Parent is ContentControl cc) cc.Content = null;
-            else if (cached.Parent is Decorator d) d.Child = null;
+            ControlHelper.DetachFromParent(cached);
             Content = cached;
             return;
         }
 
         var editor = new TextEditor
         {
-            FontFamily = new FontFamily("Cascadia Mono, Consolas, monospace"),
-            FontSize = 13,
+            FontFamily = new FontFamily(vm.FontFamily),
+            FontSize = vm.FontSize,
             ShowLineNumbers = true,
             WordWrap = true,
             Background = new SolidColorBrush(Color.Parse("#1a1a2e")),

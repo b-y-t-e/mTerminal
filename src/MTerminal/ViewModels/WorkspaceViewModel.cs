@@ -6,7 +6,7 @@ using MTerminal.Services;
 
 namespace MTerminal.ViewModels;
 
-public partial class WorkspaceViewModel : ObservableObject
+public partial class WorkspaceViewModel : ObservableObject, IDisposable
 {
     private readonly PersistenceService _persistenceService;
     private readonly SettingsService _settingsService;
@@ -25,7 +25,7 @@ public partial class WorkspaceViewModel : ObservableObject
         _persistenceService = persistenceService;
         _settingsService = settingsService;
 
-        foreach (var shell in ShellProfile.Detect())
+        foreach (var shell in ShellDetector.Detect())
             AvailableShells.Add(shell);
 
         var state = persistenceService.LoadLayout(workspace.Id);
@@ -88,9 +88,10 @@ public partial class WorkspaceViewModel : ObservableObject
 
     private EditorPaneViewModel CreateEditorContent(string workingDir)
     {
+        var s = _settingsService.Settings;
         var notesDir = Path.Combine(workingDir, ".mterminal", "notes");
         var filePath = Path.Combine(notesDir, $"{Guid.NewGuid():N}.md");
-        return new EditorPaneViewModel(filePath);
+        return new EditorPaneViewModel(filePath, s.EditorFontFamily, s.EditorFontSize);
     }
 
     private void ScheduleSave()
@@ -111,7 +112,7 @@ public partial class WorkspaceViewModel : ObservableObject
             SplitPaneNodeViewModel split => new PaneNode
             {
                 IsLeaf = false,
-                SplitOrientation = split.Orientation.ToString(),
+                SplitOrientation = split.Orientation,
                 SplitRatio = split.SplitRatio,
                 First = SerializeTree(split.First),
                 Second = SerializeTree(split.Second)
@@ -126,7 +127,10 @@ public partial class WorkspaceViewModel : ObservableObject
         {
             ObservableObject content;
             if (dto.ContentType == PaneContentType.TextEditor && dto.EditorFilePath != null)
-                content = new EditorPaneViewModel(dto.EditorFilePath);
+            {
+                var s = _settingsService.Settings;
+                content = new EditorPaneViewModel(dto.EditorFilePath, s.EditorFontFamily, s.EditorFontSize);
+            }
             else
                 content = CreateContent(dto.ContentType, WorkingDirectory);
 
@@ -143,11 +147,7 @@ public partial class WorkspaceViewModel : ObservableObject
         var second = RestoreTree(dto.Second!);
         if (first == null || second == null) return first ?? second;
 
-        var orientation = dto.SplitOrientation == "Horizontal"
-            ? Avalonia.Layout.Orientation.Horizontal
-            : Avalonia.Layout.Orientation.Vertical;
-
-        var split = new SplitPaneNodeViewModel(orientation, first, second)
+        var split = new SplitPaneNodeViewModel(dto.SplitOrientation, first, second)
         {
             SplitRatio = dto.SplitRatio,
             LayoutChanged = ScheduleSave
