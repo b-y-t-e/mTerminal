@@ -8,6 +8,7 @@ public sealed class AppSettings
     public double EditorFontSize { get; set; } = 14;
     public string Theme { get; set; } = "Dark";
 
+    public string TerminalThemeName { get; set; } = "Default Dark";
     public string DefaultShellName { get; set; } = "";
     public string CustomShellPath { get; set; } = "";
     public string CustomShellArgs { get; set; } = "";

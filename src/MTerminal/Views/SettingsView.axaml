@@ -63,9 +63,13 @@
                 </StackPanel>
             </StackPanel>
 
-            <!-- Terminal Font -->
+            <!-- Terminal -->
             <TextBlock Text="TERMINAL" Classes="section" />
             <StackPanel Spacing="4">
+                <TextBlock Text="Color Theme" Classes="label" />
+                <ComboBox Classes="setting"
+                          SelectedItem="{Binding TerminalThemeName}"
+                          ItemsSource="{x:Static vm:SettingsViewModel.TerminalThemeNames}" />
                 <TextBlock Text="Font Family" Classes="label" />
                 <TextBox Classes="setting"
                          Text="{Binding TerminalFontFamily}"
