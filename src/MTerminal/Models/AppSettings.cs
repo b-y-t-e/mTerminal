@@ -11,4 +11,10 @@ public sealed class AppSettings
     public string DefaultShellName { get; set; } = "";
     public string CustomShellPath { get; set; } = "";
     public string CustomShellArgs { get; set; } = "";
+
+    public double WindowX { get; set; } = double.NaN;
+    public double WindowY { get; set; } = double.NaN;
+    public double WindowWidth { get; set; } = double.NaN;
+    public double WindowHeight { get; set; } = double.NaN;
+    public bool WindowMaximized { get; set; } = true;
 }

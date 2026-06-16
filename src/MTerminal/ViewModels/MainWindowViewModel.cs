@@ -15,7 +15,7 @@ public partial class MainWindowViewModel : ObservableObject
     private bool _isPanelOpen = true;
 
     [ObservableProperty]
-    private ProjectsPanelViewModel _projectsPanel;
+    private WorkspacesPanelViewModel _workspacesPanel;
 
     [ObservableProperty]
     private WorkspaceViewModel? _currentWorkspace;
@@ -26,24 +26,22 @@ public partial class MainWindowViewModel : ObservableObject
     [ObservableProperty]
     private bool _isSettingsOpen;
 
-    public MainWindowViewModel(ProjectService projectService, PersistenceService persistenceService,
+    public MainWindowViewModel(WorkspaceService workspaceService, PersistenceService persistenceService,
         SettingsService settingsService)
     {
         _persistenceService = persistenceService;
         _settingsService = settingsService;
-        _projectsPanel = new ProjectsPanelViewModel(projectService);
+        _workspacesPanel = new WorkspacesPanelViewModel(workspaceService);
         _settings = new SettingsViewModel(settingsService);
 
-        _projectsPanel.PropertyChanged += (_, e) =>
+        _workspacesPanel.PropertyChanged += (_, e) =>
         {
-            if (e.PropertyName == nameof(ProjectsPanelViewModel.SelectedProject))
-                SwitchToProject(_projectsPanel.SelectedProject);
+            if (e.PropertyName == nameof(WorkspacesPanelViewModel.SelectedWorkspace))
+                SwitchToWorkspace(_workspacesPanel.SelectedWorkspace);
         };
 
-        if (_projectsPanel.Projects.Count > 0)
-        {
-            _projectsPanel.SelectedProject = _projectsPanel.Projects[0];
-        }
+        if (_workspacesPanel.Workspaces.Count > 0)
+            _workspacesPanel.SelectedWorkspace = _workspacesPanel.Workspaces[0];
     }
 
     [RelayCommand]
@@ -52,20 +50,20 @@ public partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     private void ToggleSettings() => IsSettingsOpen = !IsSettingsOpen;
 
-    private void SwitchToProject(Project? project)
+    private void SwitchToWorkspace(Workspace? workspace)
     {
-        if (project == null)
+        if (workspace == null)
         {
             CurrentWorkspace = null;
             return;
         }
 
-        if (!_workspaceCache.TryGetValue(project.Id, out var workspace))
+        if (!_workspaceCache.TryGetValue(workspace.Id, out var vm))
         {
-            workspace = new WorkspaceViewModel(project, _persistenceService, _settingsService);
-            _workspaceCache[project.Id] = workspace;
+            vm = new WorkspaceViewModel(workspace, _persistenceService, _settingsService);
+            _workspaceCache[workspace.Id] = vm;
         }
 
-        CurrentWorkspace = workspace;
+        CurrentWorkspace = vm;
     }
 }

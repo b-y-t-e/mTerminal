@@ -27,6 +27,7 @@ public partial class EditorPaneViewModel : ObservableObject, IDisposable
     partial void OnTextChanged(string value)
     {
         if (_isLoading) return;
+        Console.WriteLine($"[EditorPane] Text changed, length={value.Length}, scheduling save...");
         _saveTimer?.Dispose();
         _saveTimer = new Timer(_ => SaveToFile(), null, 2000, Timeout.Infinite);
     }
@@ -47,8 +48,12 @@ public partial class EditorPaneViewModel : ObservableObject, IDisposable
             var dir = Path.GetDirectoryName(_filePath);
             if (dir != null) Directory.CreateDirectory(dir);
             File.WriteAllText(_filePath, Text);
+            Console.WriteLine($"[EditorPane] Saved {Text.Length} chars to {_filePath}");
         }
-        catch { }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[EditorPane] Save failed: {ex.Message}");
+        }
     }
 
     public void Dispose()

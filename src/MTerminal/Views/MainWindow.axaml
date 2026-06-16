@@ -5,8 +5,6 @@
         x:Class="MTerminal.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="MTerminal"
-        Width="1280" Height="800"
-        WindowStartupLocation="CenterScreen"
         Background="#1a1a2e">
 
     <DockPanel>
@@ -23,7 +21,7 @@
                             Content="&#9776;"
                             FontSize="16"
                             Command="{Binding TogglePanelCommand}"
-                            ToolTip.Tip="Toggle Projects Panel" />
+                            ToolTip.Tip="Toggle Workspaces Panel" />
                     <TextBlock Text="MTerminal" VerticalAlignment="Center"
                                Foreground="#8088a0"
                                FontWeight="SemiBold" FontSize="13" Margin="8,0" />
@@ -46,12 +44,12 @@
                        CompactPaneLength="0"
                        OpenPaneLength="240">
                 <SplitView.Pane>
-                    <views:ProjectsPanelView DataContext="{Binding ProjectsPanel}" />
+                    <views:WorkspacesPanelView DataContext="{Binding WorkspacesPanel}" />
                 </SplitView.Pane>
                 <SplitView.Content>
                     <Panel>
                         <ContentControl Content="{Binding CurrentWorkspace}" />
-                        <TextBlock Text="Select or add a project to get started"
+                        <TextBlock Text="Select or add a workspace to get started"
                                    IsVisible="{Binding CurrentWorkspace, Converter={x:Static ObjectConverters.IsNull}}"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"

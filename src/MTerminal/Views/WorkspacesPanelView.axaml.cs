@@ -4,9 +4,9 @@ using MTerminal.ViewModels;
 
 namespace MTerminal.Views;
 
-public partial class ProjectsPanelView : UserControl
+public partial class WorkspacesPanelView : UserControl
 {
-    public ProjectsPanelView()
+    public WorkspacesPanelView()
     {
         InitializeComponent();
         DataContextChanged += OnDataContextChanged;
@@ -14,7 +14,7 @@ public partial class ProjectsPanelView : UserControl
 
     private void OnDataContextChanged(object? sender, EventArgs e)
     {
-        if (DataContext is ProjectsPanelViewModel vm)
+        if (DataContext is WorkspacesPanelViewModel vm)
         {
             vm.FolderPicker = async () =>
             {
@@ -22,7 +22,7 @@ public partial class ProjectsPanelView : UserControl
                 if (topLevel == null) return null;
 
                 var folders = await topLevel.StorageProvider.OpenFolderPickerAsync(
-                    new FolderPickerOpenOptions { Title = "Select project directory", AllowMultiple = false });
+                    new FolderPickerOpenOptions { Title = "Select workspace directory", AllowMultiple = false });
 
                 return folders.Count > 0 ? folders[0].TryGetLocalPath() : null;
             };

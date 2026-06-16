@@ -15,9 +15,9 @@ public sealed class PersistenceService
         Directory.CreateDirectory(_workspacesDir);
     }
 
-    public WorkspaceState? LoadWorkspace(string projectId)
+    public WorkspaceState? LoadLayout(string workspaceId)
     {
-        var filePath = GetWorkspaceFilePath(projectId);
+        var filePath = GetFilePath(workspaceId);
         if (!File.Exists(filePath)) return null;
         try
         {
@@ -30,37 +30,34 @@ public sealed class PersistenceService
         }
     }
 
-    public void SaveWorkspace(string projectId, PaneNode? rootPane)
+    public void SaveLayout(string workspaceId, PaneNode? rootPane)
     {
         var state = new WorkspaceState
         {
-            ProjectId = projectId,
+            WorkspaceId = workspaceId,
             RootPane = rootPane
         };
         var json = JsonSerializer.Serialize(state, JsonOptions);
-        File.WriteAllText(GetWorkspaceFilePath(projectId), json);
+        File.WriteAllText(GetFilePath(workspaceId), json);
     }
 
-    public void DebouncedSaveWorkspace(string projectId, Func<PaneNode?> getRootPane)
+    public void DebouncedSaveLayout(string workspaceId, Func<PaneNode?> getRootPane)
     {
         _debounceTimer?.Dispose();
         _debounceTimer = new Timer(_ =>
         {
-            try
-            {
-                SaveWorkspace(projectId, getRootPane());
-            }
+            try { SaveLayout(workspaceId, getRootPane()); }
             catch { }
         }, null, 1000, Timeout.Infinite);
     }
 
-    public void DeleteWorkspace(string projectId)
+    public void DeleteLayout(string workspaceId)
     {
-        var filePath = GetWorkspaceFilePath(projectId);
+        var filePath = GetFilePath(workspaceId);
         if (File.Exists(filePath))
             File.Delete(filePath);
     }
 
-    private string GetWorkspaceFilePath(string projectId) =>
-        Path.Combine(_workspacesDir, $"{projectId}.json");
+    private string GetFilePath(string workspaceId) =>
+        Path.Combine(_workspacesDir, $"{workspaceId}.json");
 }

@@ -4,11 +4,11 @@ Multiplatformowy terminal manager z systemem kafelkowych paneli. Windows, Linux 
 
 ## Funkcje
 
-- **Projekty** — każdy projekt powiązany z katalogiem, przełączanie jednym kliknięciem
+- **Workspaces** — każdy workspace powiązany z katalogiem, przełączanie jednym kliknięciem
 - **Split panes** — dzielenie paneli horyzontalnie/wertykalnie w dowolnych kombinacjach
 - **Terminale** — PowerShell, Git Bash, CMD (auto-detekcja), wybór domyślnego w ustawieniach
-- **Edytor notatek** — AvaloniaEdit z numeracją linii, auto-zapis do `.mterminal/notes/` w katalogu projektu
-- **Persystencja** — layout, projekty i ustawienia zapisywane automatycznie
+- **Edytor notatek** — AvaloniaEdit z numeracją linii, auto-zapis do `.mterminal/notes/` w katalogu workspace'a
+- **Persystencja** — layout, workspaces, ustawienia i stan okna zapisywane automatycznie
 
 ## Wymagania
 

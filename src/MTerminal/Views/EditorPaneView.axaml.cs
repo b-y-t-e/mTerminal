@@ -1,5 +1,7 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
+using Avalonia.Threading;
 using AvaloniaEdit;
 using MTerminal.ViewModels;
 
@@ -32,16 +34,23 @@ public partial class EditorPaneView : UserControl
             FontSize = 13,
             ShowLineNumbers = true,
             WordWrap = true,
-            Background = Brushes.Transparent,
-            Foreground = new SolidColorBrush(Color.Parse("#c0c8e0")),
-            IsReadOnly = false,
-            Focusable = true
+            Background = new SolidColorBrush(Color.Parse("#1a1a2e")),
+            Foreground = new SolidColorBrush(Color.Parse("#c0c8e0"))
         };
 
         editor.Text = vm.Text;
-        editor.TextChanged += (_, _) => vm.Text = editor.Text;
+
+        editor.Document.Changed += (_, _) => vm.Text = editor.Text;
 
         vm.CachedControl = editor;
         Content = editor;
+
+        AttachedToVisualTree += OnceAttached;
+
+        void OnceAttached(object? s, VisualTreeAttachmentEventArgs args)
+        {
+            AttachedToVisualTree -= OnceAttached;
+            Dispatcher.UIThread.Post(() => editor.TextArea?.Focus(), DispatcherPriority.Input);
+        }
     }
 }

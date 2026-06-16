@@ -14,30 +14,27 @@ public partial class WorkspaceViewModel : ObservableObject
     [ObservableProperty]
     private PaneNodeViewModel? _rootPane;
 
-    public string ProjectId { get; }
+    public string WorkspaceId { get; }
     public string WorkingDirectory { get; }
     public ObservableCollection<ShellProfile> AvailableShells { get; } = [];
 
-    public WorkspaceViewModel(Project project, PersistenceService persistenceService, SettingsService settingsService)
+    public WorkspaceViewModel(Workspace workspace, PersistenceService persistenceService, SettingsService settingsService)
     {
-        ProjectId = project.Id;
-        WorkingDirectory = project.DirectoryPath;
+        WorkspaceId = workspace.Id;
+        WorkingDirectory = workspace.DirectoryPath;
         _persistenceService = persistenceService;
         _settingsService = settingsService;
 
         foreach (var shell in ShellProfile.Detect())
             AvailableShells.Add(shell);
 
-        var state = persistenceService.LoadWorkspace(project.Id);
+        var state = persistenceService.LoadLayout(workspace.Id);
         if (state?.RootPane != null)
             RootPane = RestoreTree(state.RootPane);
     }
 
     [RelayCommand]
-    private void AddTerminal(ShellProfile? shell = null)
-    {
-        AddFirstPane(PaneContentType.Terminal, shell);
-    }
+    private void AddTerminal(ShellProfile? shell = null) => AddFirstPane(PaneContentType.Terminal, shell);
 
     [RelayCommand]
     private void AddEditor() => AddFirstPane(PaneContentType.TextEditor);
@@ -98,7 +95,7 @@ public partial class WorkspaceViewModel : ObservableObject
 
     private void ScheduleSave()
     {
-        _persistenceService.DebouncedSaveWorkspace(ProjectId, () => SerializeTree(RootPane));
+        _persistenceService.DebouncedSaveLayout(WorkspaceId, () => SerializeTree(RootPane));
     }
 
     private PaneNode? SerializeTree(PaneNodeViewModel? vm)

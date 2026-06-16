@@ -20,10 +20,10 @@ public partial class App : Application
     public override void OnFrameworkInitializationCompleted()
     {
         _settingsService = new SettingsService();
-        var projectService = new ProjectService();
+        var workspaceService = new WorkspaceService();
         var persistenceService = new PersistenceService();
 
-        var mainVm = new MainWindowViewModel(projectService, persistenceService, _settingsService);
+        var mainVm = new MainWindowViewModel(workspaceService, persistenceService, _settingsService);
 
         _settingsService.SettingsChanged += () =>
         {
@@ -39,10 +39,9 @@ public partial class App : Application
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.MainWindow = new MainWindow
-            {
-                DataContext = mainVm
-            };
+            var mainWindow = new MainWindow { DataContext = mainVm };
+            mainWindow.BindWindowState(_settingsService);
+            desktop.MainWindow = mainWindow;
         }
 
         base.OnFrameworkInitializationCompleted();

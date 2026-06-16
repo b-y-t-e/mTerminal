@@ -2,20 +2,20 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:MTerminal.ViewModels"
              xmlns:m="using:MTerminal.Models"
-             x:Class="MTerminal.Views.ProjectsPanelView"
-             x:DataType="vm:ProjectsPanelViewModel"
+             x:Class="MTerminal.Views.WorkspacesPanelView"
+             x:DataType="vm:WorkspacesPanelViewModel"
              Background="#16162a">
 
     <DockPanel>
         <Border DockPanel.Dock="Top" Padding="14,10"
                 BorderBrush="#2a2a4a" BorderThickness="0,0,0,1">
-            <TextBlock Text="PROJECTS" FontWeight="SemiBold" FontSize="11"
+            <TextBlock Text="WORKSPACES" FontWeight="SemiBold" FontSize="11"
                        Foreground="#6070a0" LetterSpacing="1.5" />
         </Border>
 
         <Border DockPanel.Dock="Bottom" Padding="8" BorderBrush="#2a2a4a" BorderThickness="0,1,0,0">
-            <Button Content="+ Add Project"
-                    Command="{Binding AddProjectCommand}"
+            <Button Content="+ Add Workspace"
+                    Command="{Binding AddWorkspaceCommand}"
                     HorizontalAlignment="Stretch"
                     HorizontalContentAlignment="Center"
                     Background="#1e1e3a"
@@ -28,9 +28,9 @@
                     Cursor="Hand" />
         </Border>
 
-        <ListBox x:Name="ProjectList"
-                 ItemsSource="{Binding Projects}"
-                 SelectedItem="{Binding SelectedProject}"
+        <ListBox x:Name="WorkspaceList"
+                 ItemsSource="{Binding Workspaces}"
+                 SelectedItem="{Binding SelectedWorkspace}"
                  Background="Transparent"
                  Margin="0,2">
             <ListBox.Styles>
@@ -47,19 +47,19 @@
                 </Style>
             </ListBox.Styles>
             <ListBox.ItemTemplate>
-                <DataTemplate DataType="m:Project">
+                <DataTemplate DataType="m:Workspace">
                     <DockPanel>
                         <Button DockPanel.Dock="Right"
-                                Content="&#x2715;"
+                                Content="x"
                                 FontSize="10"
                                 Background="Transparent"
                                 Foreground="#505070"
                                 Padding="4,2"
                                 BorderThickness="0"
                                 Cursor="Hand"
-                                Command="{Binding #ProjectList.((vm:ProjectsPanelViewModel)DataContext).RemoveProjectCommand}"
+                                Command="{Binding #WorkspaceList.((vm:WorkspacesPanelViewModel)DataContext).RemoveWorkspaceCommand}"
                                 CommandParameter="{Binding}"
-                                ToolTip.Tip="Remove project" />
+                                ToolTip.Tip="Remove workspace" />
                         <StackPanel Spacing="1">
                             <TextBlock Text="{Binding Name}" FontWeight="Medium"
                                        FontSize="12" Foreground="#c0c8e0" />
