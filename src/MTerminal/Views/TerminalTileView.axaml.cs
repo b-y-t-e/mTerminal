@@ -8,11 +8,11 @@ using XTerm.Options;
 
 namespace MTerminal.Views;
 
-public partial class TerminalPaneView : UserControl
+public partial class TerminalTileView : UserControl
 {
     private readonly TerminalKeyHandler _keyHandler = new();
 
-    public TerminalPaneView()
+    public TerminalTileView()
     {
         InitializeComponent();
         DataContextChanged += OnDataContextChanged;
@@ -20,7 +20,7 @@ public partial class TerminalPaneView : UserControl
 
     private void OnDataContextChanged(object? sender, EventArgs e)
     {
-        if (DataContext is not TerminalPaneViewModel vm) return;
+        if (DataContext is not TerminalTileViewModel vm) return;
 
         if (vm.CachedControl is TerminalControl cached)
         {

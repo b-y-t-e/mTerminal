@@ -29,23 +29,23 @@ public sealed class PersistenceService
         }
     }
 
-    public void SaveLayout(string workspaceId, PaneNode? rootPane)
+    public void SaveLayout(string workspaceId, TileNode? rootTile)
     {
         var state = new WorkspaceState
         {
             WorkspaceId = workspaceId,
-            RootPane = rootPane
+            RootTile = rootTile
         };
         var json = JsonSerializer.Serialize(state, JsonDefaults.Options);
         File.WriteAllText(GetFilePath(workspaceId), json);
     }
 
-    public void DebouncedSaveLayout(string workspaceId, Func<PaneNode?> getRootPane)
+    public void DebouncedSaveLayout(string workspaceId, Func<TileNode?> getRootTile)
     {
         _debounceTimer?.Dispose();
         _debounceTimer = new Timer(_ =>
         {
-            try { SaveLayout(workspaceId, getRootPane()); }
+            try { SaveLayout(workspaceId, getRootTile()); }
             catch { }
         }, null, 1000, Timeout.Infinite);
     }

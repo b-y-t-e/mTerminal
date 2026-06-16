@@ -10,6 +10,11 @@ using Iciclecreek.Terminal;
 
 namespace MTerminal.Views;
 
+// Workaround for Iciclecreek.Terminal keyboard limitations:
+// - TerminalView.OnKeyDown is a class handler (always runs, ignores e.Handled)
+// - It clears selection on ANY keypress (including modifier-only like Ctrl)
+// - It doesn't send ESC prefix for Alt+key combinations
+// - WriterStream is not exposed publicly (requires reflection)
 public sealed class TerminalKeyHandler
 {
     private TerminalView? _terminalView;
@@ -24,6 +29,8 @@ public sealed class TerminalKeyHandler
         _terminalView = tv;
         _ptyField = typeof(TerminalView).GetField("_ptyConnection", BindingFlags.NonPublic | BindingFlags.Instance);
 
+        // Pre-capture selection text on mouse release — TerminalView clears it on
+        // the next keydown (even Ctrl alone), so it's gone before Ctrl+C arrives.
         tv.AddHandler(
             InputElement.PointerReleasedEvent,
             (_, _) =>
@@ -56,6 +63,9 @@ public sealed class TerminalKeyHandler
                 e.Handled = true;
                 await _terminalView.PasteAsync();
             }
+            // TerminalView doesn't generate ESC prefix for Alt — sends raw char or nothing.
+            // We write ESC+char directly; class handler won't duplicate (TryGetPrintableChar
+            // fails with Alt modifier, so it sends nothing).
             else if (e.KeyModifiers == KeyModifiers.Alt && TryGetChar(e, out var ch))
             {
                 e.Handled = true;
@@ -76,6 +86,8 @@ public sealed class TerminalKeyHandler
         }
     }
 
+    // Reflection: TerminalView._ptyConnection.WriterStream is the only way to
+    // write directly to PTY — SendToPtyAsync and WriterStream are both private.
     private void WriteToPty(string data)
     {
         var pty = _ptyField?.GetValue(_terminalView);

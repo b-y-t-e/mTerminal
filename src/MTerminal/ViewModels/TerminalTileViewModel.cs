@@ -5,7 +5,7 @@ using MTerminal.Services;
 
 namespace MTerminal.ViewModels;
 
-public partial class TerminalPaneViewModel : ObservableObject, IDisposable
+public partial class TerminalTileViewModel : ObservableObject, IDisposable
 {
     public string WorkingDirectory { get; }
     public ShellProfile Shell { get; }
@@ -16,7 +16,7 @@ public partial class TerminalPaneViewModel : ObservableObject, IDisposable
     internal Control? CachedControl { get; set; }
     internal bool IsLaunched { get; set; }
 
-    public TerminalPaneViewModel(string workingDirectory, ShellProfile? shell = null, AppSettings? settings = null)
+    public TerminalTileViewModel(string workingDirectory, ShellProfile? shell = null, AppSettings? settings = null)
     {
         var s = settings ?? new AppSettings();
         WorkingDirectory = workingDirectory;

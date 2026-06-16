@@ -3,7 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace MTerminal.ViewModels;
 
-public partial class SplitPaneNodeViewModel : PaneNodeViewModel
+public partial class SplitTileNodeViewModel : TileNodeViewModel
 {
     [ObservableProperty]
     private Orientation _orientation;
@@ -12,12 +12,12 @@ public partial class SplitPaneNodeViewModel : PaneNodeViewModel
     private double _splitRatio = 0.5;
 
     [ObservableProperty]
-    private PaneNodeViewModel? _first;
+    private TileNodeViewModel? _first;
 
     [ObservableProperty]
-    private PaneNodeViewModel? _second;
+    private TileNodeViewModel? _second;
 
-    public SplitPaneNodeViewModel(Orientation orientation, PaneNodeViewModel first, PaneNodeViewModel second)
+    public SplitTileNodeViewModel(Orientation orientation, TileNodeViewModel first, TileNodeViewModel second)
     {
         _orientation = orientation;
         _first = first;

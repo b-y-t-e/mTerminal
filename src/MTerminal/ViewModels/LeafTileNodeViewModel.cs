@@ -5,29 +5,29 @@ using MTerminal.Models;
 
 namespace MTerminal.ViewModels;
 
-public partial class LeafPaneNodeViewModel : PaneNodeViewModel
+public partial class LeafTileNodeViewModel : TileNodeViewModel
 {
     [ObservableProperty]
     private ObservableObject? _content;
 
     [ObservableProperty]
-    private PaneContentType _contentType;
+    private TileContentType _contentType;
 
     [ObservableProperty]
-    private string _paneName = "";
+    private string _tileName = "";
 
-    partial void OnPaneNameChanged(string value) => NotifyLayoutChanged();
+    partial void OnTileNameChanged(string value) => NotifyLayoutChanged();
 
-    private readonly Func<PaneContentType, string, ObservableObject>? _contentFactory;
-    private readonly Func<PaneContentType, string>? _nameFactory;
+    private readonly Func<TileContentType, string, ObservableObject>? _contentFactory;
+    private readonly Func<TileContentType, string>? _nameFactory;
     private readonly string _workingDirectory;
 
-    public Action<PaneNodeViewModel>? RootReplaced { get; set; }
+    public Action<TileNodeViewModel>? RootReplaced { get; set; }
     public Action? RootCleared { get; set; }
 
-    public LeafPaneNodeViewModel(PaneContentType contentType, ObservableObject content, string workingDirectory,
-        Func<PaneContentType, string, ObservableObject>? contentFactory = null,
-        Func<PaneContentType, string>? nameFactory = null)
+    public LeafTileNodeViewModel(TileContentType contentType, ObservableObject content, string workingDirectory,
+        Func<TileContentType, string, ObservableObject>? contentFactory = null,
+        Func<TileContentType, string>? nameFactory = null)
     {
         _contentType = contentType;
         _content = content;
@@ -37,25 +37,25 @@ public partial class LeafPaneNodeViewModel : PaneNodeViewModel
     }
 
     [RelayCommand]
-    private void SplitHorizontalTerminal() => Split(Orientation.Horizontal, PaneContentType.Terminal);
+    private void SplitHorizontalTerminal() => Split(Orientation.Horizontal, TileContentType.Terminal);
 
     [RelayCommand]
-    private void SplitVerticalTerminal() => Split(Orientation.Vertical, PaneContentType.Terminal);
+    private void SplitVerticalTerminal() => Split(Orientation.Vertical, TileContentType.Terminal);
 
     [RelayCommand]
-    private void SplitHorizontalEditor() => Split(Orientation.Horizontal, PaneContentType.TextEditor);
+    private void SplitHorizontalEditor() => Split(Orientation.Horizontal, TileContentType.TextEditor);
 
     [RelayCommand]
-    private void SplitVerticalEditor() => Split(Orientation.Vertical, PaneContentType.TextEditor);
+    private void SplitVerticalEditor() => Split(Orientation.Vertical, TileContentType.TextEditor);
 
-    private void Split(Orientation orientation, PaneContentType newPaneType)
+    private void Split(Orientation orientation, TileContentType newTileType)
     {
-        var newContent = _contentFactory?.Invoke(newPaneType, _workingDirectory);
+        var newContent = _contentFactory?.Invoke(newTileType, _workingDirectory);
         if (newContent == null) return;
 
-        var newLeaf = new LeafPaneNodeViewModel(newPaneType, newContent, _workingDirectory, _contentFactory, _nameFactory)
+        var newLeaf = new LeafTileNodeViewModel(newTileType, newContent, _workingDirectory, _contentFactory, _nameFactory)
         {
-            PaneName = _nameFactory?.Invoke(newPaneType) ?? newPaneType.ToString(),
+            TileName = _nameFactory?.Invoke(newTileType) ?? newTileType.ToString(),
             LayoutChanged = LayoutChanged,
             RootReplaced = RootReplaced,
             RootCleared = RootCleared
@@ -63,7 +63,7 @@ public partial class LeafPaneNodeViewModel : PaneNodeViewModel
 
         var oldParent = Parent;
 
-        var split = new SplitPaneNodeViewModel(orientation, this, newLeaf)
+        var split = new SplitTileNodeViewModel(orientation, this, newLeaf)
         {
             Parent = oldParent,
             LayoutChanged = LayoutChanged
@@ -72,7 +72,7 @@ public partial class LeafPaneNodeViewModel : PaneNodeViewModel
         this.Parent = split;
         newLeaf.Parent = split;
 
-        if (oldParent is SplitPaneNodeViewModel parentSplit)
+        if (oldParent is SplitTileNodeViewModel parentSplit)
         {
             if (parentSplit.First == this)
                 parentSplit.First = split;
@@ -93,7 +93,7 @@ public partial class LeafPaneNodeViewModel : PaneNodeViewModel
         if (Content is IDisposable disposable)
             disposable.Dispose();
 
-        if (Parent is not SplitPaneNodeViewModel parentSplit)
+        if (Parent is not SplitTileNodeViewModel parentSplit)
         {
             RootCleared?.Invoke();
             return;
@@ -106,7 +106,7 @@ public partial class LeafPaneNodeViewModel : PaneNodeViewModel
         sibling.LayoutChanged = LayoutChanged;
         PropagateSiblingCallbacks(sibling);
 
-        if (parentSplit.Parent is SplitPaneNodeViewModel grandParent)
+        if (parentSplit.Parent is SplitTileNodeViewModel grandParent)
         {
             if (parentSplit == grandParent.First)
                 grandParent.First = sibling;
@@ -121,15 +121,15 @@ public partial class LeafPaneNodeViewModel : PaneNodeViewModel
         NotifyLayoutChanged();
     }
 
-    private void PropagateSiblingCallbacks(PaneNodeViewModel node)
+    private void PropagateSiblingCallbacks(TileNodeViewModel node)
     {
-        if (node is LeafPaneNodeViewModel leaf)
+        if (node is LeafTileNodeViewModel leaf)
         {
             leaf.RootReplaced = RootReplaced;
             leaf.RootCleared = RootCleared;
             leaf.LayoutChanged = LayoutChanged;
         }
-        else if (node is SplitPaneNodeViewModel split)
+        else if (node is SplitTileNodeViewModel split)
         {
             split.LayoutChanged = LayoutChanged;
             if (split.First != null) PropagateSiblingCallbacks(split.First);

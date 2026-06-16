@@ -7,14 +7,14 @@ using MTerminal.ViewModels;
 
 namespace MTerminal.Views;
 
-public partial class PaneNodeView : UserControl
+public partial class TileNodeView : UserControl
 {
-    private PaneNodeViewModel? _vm;
-    private PaneNodeView? _firstChild;
-    private PaneNodeView? _secondChild;
+    private TileNodeViewModel? _vm;
+    private TileNodeView? _firstChild;
+    private TileNodeView? _secondChild;
     private bool _isBuilding;
 
-    public PaneNodeView()
+    public TileNodeView()
     {
         InitializeComponent();
         DataContextChanged += OnDataContextChanged;
@@ -25,7 +25,7 @@ public partial class PaneNodeView : UserControl
         if (_isBuilding) return;
 
         Detach();
-        _vm = DataContext as PaneNodeViewModel;
+        _vm = DataContext as TileNodeViewModel;
         Attach();
         Rebuild();
     }
@@ -44,10 +44,10 @@ public partial class PaneNodeView : UserControl
 
     private void OnVmChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (_vm is SplitPaneNodeViewModel split &&
-            e.PropertyName is nameof(SplitPaneNodeViewModel.First)
-                or nameof(SplitPaneNodeViewModel.Second)
-                or nameof(SplitPaneNodeViewModel.Orientation))
+        if (_vm is SplitTileNodeViewModel split &&
+            e.PropertyName is nameof(SplitTileNodeViewModel.First)
+                or nameof(SplitTileNodeViewModel.Second)
+                or nameof(SplitTileNodeViewModel.Orientation))
         {
             Rebuild();
         }
@@ -61,9 +61,9 @@ public partial class PaneNodeView : UserControl
         var suspended = SuspendTerminals();
         try
         {
-            if (_vm is LeafPaneNodeViewModel leaf)
+            if (_vm is LeafTileNodeViewModel leaf)
                 ShowLeaf(leaf);
-            else if (_vm is SplitPaneNodeViewModel split)
+            else if (_vm is SplitTileNodeViewModel split)
                 ShowSplit(split);
             else
                 Content = null;
@@ -75,21 +75,21 @@ public partial class PaneNodeView : UserControl
         }
     }
 
-    private void ShowLeaf(LeafPaneNodeViewModel leaf)
+    private void ShowLeaf(LeafTileNodeViewModel leaf)
     {
         _firstChild = null;
         _secondChild = null;
 
-        if (Content is LeafPaneView existing && existing.DataContext == leaf)
+        if (Content is LeafTileView existing && existing.DataContext == leaf)
             return;
 
-        Content = new LeafPaneView { DataContext = leaf };
+        Content = new LeafTileView { DataContext = leaf };
     }
 
-    private void ShowSplit(SplitPaneNodeViewModel split)
+    private void ShowSplit(SplitTileNodeViewModel split)
     {
-        if (_firstChild == null) _firstChild = new PaneNodeView();
-        if (_secondChild == null) _secondChild = new PaneNodeView();
+        if (_firstChild == null) _firstChild = new TileNodeView();
+        if (_secondChild == null) _secondChild = new TileNodeView();
 
         ControlHelper.DetachFromParent(_firstChild);
         ControlHelper.DetachFromParent(_secondChild);
@@ -134,7 +134,7 @@ public partial class PaneNodeView : UserControl
         Content = grid;
     }
 
-    private static void UpdateSplitRatio(SplitPaneNodeViewModel split, Grid grid)
+    private static void UpdateSplitRatio(SplitTileNodeViewModel split, Grid grid)
     {
         if (split.Orientation == Orientation.Vertical && grid.ColumnDefinitions.Count >= 3)
         {

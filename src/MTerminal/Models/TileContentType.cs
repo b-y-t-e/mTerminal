@@ -1,6 +1,6 @@
 namespace MTerminal.Models;
 
-public enum PaneContentType
+public enum TileContentType
 {
     Terminal,
     TextEditor

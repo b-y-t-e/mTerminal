@@ -46,11 +46,11 @@
         <DataTemplate DataType="vm:WorkspaceViewModel">
             <views:WorkspaceView />
         </DataTemplate>
-        <DataTemplate DataType="vm:TerminalPaneViewModel">
-            <views:TerminalPaneView />
+        <DataTemplate DataType="vm:TerminalTileViewModel">
+            <views:TerminalTileView />
         </DataTemplate>
-        <DataTemplate DataType="vm:EditorPaneViewModel">
-            <views:EditorPaneView />
+        <DataTemplate DataType="vm:EditorTileViewModel">
+            <views:EditorTileView />
         </DataTemplate>
         <DataTemplate DataType="vm:SettingsViewModel">
             <views:SettingsView />

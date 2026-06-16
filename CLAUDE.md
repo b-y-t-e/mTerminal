@@ -12,7 +12,7 @@ dotnet run --project src/MTerminal
 ## Struktura
 
 - `src/MTerminal/` — jedyny projekt w solucji
-- `Models/` — DTO i modele danych (Workspace, PaneNode, AppSettings, ShellProfile, TerminalTheme)
+- `Models/` — DTO i modele danych (Workspace, TileNode, AppSettings, ShellProfile, TerminalTheme)
 - `ViewModels/` — MVVM z CommunityToolkit.Mvvm (source generators)
 - `Views/` — Avalonia AXAML + code-behind
 - `Services/` — persystencja JSON, detekcja shelli (ShellDetector), JsonDefaults
@@ -25,9 +25,9 @@ dotnet run --project src/MTerminal
   - Class handlery (`OnKeyDown`) ignorują `e.Handled` — nie da się ich zablokować zwykłymi handlerami
 - **AvaloniaEdit** — edytor tekstu. Wymaga `StyleInclude` w App.axaml. Sync tekstu przez `Document.Changed`.
 
-## Architektura split panes
+## Architektura split tiles
 
-Rekurencyjne drzewo binarne: `LeafPaneNodeViewModel` (terminal/edytor) lub `SplitPaneNodeViewModel` (H/V + dwoje dzieci). `PaneNodeView` zarządza widokami ręcznie (nie DataTemplate) i wywołuje `SuspendTerminals()`/`ResumeTerminals()` wokół Rebuild żeby zachować live terminale.
+Rekurencyjne drzewo binarne: `LeafTileNodeViewModel` (terminal/edytor) lub `SplitTileNodeViewModel` (H/V + dwoje dzieci). `TileNodeView` zarządza widokami ręcznie (nie DataTemplate) i wywołuje `SuspendTerminals()`/`ResumeTerminals()` wokół Rebuild żeby zachować live terminale.
 
 ## Obsługa klawiszy terminala
 
@@ -43,11 +43,12 @@ Refleksja na `_ptyConnection.WriterStream` jest konieczna bo TerminalView nie ek
 - `%APPDATA%/MTerminal/` (Windows) lub `~/.config/MTerminal/` (Linux)
 - `settings.json` — ustawienia (fonty, theme terminala, default shell, stan okna)
 - `workspaces.json` — lista workspace'ów (id, nazwa, ścieżka)
-- `workspaces/{id}.json` — layout paneli per workspace (shell name, pane name)
+- `workspaces/{id}.json` — layout tile'ów per workspace (shell name, tile name)
 - Auto-save z debounce
 
 ## Konwencje
 
-- **Workspace** (nie "project") — katalog roboczy z panelami terminali/edytorów
+- **Workspace** (nie "project") — katalog roboczy z tile'ami terminali/edytorów
+- **Tile** (nie "pane"/"panel") — pojedynczy kafelek w workspace (terminal lub edytor), dzielony w drzewo binarne
 - ViewModele w `ViewModels/`, widoki w `Views/`
 - Brak DI container — ręczne wstrzykiwanie w `App.axaml.cs`

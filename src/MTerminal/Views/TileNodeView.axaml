@@ -1,4 +1,4 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="MTerminal.Views.PaneNodeView">
+             x:Class="MTerminal.Views.TileNodeView">
 </UserControl>

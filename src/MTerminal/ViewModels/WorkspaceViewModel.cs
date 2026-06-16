@@ -12,7 +12,7 @@ public partial class WorkspaceViewModel : ObservableObject, IDisposable
     private readonly SettingsService _settingsService;
 
     [ObservableProperty]
-    private PaneNodeViewModel? _rootPane;
+    private TileNodeViewModel? _rootTile;
 
     public string WorkspaceId { get; }
     public string WorkingDirectory { get; }
@@ -32,39 +32,39 @@ public partial class WorkspaceViewModel : ObservableObject, IDisposable
             AvailableShells.Add(shell);
 
         var state = persistenceService.LoadLayout(workspace.Id);
-        if (state?.RootPane != null)
+        if (state?.RootTile != null)
         {
-            InitCountersFromDto(state.RootPane);
-            RootPane = RestoreTree(state.RootPane);
+            InitCountersFromDto(state.RootTile);
+            RootTile = RestoreTree(state.RootTile);
         }
     }
 
     [RelayCommand]
-    private void AddTerminal(ShellProfile? shell = null) => AddFirstPane(PaneContentType.Terminal, shell);
+    private void AddTerminal(ShellProfile? shell = null) => AddFirstTile(TileContentType.Terminal, shell);
 
     [RelayCommand]
-    private void AddEditor() => AddFirstPane(PaneContentType.TextEditor);
+    private void AddEditor() => AddFirstTile(TileContentType.TextEditor);
 
-    private void AddFirstPane(PaneContentType type, ShellProfile? shell = null)
+    private void AddFirstTile(TileContentType type, ShellProfile? shell = null)
     {
-        if (RootPane != null) return;
+        if (RootTile != null) return;
         var content = CreateContent(type, WorkingDirectory, shell);
-        RootPane = CreateLeaf(type, content, AllocatePaneName(type));
+        RootTile = CreateLeaf(type, content, AllocateTileName(type));
         ScheduleSave();
     }
 
-    private LeafPaneNodeViewModel CreateLeaf(PaneContentType type, ObservableObject content, string paneName)
+    private LeafTileNodeViewModel CreateLeaf(TileContentType type, ObservableObject content, string tileName)
     {
-        return new LeafPaneNodeViewModel(type, content, WorkingDirectory, (t, d) => CreateContent(t, d), AllocatePaneName)
+        return new LeafTileNodeViewModel(type, content, WorkingDirectory, (t, d) => CreateContent(t, d), AllocateTileName)
         {
-            PaneName = paneName,
+            TileName = tileName,
             LayoutChanged = ScheduleSave,
-            RootReplaced = newRoot => RootPane = ConfigureRoot(newRoot),
-            RootCleared = () => { RootPane = null; ScheduleSave(); }
+            RootReplaced = newRoot => RootTile = ConfigureRoot(newRoot),
+            RootCleared = () => { RootTile = null; ScheduleSave(); }
         };
     }
 
-    private PaneNodeViewModel ConfigureRoot(PaneNodeViewModel node)
+    private TileNodeViewModel ConfigureRoot(TileNodeViewModel node)
     {
         node.LayoutChanged = ScheduleSave;
         PropagateCallbacks(node);
@@ -72,44 +72,44 @@ public partial class WorkspaceViewModel : ObservableObject, IDisposable
         return node;
     }
 
-    private void PropagateCallbacks(PaneNodeViewModel node)
+    private void PropagateCallbacks(TileNodeViewModel node)
     {
         node.LayoutChanged = ScheduleSave;
-        if (node is LeafPaneNodeViewModel leaf)
+        if (node is LeafTileNodeViewModel leaf)
         {
-            leaf.RootReplaced = newRoot => RootPane = ConfigureRoot(newRoot);
-            leaf.RootCleared = () => { RootPane = null; ScheduleSave(); };
+            leaf.RootReplaced = newRoot => RootTile = ConfigureRoot(newRoot);
+            leaf.RootCleared = () => { RootTile = null; ScheduleSave(); };
         }
-        else if (node is SplitPaneNodeViewModel split)
+        else if (node is SplitTileNodeViewModel split)
         {
             if (split.First != null) PropagateCallbacks(split.First);
             if (split.Second != null) PropagateCallbacks(split.Second);
         }
     }
 
-    private string AllocatePaneName(PaneContentType type) => type switch
+    private string AllocateTileName(TileContentType type) => type switch
     {
-        PaneContentType.Terminal => $"Terminal #{++_terminalCount}",
-        PaneContentType.TextEditor => $"Note #{++_editorCount}",
+        TileContentType.Terminal => $"Terminal #{++_terminalCount}",
+        TileContentType.TextEditor => $"Note #{++_editorCount}",
         _ => type.ToString()
     };
 
-    private static readonly System.Text.RegularExpressions.Regex PaneNumberRegex = new(@"#(\d+)$", System.Text.RegularExpressions.RegexOptions.Compiled);
+    private static readonly System.Text.RegularExpressions.Regex TileNumberRegex = new(@"#(\d+)$", System.Text.RegularExpressions.RegexOptions.Compiled);
 
-    private void InitCountersFromDto(PaneNode? node)
+    private void InitCountersFromDto(TileNode? node)
     {
         if (node == null) return;
         if (node.IsLeaf)
         {
-            if (node.PaneName != null)
+            if (node.TileName != null)
             {
-                var match = PaneNumberRegex.Match(node.PaneName);
+                var match = TileNumberRegex.Match(node.TileName);
                 if (match.Success)
                 {
                     var num = int.Parse(match.Groups[1].Value);
-                    if (node.ContentType == PaneContentType.Terminal)
+                    if (node.ContentType == TileContentType.Terminal)
                         _terminalCount = Math.Max(_terminalCount, num);
-                    else if (node.ContentType == PaneContentType.TextEditor)
+                    else if (node.ContentType == TileContentType.TextEditor)
                         _editorCount = Math.Max(_editorCount, num);
                 }
             }
@@ -121,42 +121,42 @@ public partial class WorkspaceViewModel : ObservableObject, IDisposable
         }
     }
 
-    private ObservableObject CreateContent(PaneContentType type, string workingDir, ShellProfile? shell = null)
+    private ObservableObject CreateContent(TileContentType type, string workingDir, ShellProfile? shell = null)
     {
         return type switch
         {
-            PaneContentType.Terminal => new TerminalPaneViewModel(workingDir, shell, _settingsService.Settings),
-            PaneContentType.TextEditor => CreateEditorContent(workingDir),
+            TileContentType.Terminal => new TerminalTileViewModel(workingDir, shell, _settingsService.Settings),
+            TileContentType.TextEditor => CreateEditorContent(workingDir),
             _ => throw new ArgumentOutOfRangeException(nameof(type))
         };
     }
 
-    private EditorPaneViewModel CreateEditorContent(string workingDir)
+    private EditorTileViewModel CreateEditorContent(string workingDir)
     {
         var s = _settingsService.Settings;
         var notesDir = Path.Combine(workingDir, ".mterminal", "notes");
         var filePath = Path.Combine(notesDir, $"{Guid.NewGuid():N}.md");
-        return new EditorPaneViewModel(filePath, s.EditorFontFamily, s.EditorFontSize);
+        return new EditorTileViewModel(filePath, s.EditorFontFamily, s.EditorFontSize);
     }
 
     private void ScheduleSave()
     {
-        _persistenceService.DebouncedSaveLayout(WorkspaceId, () => SerializeTree(RootPane));
+        _persistenceService.DebouncedSaveLayout(WorkspaceId, () => SerializeTree(RootTile));
     }
 
-    private PaneNode? SerializeTree(PaneNodeViewModel? vm)
+    private TileNode? SerializeTree(TileNodeViewModel? vm)
     {
         return vm switch
         {
-            LeafPaneNodeViewModel leaf => new PaneNode
+            LeafTileNodeViewModel leaf => new TileNode
             {
                 IsLeaf = true,
                 ContentType = leaf.ContentType,
-                PaneName = leaf.PaneName,
-                ShellName = (leaf.Content as TerminalPaneViewModel)?.Shell.Name,
-                EditorFilePath = (leaf.Content as EditorPaneViewModel)?.FilePath
+                TileName = leaf.TileName,
+                ShellName = (leaf.Content as TerminalTileViewModel)?.Shell.Name,
+                EditorFilePath = (leaf.Content as EditorTileViewModel)?.FilePath
             },
-            SplitPaneNodeViewModel split => new PaneNode
+            SplitTileNodeViewModel split => new TileNode
             {
                 IsLeaf = false,
                 SplitOrientation = split.Orientation,
@@ -168,15 +168,15 @@ public partial class WorkspaceViewModel : ObservableObject, IDisposable
         };
     }
 
-    private PaneNodeViewModel? RestoreTree(PaneNode dto)
+    private TileNodeViewModel? RestoreTree(TileNode dto)
     {
         if (dto.IsLeaf)
         {
             ObservableObject content;
-            if (dto.ContentType == PaneContentType.TextEditor && dto.EditorFilePath != null)
+            if (dto.ContentType == TileContentType.TextEditor && dto.EditorFilePath != null)
             {
                 var s = _settingsService.Settings;
-                content = new EditorPaneViewModel(dto.EditorFilePath, s.EditorFontFamily, s.EditorFontSize);
+                content = new EditorTileViewModel(dto.EditorFilePath, s.EditorFontFamily, s.EditorFontSize);
             }
             else
             {
@@ -187,14 +187,14 @@ public partial class WorkspaceViewModel : ObservableObject, IDisposable
                 content = CreateContent(dto.ContentType, WorkingDirectory, shell);
             }
 
-            return CreateLeaf(dto.ContentType, content, dto.PaneName ?? AllocatePaneName(dto.ContentType));
+            return CreateLeaf(dto.ContentType, content, dto.TileName ?? AllocateTileName(dto.ContentType));
         }
 
         var first = RestoreTree(dto.First!);
         var second = RestoreTree(dto.Second!);
         if (first == null || second == null) return first ?? second;
 
-        var split = new SplitPaneNodeViewModel(dto.SplitOrientation, first, second)
+        var split = new SplitTileNodeViewModel(dto.SplitOrientation, first, second)
         {
             SplitRatio = dto.SplitRatio,
             LayoutChanged = ScheduleSave
@@ -206,14 +206,14 @@ public partial class WorkspaceViewModel : ObservableObject, IDisposable
 
     public void Dispose()
     {
-        DisposeTree(RootPane);
+        DisposeTree(RootTile);
     }
 
-    private static void DisposeTree(PaneNodeViewModel? node)
+    private static void DisposeTree(TileNodeViewModel? node)
     {
-        if (node is LeafPaneNodeViewModel leaf && leaf.Content is IDisposable d)
+        if (node is LeafTileNodeViewModel leaf && leaf.Content is IDisposable d)
             d.Dispose();
-        else if (node is SplitPaneNodeViewModel split)
+        else if (node is SplitTileNodeViewModel split)
         {
             DisposeTree(split.First);
             DisposeTree(split.Second);

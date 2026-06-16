@@ -1,11 +1,11 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:MTerminal.ViewModels"
-             x:Class="MTerminal.Views.LeafPaneView"
-             x:DataType="vm:LeafPaneNodeViewModel">
+             x:Class="MTerminal.Views.LeafTileView"
+             x:DataType="vm:LeafTileNodeViewModel">
 
     <UserControl.Styles>
-        <Style Selector="Button.pane-btn">
+        <Style Selector="Button.tile-btn">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="Foreground" Value="#6070a0" />
             <Setter Property="Padding" Value="6,2" />
@@ -16,11 +16,11 @@
             <Setter Property="MinWidth" Value="24" />
             <Setter Property="MinHeight" Value="20" />
         </Style>
-        <Style Selector="Button.pane-btn:pointerover">
+        <Style Selector="Button.tile-btn:pointerover">
             <Setter Property="Background" Value="#2a2a4a" />
             <Setter Property="Foreground" Value="#b0b8d0" />
         </Style>
-        <Style Selector="Button.pane-btn:pressed">
+        <Style Selector="Button.tile-btn:pressed">
             <Setter Property="Background" Value="#3a3a5a" />
         </Style>
         <Style Selector="TextBox.clearFocus:focus /template/ Border#PART_BorderElement">
@@ -34,14 +34,14 @@
             CornerRadius="3"
             ClipToBounds="True">
         <DockPanel>
-            <!-- Pane toolbar -->
+            <!-- Tile toolbar -->
             <Border DockPanel.Dock="Top"
                     Background="#16162a"
                     Padding="6,0"
                     Height="26">
                 <DockPanel>
                     <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="1">
-                        <Button Classes="pane-btn" ToolTip.Tip="Split pane">
+                        <Button Classes="tile-btn" ToolTip.Tip="Split tile">
                             <Button.Content>
                                 <TextBlock Text="+" FontSize="12" FontWeight="Bold" />
                             </Button.Content>
@@ -60,23 +60,23 @@
                             </Button.Flyout>
                         </Button>
 
-                        <Button Classes="pane-btn"
+                        <Button Classes="tile-btn"
                                 Command="{Binding CloseCommand}"
-                                ToolTip.Tip="Close pane">
+                                ToolTip.Tip="Close tile">
                             <TextBlock Text="x" FontSize="11" />
                         </Button>
                     </StackPanel>
 
-                    <TextBlock x:Name="PaneNameLabel"
-                               Text="{Binding PaneName}"
+                    <TextBlock x:Name="TileNameLabel"
+                               Text="{Binding TileName}"
                                VerticalAlignment="Center"
                                FontSize="10"
                                Foreground="#4a5070"
                                Margin="2,0"
                                Cursor="Hand"
-                               DoubleTapped="PaneNameLabel_DoubleTapped" />
-                    <TextBox x:Name="PaneNameEditor"
-                             Text="{Binding PaneName}"
+                               DoubleTapped="TileNameLabel_DoubleTapped" />
+                    <TextBox x:Name="TileNameEditor"
+                             Text="{Binding TileName}"
                              IsVisible="False"
                              FontSize="10"
                              Foreground="#c0c8e0"
@@ -91,8 +91,8 @@
                              VerticalAlignment="Center"
                              VerticalContentAlignment="Center"
                              MinWidth="60"
-                             LostFocus="PaneNameEditor_Confirm"
-                             KeyDown="PaneNameEditor_KeyDown" />
+                             LostFocus="TileNameEditor_Confirm"
+                             KeyDown="TileNameEditor_KeyDown" />
                 </DockPanel>
             </Border>
 

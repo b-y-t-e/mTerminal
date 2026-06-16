@@ -7,9 +7,9 @@ using MTerminal.ViewModels;
 
 namespace MTerminal.Views;
 
-public partial class EditorPaneView : UserControl
+public partial class EditorTileView : UserControl
 {
-    public EditorPaneView()
+    public EditorTileView()
     {
         InitializeComponent();
         DataContextChanged += OnDataContextChanged;
@@ -17,7 +17,7 @@ public partial class EditorPaneView : UserControl
 
     private void OnDataContextChanged(object? sender, EventArgs e)
     {
-        if (DataContext is not EditorPaneViewModel vm) return;
+        if (DataContext is not EditorTileViewModel vm) return;
 
         if (vm.CachedControl is TextEditor cached)
         {

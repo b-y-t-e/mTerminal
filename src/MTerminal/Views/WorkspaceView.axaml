@@ -9,11 +9,11 @@
 
     <Panel>
         <!-- Empty workspace -->
-        <StackPanel IsVisible="{Binding RootPane, Converter={x:Static ObjectConverters.IsNull}}"
+        <StackPanel IsVisible="{Binding RootTile, Converter={x:Static ObjectConverters.IsNull}}"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Spacing="16">
-            <TextBlock Text="No panes open"
+            <TextBlock Text="No tiles open"
                        FontSize="16"
                        Foreground="#3a3a5a"
                        HorizontalAlignment="Center" />
@@ -47,9 +47,9 @@
             </StackPanel>
         </StackPanel>
 
-        <!-- Pane tree (using PaneNodeView directly, NOT DataTemplate) -->
-        <views:PaneNodeView x:Name="RootPaneView"
-                            DataContext="{Binding RootPane}"
-                            IsVisible="{Binding $parent[UserControl].((vm:WorkspaceViewModel)DataContext).RootPane, Converter={x:Static ObjectConverters.IsNotNull}}" />
+        <!-- Tile tree -->
+        <views:TileNodeView x:Name="RootTileView"
+                            DataContext="{Binding RootTile}"
+                            IsVisible="{Binding $parent[UserControl].((vm:WorkspaceViewModel)DataContext).RootTile, Converter={x:Static ObjectConverters.IsNotNull}}" />
     </Panel>
 </UserControl>
