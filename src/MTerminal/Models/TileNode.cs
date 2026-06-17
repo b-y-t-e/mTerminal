@@ -12,6 +12,8 @@ public sealed class TileNode
     public string? NoteFilePath { get; set; }
     public string? TodoFilePath { get; set; }
 
+    public Dictionary<string, object?>? Settings { get; set; }
+
     public Orientation SplitOrientation { get; set; } = Orientation.Vertical;
     public double SplitRatio { get; set; } = 0.5;
     public TileNode? First { get; set; }

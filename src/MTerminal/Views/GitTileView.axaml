@@ -1,0 +1,475 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:MTerminal.ViewModels"
+             xmlns:m="using:MTerminal.Models"
+             xmlns:mi="using:Material.Icons.Avalonia"
+             xmlns:v="using:MTerminal.Views"
+             x:Class="MTerminal.Views.GitTileView"
+             x:DataType="vm:GitTileViewModel">
+
+    <UserControl.Styles>
+
+        <!-- ── Tab toggle buttons ── -->
+        <Style Selector="Button.git-tab">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource TextMuted}" />
+            <Setter Property="Padding" Value="10,5" />
+            <Setter Property="CornerRadius" Value="0" />
+            <Setter Property="FontSize" Value="{DynamicResource FontSm}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="BorderThickness" Value="0,0,0,2" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="MinWidth" Value="0" />
+        </Style>
+        <Style Selector="Button.git-tab:pointerover">
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}" />
+        </Style>
+        <Style Selector="Button.git-tab-active">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+            <Setter Property="Padding" Value="10,5" />
+            <Setter Property="CornerRadius" Value="0" />
+            <Setter Property="FontSize" Value="{DynamicResource FontSm}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="BorderThickness" Value="0,0,0,2" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentDefault}" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="MinWidth" Value="0" />
+        </Style>
+        <Style Selector="Button.git-tab-active:pointerover">
+            <Setter Property="Foreground" Value="{DynamicResource TextHover}" />
+        </Style>
+
+        <!-- ── Commit message fields ── -->
+        <Style Selector="TextBox.commit-summary">
+            <Setter Property="FontSize" Value="{DynamicResource FontMd}" />
+            <Setter Property="Background" Value="{DynamicResource BgElevated}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+            <Setter Property="CaretBrush" Value="{DynamicResource TextSecondary}" />
+            <Setter Property="SelectionBrush" Value="{DynamicResource AccentDefault}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtle}" />
+            <Setter Property="BorderThickness" Value="{DynamicResource BorderThin}" />
+            <Setter Property="CornerRadius" Value="{DynamicResource RadiusMd}" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="Padding" Value="8,5" />
+            <Setter Property="AcceptsReturn" Value="False" />
+        </Style>
+        <Style Selector="TextBox.commit-summary:focus /template/ Border#PART_BorderElement">
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentDefault}" />
+        </Style>
+
+        <Style Selector="TextBox.commit-desc">
+            <Setter Property="FontSize" Value="{DynamicResource FontSm}" />
+            <Setter Property="Background" Value="{DynamicResource BgElevated}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+            <Setter Property="CaretBrush" Value="{DynamicResource TextSecondary}" />
+            <Setter Property="SelectionBrush" Value="{DynamicResource AccentDefault}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtle}" />
+            <Setter Property="BorderThickness" Value="{DynamicResource BorderThin}" />
+            <Setter Property="CornerRadius" Value="{DynamicResource RadiusMd}" />
+            <Setter Property="MinHeight" Value="32" />
+            <Setter Property="MaxHeight" Value="60" />
+            <Setter Property="Padding" Value="8,4" />
+            <Setter Property="AcceptsReturn" Value="True" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <Style Selector="TextBox.commit-desc:focus /template/ Border#PART_BorderElement">
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentDefault}" />
+        </Style>
+
+        <!-- ── Compact action button ── -->
+        <Style Selector="Button.git-compact">
+            <Setter Property="Background" Value="{DynamicResource BgElevated}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}" />
+            <Setter Property="Padding" Value="8,4" />
+            <Setter Property="CornerRadius" Value="{DynamicResource RadiusMd}" />
+            <Setter Property="FontSize" Value="{DynamicResource FontSm}" />
+            <Setter Property="BorderThickness" Value="{DynamicResource BorderThin}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtle}" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="MinWidth" Value="0" />
+        </Style>
+        <Style Selector="Button.git-compact:pointerover">
+            <Setter Property="Background" Value="{DynamicResource InteractiveHover}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextHover}" />
+        </Style>
+        <Style Selector="Button.git-compact:pressed">
+            <Setter Property="Background" Value="{DynamicResource InteractivePressed}" />
+        </Style>
+
+        <!-- ── CheckBox: strip Fluent bloat ── -->
+        <Style Selector="CheckBox.git-check">
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="MinWidth" Value="16" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <!-- ── Files list ── -->
+        <Style Selector="ListBox.git-files">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="0" />
+        </Style>
+        <Style Selector="ListBox.git-files ListBoxItem">
+            <Setter Property="Padding" Value="6,3" />
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="CornerRadius" Value="{DynamicResource RadiusSm}" />
+        </Style>
+        <Style Selector="ListBox.git-files ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource InteractivePressed}" />
+        </Style>
+        <Style Selector="ListBox.git-files ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource InteractiveHover}" />
+        </Style>
+
+        <!-- ── Log list ── -->
+        <Style Selector="ListBox.git-log">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="0" />
+        </Style>
+        <Style Selector="ListBox.git-log ListBoxItem">
+            <Setter Property="Padding" Value="6,3" />
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="CornerRadius" Value="{DynamicResource RadiusSm}" />
+        </Style>
+        <Style Selector="ListBox.git-log ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource InteractivePressed}" />
+        </Style>
+        <Style Selector="ListBox.git-log ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource InteractiveHover}" />
+        </Style>
+
+    </UserControl.Styles>
+
+    <UserControl.Resources>
+        <v:GitStatusColorConverter x:Key="StatusColor" />
+    </UserControl.Resources>
+
+    <!-- ═══ Root ═══ -->
+    <Grid x:Name="MainGrid">
+
+        <!-- ══════════════════════════════════════════
+             LEFT SIDEBAR: tabs, files, commit area
+             ══════════════════════════════════════════ -->
+        <DockPanel Grid.Column="0"
+                   x:Name="Sidebar"
+                   LastChildFill="True"
+                   Background="{DynamicResource BgSurface}">
+
+            <!-- 1. Tab bar — Top -->
+            <Border DockPanel.Dock="Top"
+                    BorderBrush="{DynamicResource BorderSubtle}"
+                    BorderThickness="0,0,0,1">
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Right"
+                                Orientation="Horizontal" Spacing="0"
+                                Margin="0,0,4,0">
+                        <Button Classes="tile-btn"
+                                Command="{Binding ToggleDiffPanelCommand}"
+                                ToolTip.Tip="Toggle diff panel">
+                            <mi:MaterialIcon Kind="FileCompare" Width="13" Height="13"
+                                             Opacity="{Binding ShowDiffPanel, Converter={x:Static v:DiffModeIconConverter.BoolToOpacity}}" />
+                        </Button>
+                        <Button Classes="tile-btn"
+                                Command="{Binding RefreshCommand}"
+                                ToolTip.Tip="Refresh">
+                            <mi:MaterialIcon Kind="Refresh" Width="13" Height="13" />
+                        </Button>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Button Classes.git-tab-active="{Binding !ShowHistory}"
+                                Classes.git-tab="{Binding ShowHistory}"
+                                Command="{Binding ToggleHistoryCommand}">
+                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                <mi:MaterialIcon Kind="FileDocumentEditOutline" Width="12" Height="12" />
+                                <TextBlock Text="Changes" />
+                            </StackPanel>
+                        </Button>
+                        <Button Classes.git-tab-active="{Binding ShowHistory}"
+                                Classes.git-tab="{Binding !ShowHistory}"
+                                Command="{Binding ToggleHistoryCommand}">
+                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                <mi:MaterialIcon Kind="History" Width="12" Height="12" />
+                                <TextBlock Text="History" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+
+            <!-- 2. Not a git repo — Top -->
+            <StackPanel DockPanel.Dock="Top"
+                        IsVisible="{Binding !IsGitRepo}"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Center"
+                        Spacing="8"
+                        Margin="0,24">
+                <mi:MaterialIcon Kind="AlertCircleOutline"
+                                 Width="28" Height="28"
+                                 Foreground="{DynamicResource TextFaint}"
+                                 HorizontalAlignment="Center" />
+                <TextBlock Text="Not a git repository"
+                           Foreground="{DynamicResource TextMuted}"
+                           FontSize="{DynamicResource FontMd}"
+                           HorizontalAlignment="Center" />
+            </StackPanel>
+
+            <!-- 3. Commit area — BOTTOM (measured BEFORE file list!) -->
+            <Border x:Name="CommitArea"
+                    DockPanel.Dock="Bottom"
+                    BorderBrush="{DynamicResource BorderSubtle}"
+                    BorderThickness="0,1,0,0"
+                    Padding="8,6"
+                    IsVisible="{Binding IsGitRepo}">
+                <StackPanel Spacing="4"
+                            IsVisible="{Binding !ShowHistory}">
+                    <TextBox Classes="commit-summary"
+                             Text="{Binding CommitMessage, Mode=TwoWay}"
+                             PlaceholderText="Summary (required)" />
+                    <TextBox Classes="commit-desc"
+                             Text="{Binding CommitDescription, Mode=TwoWay}"
+                             PlaceholderText="Description" />
+                    <DockPanel>
+                        <StackPanel DockPanel.Dock="Right"
+                                    Orientation="Horizontal" Spacing="3"
+                                    VerticalAlignment="Center">
+                            <Button Classes="git-compact"
+                                    Command="{Binding StashCommand}"
+                                    ToolTip.Tip="Stash all changes">
+                                <StackPanel Orientation="Horizontal" Spacing="3">
+                                    <mi:MaterialIcon Kind="TrayArrowDown" Width="11" Height="11" />
+                                    <TextBlock Text="Stash" />
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="git-compact"
+                                    Command="{Binding StashPopCommand}"
+                                    ToolTip.Tip="Pop latest stash">
+                                <StackPanel Orientation="Horizontal" Spacing="3">
+                                    <mi:MaterialIcon Kind="TrayArrowUp" Width="11" Height="11" />
+                                    <TextBlock Text="Pop" />
+                                    <TextBlock Text="{Binding StashCount, StringFormat='({0})'}"
+                                               Foreground="{DynamicResource TextMuted}"
+                                               IsVisible="{Binding StashCount}" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                        <Button Classes="accent"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
+                                Padding="0,5"
+                                MinHeight="0"
+                                Command="{Binding CommitCommand}"
+                                Margin="0,0,6,0">
+                            <StackPanel Orientation="Horizontal" Spacing="5">
+                                <mi:MaterialIcon Kind="Check" Width="13" Height="13" />
+                                <TextBlock Text="{Binding BranchName, StringFormat='Commit to {0}'}"
+                                           FontSize="{DynamicResource FontSm}" />
+                            </StackPanel>
+                        </Button>
+                    </DockPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- 4. Select-all header — Top -->
+            <Button DockPanel.Dock="Top"
+                    Command="{Binding ToggleAllCheckedCommand}"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Padding="8,4,8,2"
+                    Margin="0"
+                    MinHeight="0"
+                    Cursor="Hand"
+                    HorizontalContentAlignment="Stretch"
+                    IsVisible="{Binding IsGitRepo}">
+                <DockPanel IsVisible="{Binding !ShowHistory}">
+                    <Viewbox DockPanel.Dock="Left"
+                             Width="{Binding CheckSize}"
+                             Height="{Binding CheckSize}"
+                             VerticalAlignment="Center"
+                             Margin="0,0,6,0">
+                        <CheckBox Classes="git-check"
+                                  IsChecked="{Binding AllChecked}"
+                                  IsHitTestVisible="False" />
+                    </Viewbox>
+                    <TextBlock Text="{Binding Changes.Count, StringFormat='{}{0} changed files'}"
+                               Foreground="{DynamicResource TextMuted}"
+                               VerticalAlignment="Center" />
+                </DockPanel>
+            </Button>
+
+            <!-- 5. File list / History — LastChildFill (gets REMAINING space) -->
+            <Panel>
+                <ListBox Classes="git-files"
+                         ItemsSource="{Binding Changes}"
+                         SelectedItem="{Binding SelectedChange}"
+                         SelectionMode="Multiple"
+                         x:Name="FilesListBox"
+                         Margin="4,0"
+                         IsVisible="{Binding !ShowHistory}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="m:GitFileChange">
+                            <DockPanel Margin="{Binding $parent[ListBox].((vm:GitTileViewModel)DataContext).ItemPadding}">
+                                <Viewbox DockPanel.Dock="Left"
+                                         Width="{Binding $parent[ListBox].((vm:GitTileViewModel)DataContext).CheckSize}"
+                                         Height="{Binding $parent[ListBox].((vm:GitTileViewModel)DataContext).CheckSize}"
+                                         VerticalAlignment="Center"
+                                         Margin="0,0,4,0">
+                                    <CheckBox Classes="git-check"
+                                              IsChecked="{Binding IsChecked}" />
+                                </Viewbox>
+                                <TextBlock DockPanel.Dock="Left"
+                                           Text="{Binding Status}"
+                                           FontWeight="Bold"
+                                           Width="16"
+                                           TextAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           Foreground="{Binding Status, Converter={StaticResource StatusColor}}"
+                                           Margin="0,0,4,0" />
+                                <TextBlock Text="{Binding FilePath}"
+                                           Foreground="{DynamicResource TextPrimary}"
+                                           VerticalAlignment="Center"
+                                           TextTrimming="CharacterEllipsis" />
+                            </DockPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+                <ListBox Classes="git-log"
+                         IsVisible="{Binding ShowHistory}"
+                         ItemsSource="{Binding CommitLog}"
+                         SelectedItem="{Binding SelectedCommit}"
+                         Margin="4,2">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="m:CommitLogEntry">
+                            <DockPanel>
+                                <TextBlock DockPanel.Dock="Left"
+                                           Text="{Binding Hash}"
+                                           Foreground="{DynamicResource AccentDefault}"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,8,0"
+                                           Width="52" />
+                                <TextBlock Text="{Binding Message}"
+                                           Foreground="{DynamicResource TextSecondary}"
+                                           VerticalAlignment="Center"
+                                           TextTrimming="CharacterEllipsis" />
+                            </DockPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Panel>
+        </DockPanel>
+
+        <!-- ══════════════════════
+             SPLITTER
+             ══════════════════════ -->
+        <GridSplitter x:Name="MainSplitter"
+                      Grid.Column="1"
+                      Width="3"
+                      Background="{DynamicResource BorderSubtle}"
+                      ResizeBehavior="PreviousAndNext" />
+
+        <!-- ══════════════════════════════════════
+             RIGHT: diff / detail panel
+             ══════════════════════════════════════ -->
+        <Panel Grid.Column="2"
+               x:Name="RightPanel"
+               Background="{DynamicResource BgBase}">
+
+            <!-- Branch header strip -->
+            <Border VerticalAlignment="Top"
+                    Padding="10,5"
+                    Background="{DynamicResource BgSurface}"
+                    BorderBrush="{DynamicResource BorderSubtle}"
+                    BorderThickness="0,0,0,1"
+                    IsVisible="{Binding !SelectedChange}">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <mi:MaterialIcon Kind="SourceBranch" Width="14" Height="14"
+                                     Foreground="{DynamicResource AccentDefault}"
+                                     VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding BranchName}"
+                               FontWeight="SemiBold"
+                               FontSize="{DynamicResource FontMd}"
+                               Foreground="{DynamicResource TextPrimary}"
+                               VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding WorktreePath}"
+                               FontSize="{DynamicResource FontSm}"
+                               Foreground="{DynamicResource TextMuted}"
+                               VerticalAlignment="Center"
+                               TextTrimming="CharacterEllipsis"
+                               Margin="8,0,0,0" />
+                </StackPanel>
+            </Border>
+
+            <!-- Empty state -->
+            <StackPanel IsVisible="{Binding !SelectedChange}"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Center"
+                        Spacing="6"
+                        Opacity="0.35">
+                <mi:MaterialIcon Kind="FileCompare"
+                                 Width="36" Height="36"
+                                 Foreground="{DynamicResource TextFaint}"
+                                 HorizontalAlignment="Center" />
+                <TextBlock Text="Select a file to view changes"
+                           Foreground="{DynamicResource TextMuted}"
+                           FontSize="{DynamicResource FontMd}"
+                           HorizontalAlignment="Center" />
+            </StackPanel>
+
+            <!-- Diff header + editor (shown when file selected) -->
+            <DockPanel IsVisible="{Binding !!SelectedChange}"
+                       LastChildFill="True">
+                <!-- File name header -->
+                <Border DockPanel.Dock="Top"
+                        Padding="10,5"
+                        Background="{DynamicResource BgSurface}"
+                        BorderBrush="{DynamicResource BorderSubtle}"
+                        BorderThickness="0,0,0,1">
+                    <DockPanel>
+                        <StackPanel DockPanel.Dock="Right"
+                                    Orientation="Horizontal" Spacing="6"
+                                    VerticalAlignment="Center"
+                                    Margin="8,0,0,0">
+                            <TextBlock Text="{Binding SelectedChange.StatusDisplay}"
+                                       FontSize="{DynamicResource FontXs}"
+                                       Foreground="{Binding SelectedChange.Status, Converter={StaticResource StatusColor}}"
+                                       VerticalAlignment="Center" />
+                            <Button Classes="tile-btn"
+                                    Command="{Binding ToggleDiffSkipEmptyLinesCommand}"
+                                    ToolTip.Tip="Toggle skip empty lines">
+                                <mi:MaterialIcon Kind="FormatLineSpacing" Width="13" Height="13"
+                                                 Opacity="{Binding DiffSkipEmptyLines, Converter={x:Static v:DiffModeIconConverter.BoolToOpacity}}" />
+                            </Button>
+                        </StackPanel>
+                        <TextBlock Text="{Binding SelectedChange.DisplayPath}"
+                                   FontSize="{DynamicResource FontSm}"
+                                   FontFamily="{Binding FontFamily}"
+                                   Foreground="{DynamicResource TextPrimary}"
+                                   VerticalAlignment="Center"
+                                   TextTrimming="CharacterEllipsis" />
+                    </DockPanel>
+                </Border>
+
+                <!-- Diff editor -->
+                <v:DiffView x:Name="DiffPanel"
+                            DiffText="{Binding DiffText}"
+                            OldContent="{Binding OldContent}"
+                            NewContent="{Binding NewContent}"
+                            EditorFontFamily="{Binding FontFamily}"
+                            EditorFontSize="{Binding FontSize}"
+                            SplitMode="{Binding SplitDiff}"
+                            SkipEmptyLines="{Binding DiffSkipEmptyLines}" />
+            </DockPanel>
+        </Panel>
+    </Grid>
+</UserControl>

@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MTerminal.Models;
@@ -21,6 +22,7 @@ public partial class WorkspaceViewModel : ObservableObject, IDisposable
     private int _terminalCount;
     private int _noteCount;
     private int _todoCount;
+    private int _gitCount;
 
     public WorkspaceViewModel(Workspace workspace, PersistenceService persistenceService, SettingsService settingsService)
     {
@@ -83,6 +85,7 @@ public partial class WorkspaceViewModel : ObservableObject, IDisposable
         TileContentType.Terminal => $"Terminal #{++_terminalCount}",
         TileContentType.Note => $"Note #{++_noteCount}",
         TileContentType.Todo => $"Todo #{++_todoCount}",
+        TileContentType.Git => $"Git #{++_gitCount}",
         TileContentType.Empty => "",
         _ => type.ToString()
     };
@@ -106,6 +109,8 @@ public partial class WorkspaceViewModel : ObservableObject, IDisposable
                         _noteCount = Math.Max(_noteCount, num);
                     else if (node.ContentType == TileContentType.Todo)
                         _todoCount = Math.Max(_todoCount, num);
+                    else if (node.ContentType == TileContentType.Git)
+                        _gitCount = Math.Max(_gitCount, num);
                 }
             }
         }
@@ -123,6 +128,7 @@ public partial class WorkspaceViewModel : ObservableObject, IDisposable
             TileContentType.Terminal => new TerminalTileViewModel(workingDir, shell, _settingsService),
             TileContentType.Note => CreateNoteContent(workingDir),
             TileContentType.Todo => CreateTodoContent(workingDir),
+            TileContentType.Git => new GitTileViewModel(workingDir, _settingsService) { TileSettingsChanged = ScheduleSave },
             _ => throw new ArgumentOutOfRangeException(nameof(type))
         };
     }
@@ -158,7 +164,8 @@ public partial class WorkspaceViewModel : ObservableObject, IDisposable
                 TileName = leaf.TileName,
                 ShellName = (leaf.Content as TerminalTileViewModel)?.Shell.Name,
                 NoteFilePath = (leaf.Content as NoteTileViewModel)?.FilePath,
-                TodoFilePath = (leaf.Content as TodoTileViewModel)?.FilePath
+                TodoFilePath = (leaf.Content as TodoTileViewModel)?.FilePath,
+                Settings = SerializeTileSettings(leaf)
             },
             SplitTileNodeViewModel split => new TileNode
             {
@@ -187,6 +194,13 @@ public partial class WorkspaceViewModel : ObservableObject, IDisposable
                 {
                     content = new TodoTileViewModel(dto.TodoFilePath, _settingsService);
                 }
+                else if (dto.ContentType == TileContentType.Git)
+                {
+                    var git = new GitTileViewModel(WorkingDirectory, _settingsService);
+                    RestoreTileSettings(git, dto.Settings);
+                    git.TileSettingsChanged = ScheduleSave;
+                    content = git;
+                }
                 else
                 {
                     ShellProfile? shell = null;
@@ -212,6 +226,23 @@ public partial class WorkspaceViewModel : ObservableObject, IDisposable
         first.Parent = split;
         second.Parent = split;
         return split;
+    }
+
+    private static Dictionary<string, object?>? SerializeTileSettings(LeafTileNodeViewModel leaf)
+    {
+        if (leaf.Content is GitTileViewModel git)
+        {
+            if (!git.ShowDiffPanel)
+                return new Dictionary<string, object?> { ["showDiffPanel"] = git.ShowDiffPanel };
+        }
+        return null;
+    }
+
+    private static void RestoreTileSettings(GitTileViewModel git, Dictionary<string, object?>? settings)
+    {
+        if (settings == null) return;
+        if (settings.TryGetValue("showDiffPanel", out var val) && val is JsonElement el)
+            git.ShowDiffPanel = el.GetBoolean();
     }
 
     public void Dispose()

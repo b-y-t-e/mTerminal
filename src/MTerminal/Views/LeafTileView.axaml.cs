@@ -71,7 +71,7 @@ public partial class LeafTileView : UserControl
     private void UpdateActiveIndicator(bool isActive)
     {
         ActiveStrip.Bind(Border.BackgroundProperty,
-            ActiveStrip.GetResourceObservable(isActive ? "AccentHover" : "BorderSubtle"));
+            ActiveStrip.GetResourceObservable(isActive ? "AccentHover" : "BgSurface"));
         TileToolbar.Bind(Border.BackgroundProperty,
             TileToolbar.GetResourceObservable(isActive ? "BgElevated" : "BgSurface"));
     }
@@ -108,6 +108,7 @@ public partial class LeafTileView : UserControl
             TerminalTileViewModel => new TerminalTileView { DataContext = contentVm },
             NoteTileViewModel => new NoteTileView { DataContext = contentVm },
             TodoTileViewModel => new TodoTileView { DataContext = contentVm },
+            GitTileViewModel => new GitTileView { DataContext = contentVm },
             _ => throw new InvalidOperationException($"Unknown content type: {contentVm.GetType()}")
         };
 
