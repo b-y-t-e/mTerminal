@@ -18,6 +18,19 @@ public partial class LeafTileView : UserControl
     {
         InitializeComponent();
         DataContextChanged += OnDataContextChanged;
+        AddHandler(InputElement.KeyDownEvent, OnTileKeyDown, Avalonia.Interactivity.RoutingStrategies.Tunnel);
+    }
+
+    private void OnTileKeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.R && e.KeyModifiers == (KeyModifiers.Control | KeyModifiers.Shift))
+        {
+            if (DataContext is LeafTileNodeViewModel { ContentType: TileContentType.Terminal } leaf)
+            {
+                leaf.RestartTerminalCommand.Execute(null);
+                e.Handled = true;
+            }
+        }
     }
 
     private void OnDataContextChanged(object? sender, EventArgs e)

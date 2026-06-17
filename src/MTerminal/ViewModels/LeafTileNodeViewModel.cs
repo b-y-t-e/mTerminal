@@ -37,6 +37,16 @@ public partial class LeafTileNodeViewModel : TileNodeViewModel
     }
 
     [RelayCommand]
+    private void RestartTerminal()
+    {
+        if (Content is not TerminalTileViewModel tvm) return;
+        if (tvm.CachedControl is not Iciclecreek.Terminal.TerminalControl tc) return;
+
+        tc.Kill();
+        _ = tc.LaunchProcess(_workingDirectory, tvm.Shell.ExecutablePath, tvm.Shell.Args);
+    }
+
+    [RelayCommand]
     private void SplitHorizontal() => Split(Orientation.Horizontal);
 
     [RelayCommand]

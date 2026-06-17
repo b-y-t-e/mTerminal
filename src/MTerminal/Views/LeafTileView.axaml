@@ -17,6 +17,12 @@
                     Height="26">
                 <DockPanel>
                     <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="1">
+                        <Button Classes="tile-btn"
+                                Command="{Binding RestartTerminalCommand}"
+                                ToolTip.Tip="Restart shell (Ctrl+Shift+R)"
+                                IsVisible="{Binding ContentType, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static m:TileContentType.Terminal}}">
+                            <TextBlock Text="⟳" FontSize="{DynamicResource FontMd}" />
+                        </Button>
                         <Button Classes="tile-btn" ToolTip.Tip="Split tile">
                             <Button.Content>
                                 <TextBlock Text="+" FontSize="{DynamicResource FontMd}" FontWeight="Bold" />
