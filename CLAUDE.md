@@ -12,11 +12,11 @@ dotnet run --project src/MTerminal
 ## Struktura
 
 - `src/MTerminal/` — jedyny projekt w solucji
-- `Models/` — DTO i modele danych (Workspace, TileNode, AppSettings, ShellProfile, TerminalTheme)
+- `Models/` — DTO i modele danych (Workspace, TileNode, AppSettings, AppDefaults, ShellProfile, TerminalTheme, GitFileChange, CommitLogEntry)
 - `ViewModels/` — MVVM z CommunityToolkit.Mvvm (source generators)
 - `Views/` — Avalonia AXAML + code-behind
 - `Styles/` — design tokens (`AppTheme.axaml`) i globalne style kontrolek (`Controls.axaml`). Kolory UI wyłącznie przez `DynamicResource`, terminal ANSI colors osobno w `TerminalTheme`
-- `Services/` — persystencja JSON, detekcja shelli (ShellDetector), ThemeBridge, JsonDefaults
+- `Services/` — persystencja JSON (PersistenceService, SettingsService, WorkspaceService), detekcja shelli (ShellDetector), ThemeBridge, JsonDefaults, AppPaths, GitService/GitCommandRunner/GitDirectoryWatcher, DiffFormatter, FileHelper, TileFactory, TileTreeSerializer, UpdateService
 
 ## Kluczowe biblioteki
 
@@ -73,4 +73,5 @@ Refleksja na `_ptyConnection.WriterStream` jest konieczna bo TerminalView nie ek
 - **Note** (nie "editor") — tile z edytorem tekstu (AvaloniaEdit), TileContentType.Note
 - **Todo** — tile z listą zadań, TileContentType.Todo
 - ViewModele w `ViewModels/`, widoki w `Views/`
-- Brak DI container — ręczne wstrzykiwanie w `App.axaml.cs`
+- **Git** — tile z podglądem zmian (diff, commit, stash), TileContentType.Git
+- Brak DI container — ręczne wstrzykiwanie w `App.axaml.cs`, `TileFactory` jako fabryka contentu tile'ów

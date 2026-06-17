@@ -1,17 +1,18 @@
 # MTerminal
 
-Multiplatformowy terminal manager z systemem kafelkowych paneli. Windows, Linux (Android w przyszłości).
+Multiplatformowy terminal manager z systemem kafelkowych paneli. Windows, Linux, macOS.
 
 ## Funkcje
 
 - **Workspaces** — każdy workspace powiązany z katalogiem, przełączanie jednym kliknięciem
 - **Split panes** — dzielenie paneli horyzontalnie/wertykalnie w dowolnych kombinacjach
-- **Terminale** — PowerShell, Git Bash, CMD (auto-detekcja), wybór domyślnego w ustawieniach
+- **Terminale** — Git Bash, PowerShell, CMD (auto-detekcja), wybór domyślnego w ustawieniach
+- **Git tile** — podgląd zmian w stylu GitHub Desktop: diff, commit, stash, historia commitów
 - **Motywy terminala** — Default Dark, Dracula, Nord, Monokai, Solarized Dark, Catppuccin Mocha
 - **Edytor notatek** — AvaloniaEdit z numeracją linii, auto-zapis do `.mterminal/notes/`
 - **Lista Todo** — inline-editable checklist, Enter dodaje element, checkbox przesuwa na dół, auto-zapis do `.mterminal/todos/`
 - **Skróty klawiszowe** — Ctrl+C/V (copy/paste), Alt+key (ESC sequences), Ctrl+Shift+R (restart shell)
-- **Context menu workspace** — PPM → otwórz folder w eksploratorze, usuń workspace
+- **Context menu workspace** — PPM → otwórz folder w eksploratorze (Windows/macOS/Linux), usuń workspace
 - **Rename paneli** — double-click na nazwę, auto-numeracja (Terminal #1, Note #1, Todo #1)
 - **Resizable panel** — workspace panel z regulowaną szerokością
 - **Persystencja** — layout, workspaces, ustawienia, stan okna, profil shella
