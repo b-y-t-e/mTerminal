@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Reflection;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
@@ -51,6 +52,7 @@ public partial class TerminalTileView : UserControl
             Options = CreateOptions(theme)
         };
 
+        AttachAltBufferCleanup(terminal);
         vm.CachedControl = terminal;
         Content = terminal;
 
@@ -112,7 +114,33 @@ public partial class TerminalTileView : UserControl
         terminal.Margin = default;
     }
 
-private static TerminalOptions CreateOptions(TerminalTheme theme) => new()
+    private static void AttachAltBufferCleanup(TerminalControl terminal)
+    {
+        terminal.TemplateApplied += (_, e) =>
+        {
+            var tv = e.NameScope.Find<TerminalView>("PART_TerminalView");
+            if (tv == null) return;
+
+            tv.PropertyChanged += (_, args) =>
+            {
+                if (args.Property.Name != "IsAlternateBuffer") return;
+                if (args.NewValue is true || args.OldValue is not true) return;
+
+                var xterm = terminal.Terminal;
+                if (xterm == null) return;
+
+                var tracker = xterm.GetType()
+                    .GetField("_mouseTracker", BindingFlags.NonPublic | BindingFlags.Instance)
+                    ?.GetValue(xterm);
+                if (tracker == null) return;
+
+                tracker.GetType().GetProperty("TrackingMode")?.SetValue(tracker, 0);
+                tracker.GetType().GetProperty("Encoding")?.SetValue(tracker, 0);
+            };
+        };
+    }
+
+    private static TerminalOptions CreateOptions(TerminalTheme theme) => new()
     {
         Theme = new ThemeOptions
         {
