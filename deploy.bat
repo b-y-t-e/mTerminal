@@ -20,7 +20,7 @@ REM Create new version string
 set NEW_VERSION=%MAJOR%.%MINOR%.%PATCH%
 
 REM Update version.txt with new version
-echo %NEW_VERSION% > version.txt
+echo %NEW_VERSION%> version.txt
 
 echo Updated version to: %NEW_VERSION%
 set VERSION=%NEW_VERSION%
@@ -80,14 +80,16 @@ if %errorlevel% neq 0 set UPLOAD_OK=0
 if %UPLOAD_OK% equ 1 (
     echo Files uploaded successfully to FTP server!
 
-    REM Delete old nupkg from FTP
-    echo Deleting old package MTerminal-%OLD_VERSION%-full.nupkg from FTP...
-    curl -s --user %FTP_USER% "%FTP_BASE%" -Q "DELE MTerminal-%OLD_VERSION%-full.nupkg"
-    if %errorlevel% equ 0 (
-        echo Old package deleted.
-    ) else (
-        echo Could not delete old package ^(may not exist^).
+    REM Delete all old nupkg files from FTP
+    echo Cleaning up old packages from FTP...
+    curl -s --user %FTP_USER% --list-only "%FTP_BASE%" > _ftp_list.tmp
+    for /f "tokens=*" %%F in ('findstr /i "full.nupkg" _ftp_list.tmp') do (
+        if /i not "%%F"=="MTerminal-%VERSION%-full.nupkg" (
+            echo Deleting %%F ...
+            curl -s --user %FTP_USER% "%FTP_BASE%" -Q "-DELE %%F" -o nul
+        )
     )
+    del _ftp_list.tmp 2>nul
 ) else (
     echo FTP upload failed for one or more files!
 )
