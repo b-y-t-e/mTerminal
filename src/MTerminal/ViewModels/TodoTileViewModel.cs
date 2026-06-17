@@ -312,9 +312,9 @@ public partial class TodoTileViewModel : ObservableObject, IFileContent, IDispos
     {
         if (_settingsService != null)
             _settingsService.SettingsChanged -= OnSettingsChanged;
-        _watcher?.Dispose();
         _saveTimer?.Dispose();
         _reloadTimer?.Dispose();
         SaveToFile([.. Items], _filePath);
+        _watcher?.Dispose();
     }
 }
