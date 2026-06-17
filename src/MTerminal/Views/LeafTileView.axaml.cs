@@ -70,10 +70,8 @@ public partial class LeafTileView : UserControl
 
     private void UpdateActiveIndicator(bool isActive)
     {
-        ActiveStrip.IsVisible = isActive;
-        if (isActive)
-            ActiveStrip.Bind(Border.BackgroundProperty, ActiveStrip.GetResourceObservable("AccentHover"));
-
+        ActiveStrip.Bind(Border.BackgroundProperty,
+            ActiveStrip.GetResourceObservable(isActive ? "AccentHover" : "BorderSubtle"));
         TileToolbar.Bind(Border.BackgroundProperty,
             TileToolbar.GetResourceObservable(isActive ? "BgElevated" : "BgSurface"));
     }

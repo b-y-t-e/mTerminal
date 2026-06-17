@@ -15,7 +15,7 @@
             <Border x:Name="ActiveStrip"
                     DockPanel.Dock="Top"
                     Height="2"
-                    IsVisible="False" />
+                    Background="{DynamicResource BorderSubtle}" />
 
             <!-- Tile toolbar -->
             <Border x:Name="TileToolbar"
