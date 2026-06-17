@@ -9,7 +9,7 @@ using MTerminal.Services;
 
 namespace MTerminal.ViewModels;
 
-public partial class TodoTileViewModel : ObservableObject, IDisposable
+public partial class TodoTileViewModel : ObservableObject, IFileContent, IDisposable
 {
     private static readonly Regex MdLineRegex = new(@"^(?:- )?\[([ xX])\] (.*)$", RegexOptions.Compiled);
 
@@ -27,7 +27,7 @@ public partial class TodoTileViewModel : ObservableObject, IDisposable
 
     public ObservableCollection<TodoItem> Items { get; } = [];
 
-    private readonly string _filePath;
+    private string _filePath;
     private readonly SettingsService? _settingsService;
     private Timer? _saveTimer;
     private Timer? _reloadTimer;
@@ -160,6 +160,41 @@ public partial class TodoTileViewModel : ObservableObject, IDisposable
         };
     }
 
+    public void RenameFile(string newName)
+    {
+        var sanitized = IFileContent.SanitizeFileName(newName);
+        if (string.IsNullOrEmpty(sanitized)) return;
+
+        var dir = Path.GetDirectoryName(_filePath);
+        if (dir == null) return;
+
+        var newPath = Path.Combine(dir, sanitized + ".md");
+        if (string.Equals(newPath, _filePath, StringComparison.OrdinalIgnoreCase)) return;
+
+        _saveTimer?.Dispose();
+        _saveTimer = null;
+        SaveToFile([.. Items], _filePath);
+
+        try
+        {
+            _watcher?.Dispose();
+            _watcher = null;
+
+            if (File.Exists(_filePath))
+                File.Move(_filePath, newPath, overwrite: false);
+
+            _filePath = newPath;
+            _hasPendingChanges = false;
+            StartWatching();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Trace.TraceWarning("TodoTile rename failed: {0}", ex.Message);
+            if (_hasPendingChanges) ScheduleSave();
+            StartWatching();
+        }
+    }
+
     private void ScheduleSave()
     {
         if (_isLoading) return;
@@ -169,9 +204,10 @@ public partial class TodoTileViewModel : ObservableObject, IDisposable
             Dispatcher.UIThread.Post(() =>
             {
                 var snapshot = Items.ToList();
+                var path = _filePath;
                 Task.Run(() =>
                 {
-                    SaveToFile(snapshot);
+                    SaveToFile(snapshot, path);
                     _hasPendingChanges = false;
                 });
             }), null, 1000, Timeout.Infinite);
@@ -210,22 +246,33 @@ public partial class TodoTileViewModel : ObservableObject, IDisposable
         }
     }
 
-    private void SaveToFile(List<TodoItem> snapshot)
+    private void SaveToFile(List<TodoItem> snapshot, string path)
     {
         try
         {
-            var dir = Path.GetDirectoryName(_filePath);
+            var dir = Path.GetDirectoryName(path);
             if (dir != null) Directory.CreateDirectory(dir);
 
             var lines = snapshot.Select(item =>
                 $"[{(item.IsDone ? "x" : " ")}] {item.Text}");
-            if (_watcher != null) _watcher.EnableRaisingEvents = false;
-            File.WriteAllLines(_filePath, lines);
-            if (_watcher != null) _watcher.EnableRaisingEvents = true;
+            var w = _watcher;
+            if (w != null) w.EnableRaisingEvents = false;
+            File.WriteAllLines(path, lines);
+            if (w != null) w.EnableRaisingEvents = true;
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Trace.TraceWarning("TodoTile save failed: {0}", ex.Message);
+            System.Diagnostics.Trace.TraceWarning("TodoTile save failed, retrying: {0}", ex.Message);
+            try
+            {
+                Thread.Sleep(500);
+                File.WriteAllLines(path, snapshot.Select(item =>
+                    $"[{(item.IsDone ? "x" : " ")}] {item.Text}"));
+            }
+            catch (Exception ex2)
+            {
+                System.Diagnostics.Trace.TraceWarning("TodoTile save retry failed: {0}", ex2.Message);
+            }
         }
     }
 
@@ -289,6 +336,6 @@ public partial class TodoTileViewModel : ObservableObject, IDisposable
         _watcher?.Dispose();
         _saveTimer?.Dispose();
         _reloadTimer?.Dispose();
-        SaveToFile([.. Items]);
+        SaveToFile([.. Items], _filePath);
     }
 }

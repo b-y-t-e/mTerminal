@@ -4,7 +4,7 @@ using MTerminal.Services;
 
 namespace MTerminal.ViewModels;
 
-public partial class NoteTileViewModel : ObservableObject, IDisposable
+public partial class NoteTileViewModel : ObservableObject, IFileContent, IDisposable
 {
     [ObservableProperty]
     private string _text = string.Empty;
@@ -15,7 +15,7 @@ public partial class NoteTileViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private double _fontSize;
 
-    private readonly string _filePath;
+    private string _filePath;
     private readonly SettingsService? _settingsService;
     private Timer? _saveTimer;
     private bool _isLoading;
@@ -48,11 +48,40 @@ public partial class NoteTileViewModel : ObservableObject, IDisposable
             FontSize = s.NoteFontSize;
     }
 
+    public void RenameFile(string newName)
+    {
+        var sanitized = IFileContent.SanitizeFileName(newName);
+        if (string.IsNullOrEmpty(sanitized)) return;
+
+        var dir = Path.GetDirectoryName(_filePath);
+        if (dir == null) return;
+
+        var newPath = Path.Combine(dir, sanitized + ".md");
+        if (string.Equals(newPath, _filePath, StringComparison.OrdinalIgnoreCase)) return;
+
+        _saveTimer?.Dispose();
+        _saveTimer = null;
+        SaveToFile(Text, _filePath);
+
+        try
+        {
+            if (File.Exists(_filePath))
+                File.Move(_filePath, newPath, overwrite: false);
+            _filePath = newPath;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Trace.TraceWarning("NoteTile rename failed: {0}", ex.Message);
+        }
+    }
+
     partial void OnTextChanged(string value)
     {
         if (_isLoading) return;
         _saveTimer?.Dispose();
-        _saveTimer = new Timer(_ => SaveToFile(), null, 2000, Timeout.Infinite);
+        var path = _filePath;
+        var text = value;
+        _saveTimer = new Timer(_ => SaveToFile(text, path), null, 2000, Timeout.Infinite);
     }
 
     private void LoadFromFile()
@@ -64,17 +93,26 @@ public partial class NoteTileViewModel : ObservableObject, IDisposable
         }
     }
 
-    private void SaveToFile()
+    private void SaveToFile(string text, string path)
     {
         try
         {
-            var dir = Path.GetDirectoryName(_filePath);
+            var dir = Path.GetDirectoryName(path);
             if (dir != null) Directory.CreateDirectory(dir);
-            File.WriteAllText(_filePath, Text);
+            File.WriteAllText(path, text);
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Trace.TraceWarning("NoteTile save failed: {0}", ex.Message);
+            System.Diagnostics.Trace.TraceWarning("NoteTile save failed, retrying: {0}", ex.Message);
+            try
+            {
+                Thread.Sleep(500);
+                File.WriteAllText(path, text);
+            }
+            catch (Exception ex2)
+            {
+                System.Diagnostics.Trace.TraceWarning("NoteTile save retry failed: {0}", ex2.Message);
+            }
         }
     }
 
@@ -83,6 +121,6 @@ public partial class NoteTileViewModel : ObservableObject, IDisposable
         if (_settingsService != null)
             _settingsService.SettingsChanged -= OnSettingsChanged;
         _saveTimer?.Dispose();
-        SaveToFile();
+        SaveToFile(Text, _filePath);
     }
 }

@@ -73,6 +73,7 @@ public partial class LeafTileNodeViewModel : TileNodeViewModel
         Content = newContent;
         ContentType = type;
         TileName = _nameFactory?.Invoke(type) ?? type.ToString();
+        (newContent as IFileContent)?.RenameFile(TileName);
         NotifyLayoutChanged();
     }
 

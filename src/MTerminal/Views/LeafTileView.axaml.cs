@@ -172,8 +172,14 @@ public partial class LeafTileView : UserControl
     {
         if (!TileNameEditor.IsVisible) return;
 
-        if (DataContext is LeafTileNodeViewModel leaf && string.IsNullOrWhiteSpace(leaf.TileName))
-            leaf.TileName = _originalTileName;
+        if (DataContext is LeafTileNodeViewModel leaf)
+        {
+            if (string.IsNullOrWhiteSpace(leaf.TileName))
+                leaf.TileName = _originalTileName;
+
+            if (leaf.TileName != _originalTileName)
+                (leaf.Content as IFileContent)?.RenameFile(leaf.TileName);
+        }
 
         TileNameEditor.IsVisible = false;
         TileNameLabel.IsVisible = true;
