@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:MTerminal.ViewModels"
         xmlns:views="using:MTerminal.Views"
+        xmlns:mi="using:Material.Icons.Avalonia"
         x:Class="MTerminal.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="MTerminal"
@@ -19,20 +20,20 @@
             <DockPanel>
                 <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" Spacing="2">
                     <Button Classes="toolbar"
-                            Content="&#9776;"
-                            FontSize="{DynamicResource FontLg}"
                             Command="{Binding TogglePanelCommand}"
-                            ToolTip.Tip="Toggle Workspaces Panel" />
+                            ToolTip.Tip="Toggle Workspaces Panel">
+                        <mi:MaterialIcon Kind="Menu" Width="18" Height="18" />
+                    </Button>
                     <TextBlock Text="MTerminal" VerticalAlignment="Center"
                                Foreground="{DynamicResource TextSecondary}"
                                FontWeight="SemiBold" FontSize="{DynamicResource FontMd}" Margin="8,0" />
                 </StackPanel>
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="2">
                     <Button Classes="toolbar"
-                            Content="&#9881;"
-                            FontSize="{DynamicResource FontLg}"
                             Command="{Binding ToggleSettingsCommand}"
-                            ToolTip.Tip="Settings" />
+                            ToolTip.Tip="Settings">
+                        <mi:MaterialIcon Kind="CogOutline" Width="18" Height="18" />
+                    </Button>
                 </StackPanel>
                 <Panel />
             </DockPanel>
@@ -89,8 +90,9 @@
                                 BorderThickness="{DynamicResource BorderBottom}">
                             <DockPanel>
                                 <Button DockPanel.Dock="Right" Classes="toolbar"
-                                        Content="x" FontSize="14"
-                                        Command="{Binding ToggleSettingsCommand}" />
+                                        Command="{Binding ToggleSettingsCommand}">
+                                    <mi:MaterialIcon Kind="Close" Width="16" Height="16" />
+                                </Button>
                                 <TextBlock Text="SETTINGS" Classes="section"
                                            VerticalAlignment="Center" Margin="0" />
                             </DockPanel>

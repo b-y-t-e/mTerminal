@@ -2,11 +2,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:MTerminal.ViewModels"
              xmlns:views="using:MTerminal.Views"
+             xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              x:Class="MTerminal.App"
              RequestedThemeVariant="Dark">
     <Application.Styles>
         <FluentTheme />
         <StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
+        <mi:MaterialIconStyles />
         <StyleInclude Source="avares://MTerminal/Styles/Controls.axaml" />
     </Application.Styles>
 

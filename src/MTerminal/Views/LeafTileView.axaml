@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:MTerminal.ViewModels"
              xmlns:m="using:MTerminal.Models"
+             xmlns:mi="using:Material.Icons.Avalonia"
              x:Class="MTerminal.Views.LeafTileView"
              x:DataType="vm:LeafTileNodeViewModel">
 
@@ -10,8 +11,15 @@
             CornerRadius="{DynamicResource RadiusSm}"
             ClipToBounds="True">
         <DockPanel>
+            <!-- Active indicator strip -->
+            <Border x:Name="ActiveStrip"
+                    DockPanel.Dock="Top"
+                    Height="2"
+                    IsVisible="False" />
+
             <!-- Tile toolbar -->
-            <Border DockPanel.Dock="Top"
+            <Border x:Name="TileToolbar"
+                    DockPanel.Dock="Top"
                     Background="{DynamicResource BgSurface}"
                     Padding="6,0"
                     Height="26">
@@ -21,26 +29,23 @@
                                 Command="{Binding RestartTerminalCommand}"
                                 ToolTip.Tip="Restart shell (Ctrl+Shift+R)"
                                 IsVisible="{Binding ContentType, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static m:TileContentType.Terminal}}">
-                            <TextBlock Text="⟳" FontSize="{DynamicResource FontMd}" />
+                            <mi:MaterialIcon Kind="Restart" Width="14" Height="14" />
                         </Button>
-                        <Button Classes="tile-btn" ToolTip.Tip="Split tile">
-                            <Button.Content>
-                                <TextBlock Text="+" FontSize="{DynamicResource FontMd}" FontWeight="Bold" />
-                            </Button.Content>
-                            <Button.Flyout>
-                                <MenuFlyout Placement="BottomEdgeAlignedRight">
-                                    <MenuItem Header="Split Right"
-                                              Command="{Binding SplitVerticalCommand}" />
-                                    <MenuItem Header="Split Down"
-                                              Command="{Binding SplitHorizontalCommand}" />
-                                </MenuFlyout>
-                            </Button.Flyout>
+                        <Button Classes="tile-btn"
+                                Command="{Binding SplitVerticalCommand}"
+                                ToolTip.Tip="Split Right">
+                            <mi:MaterialIcon Kind="ArrowSplitVertical" Width="14" Height="14" />
                         </Button>
-
+                        <Button Classes="tile-btn"
+                                Command="{Binding SplitHorizontalCommand}"
+                                ToolTip.Tip="Split Down">
+                            <mi:MaterialIcon Kind="ArrowSplitHorizontal" Width="14" Height="14" />
+                        </Button>
                         <Button Classes="tile-btn-close"
                                 Command="{Binding CloseCommand}"
-                                ToolTip.Tip="Close tile"
-                                Content="&#215;" />
+                                ToolTip.Tip="Close tile">
+                            <mi:MaterialIcon Kind="Close" Width="14" Height="14" />
+                        </Button>
                     </StackPanel>
 
                     <TextBlock x:Name="TileNameLabel"
@@ -73,9 +78,9 @@
                             Command="{Binding SelectContentTypeCommand}"
                             CommandParameter="{x:Static m:TileContentType.Terminal}">
                         <StackPanel Spacing="4" HorizontalAlignment="Center">
-                            <TextBlock Text="&gt;_" FontSize="18" FontWeight="Bold"
-                                       HorizontalAlignment="Center"
-                                       Foreground="{DynamicResource TextMuted}" />
+                            <mi:MaterialIcon Kind="Console" Width="22" Height="22"
+                                             HorizontalAlignment="Center"
+                                             Foreground="{DynamicResource TextMuted}" />
                             <TextBlock Text="Terminal" FontSize="{DynamicResource FontSm}"
                                        HorizontalAlignment="Center" />
                         </StackPanel>
@@ -84,9 +89,9 @@
                             Command="{Binding SelectContentTypeCommand}"
                             CommandParameter="{x:Static m:TileContentType.Note}">
                         <StackPanel Spacing="4" HorizontalAlignment="Center">
-                            <TextBlock Text="#" FontSize="18" FontWeight="Bold"
-                                       HorizontalAlignment="Center"
-                                       Foreground="{DynamicResource TextMuted}" />
+                            <mi:MaterialIcon Kind="NoteEditOutline" Width="22" Height="22"
+                                             HorizontalAlignment="Center"
+                                             Foreground="{DynamicResource TextMuted}" />
                             <TextBlock Text="Note" FontSize="{DynamicResource FontSm}"
                                        HorizontalAlignment="Center" />
                         </StackPanel>
