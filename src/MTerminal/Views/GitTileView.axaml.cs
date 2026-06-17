@@ -69,6 +69,7 @@ public partial class GitTileView : UserControl
                     FontSize = vm.FontSize;
                     break;
                 case nameof(GitTileViewModel.ShowDiffPanel):
+                case nameof(GitTileViewModel.SelectedChange):
                     RefreshLayout();
                     break;
             }
@@ -98,10 +99,12 @@ public partial class GitTileView : UserControl
         _isVerticalLayout = wantVertical;
         _layoutApplied = true;
 
-        var userWantsDiff = (DataContext as GitTileViewModel)?.ShowDiffPanel ?? true;
+        var vm = DataContext as GitTileViewModel;
+        var userWantsDiff = vm?.ShowDiffPanel ?? true;
+        var hasSelection = vm?.SelectedChange != null;
 
         bool showDiff;
-        if (!userWantsDiff)
+        if (!userWantsDiff || !hasSelection)
             showDiff = false;
         else if (_isVerticalLayout)
             showDiff = h > MinDiffSize + MinDiffSize;
