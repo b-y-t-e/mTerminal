@@ -10,11 +10,6 @@ public static class ShellDetector
 
         if (OperatingSystem.IsWindows())
         {
-            var pwsh = FindExecutable("pwsh.exe")
-                       ?? FindExecutable("powershell.exe");
-            if (pwsh != null)
-                profiles.Add(new ShellProfile { Name = "PowerShell", ExecutablePath = pwsh });
-
             var gitBashPaths = new[]
             {
                 @"C:\Program Files\Git\bin\bash.exe",
@@ -29,6 +24,11 @@ public static class ShellDetector
                     break;
                 }
             }
+
+            var pwsh = FindExecutable("pwsh.exe")
+                       ?? FindExecutable("powershell.exe");
+            if (pwsh != null)
+                profiles.Add(new ShellProfile { Name = "PowerShell", ExecutablePath = pwsh });
 
             var cmd = FindExecutable("cmd.exe");
             if (cmd != null)
