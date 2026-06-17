@@ -138,7 +138,7 @@ public partial class WorkspaceViewModel : ObservableObject, IDisposable
     private TodoTileViewModel CreateTodoContent(string workingDir)
     {
         var todosDir = Path.Combine(workingDir, ".mterminal", "todos");
-        var filePath = Path.Combine(todosDir, $"{Guid.NewGuid():N}.json");
+        var filePath = Path.Combine(todosDir, $"{Guid.NewGuid():N}.md");
         return new TodoTileViewModel(filePath, _settingsService);
     }
 

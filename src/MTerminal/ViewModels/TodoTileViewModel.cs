@@ -1,5 +1,5 @@
 using System.Collections.ObjectModel;
-using System.Text.Json;
+using System.Text.RegularExpressions;
 using Avalonia;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -11,6 +11,8 @@ namespace MTerminal.ViewModels;
 
 public partial class TodoTileViewModel : ObservableObject, IDisposable
 {
+    private static readonly Regex MdLineRegex = new(@"^(?:- )?\[([ xX])\] (.*)$", RegexOptions.Compiled);
+
     [ObservableProperty]
     private string _fontFamily;
 
@@ -28,7 +30,10 @@ public partial class TodoTileViewModel : ObservableObject, IDisposable
     private readonly string _filePath;
     private readonly SettingsService? _settingsService;
     private Timer? _saveTimer;
+    private Timer? _reloadTimer;
     private bool _isLoading;
+    private FileSystemWatcher? _watcher;
+    private bool _hasPendingChanges;
 
     public string FilePath => _filePath;
 
@@ -49,6 +54,8 @@ public partial class TodoTileViewModel : ObservableObject, IDisposable
 
         if (_settingsService != null)
             _settingsService.SettingsChanged += OnSettingsChanged;
+
+        StartWatching();
     }
 
     private void UpdateSizeMetrics()
@@ -156,13 +163,37 @@ public partial class TodoTileViewModel : ObservableObject, IDisposable
     private void ScheduleSave()
     {
         if (_isLoading) return;
+        _hasPendingChanges = true;
         _saveTimer?.Dispose();
         _saveTimer = new Timer(_ =>
             Dispatcher.UIThread.Post(() =>
             {
                 var snapshot = Items.ToList();
-                Task.Run(() => SaveToFile(snapshot));
-            }), null, 2000, Timeout.Infinite);
+                Task.Run(() =>
+                {
+                    SaveToFile(snapshot);
+                    _hasPendingChanges = false;
+                });
+            }), null, 1000, Timeout.Infinite);
+    }
+
+    private static List<TodoItem> ParseMarkdown(string[] lines)
+    {
+        var items = new List<TodoItem>();
+        foreach (var line in lines)
+        {
+            var match = MdLineRegex.Match(line);
+            if (match.Success)
+            {
+                items.Add(new TodoItem
+                {
+                    Id = Guid.NewGuid().ToString("N"),
+                    Text = match.Groups[2].Value,
+                    IsDone = match.Groups[1].Value != " "
+                });
+            }
+        }
+        return items;
     }
 
     private void LoadFromFile()
@@ -170,13 +201,8 @@ public partial class TodoTileViewModel : ObservableObject, IDisposable
         if (!File.Exists(_filePath)) return;
         try
         {
-            var json = File.ReadAllText(_filePath);
-            var data = JsonSerializer.Deserialize<TodoFileData>(json, JsonDefaults.Options);
-            if (data?.Items != null)
-            {
-                foreach (var item in data.Items)
-                    Items.Add(item);
-            }
+            foreach (var item in ParseMarkdown(File.ReadAllLines(_filePath)))
+                Items.Add(item);
         }
         catch (Exception ex)
         {
@@ -191,8 +217,11 @@ public partial class TodoTileViewModel : ObservableObject, IDisposable
             var dir = Path.GetDirectoryName(_filePath);
             if (dir != null) Directory.CreateDirectory(dir);
 
-            var json = JsonSerializer.Serialize(new TodoFileData { Items = snapshot }, JsonDefaults.Options);
-            File.WriteAllText(_filePath, json);
+            var lines = snapshot.Select(item =>
+                $"[{(item.IsDone ? "x" : " ")}] {item.Text}");
+            if (_watcher != null) _watcher.EnableRaisingEvents = false;
+            File.WriteAllLines(_filePath, lines);
+            if (_watcher != null) _watcher.EnableRaisingEvents = true;
         }
         catch (Exception ex)
         {
@@ -200,16 +229,66 @@ public partial class TodoTileViewModel : ObservableObject, IDisposable
         }
     }
 
+    private void StartWatching()
+    {
+        var dir = Path.GetDirectoryName(_filePath);
+        var name = Path.GetFileName(_filePath);
+        if (dir == null || name == null) return;
+
+        try
+        {
+            Directory.CreateDirectory(dir);
+            _watcher = new FileSystemWatcher(dir, name)
+            {
+                NotifyFilter = NotifyFilters.LastWrite,
+                EnableRaisingEvents = true
+            };
+            _watcher.Changed += OnFileChanged;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Trace.TraceWarning("TodoTile watcher failed: {0}", ex.Message);
+        }
+    }
+
+    private void OnFileChanged(object sender, FileSystemEventArgs e)
+    {
+        if (_hasPendingChanges) return;
+
+        _reloadTimer?.Dispose();
+        _reloadTimer = new Timer(_ =>
+            Dispatcher.UIThread.Post(ReloadFromFile), null, 500, Timeout.Infinite);
+    }
+
+    private void ReloadFromFile()
+    {
+        if (!File.Exists(_filePath)) return;
+        try
+        {
+            var newItems = ParseMarkdown(File.ReadAllLines(_filePath));
+
+            _isLoading = true;
+            Items.Clear();
+            foreach (var item in newItems)
+                Items.Add(item);
+            if (Items.Count == 0)
+                Items.Add(CreateItem());
+            _isLoading = false;
+        }
+        catch (Exception ex)
+        {
+            _isLoading = false;
+            System.Diagnostics.Trace.TraceWarning("TodoTile reload failed: {0}", ex.Message);
+        }
+    }
+
     public void Dispose()
     {
         if (_settingsService != null)
             _settingsService.SettingsChanged -= OnSettingsChanged;
+        _watcher?.Dispose();
         _saveTimer?.Dispose();
+        _reloadTimer?.Dispose();
         SaveToFile([.. Items]);
-    }
-
-    private sealed class TodoFileData
-    {
-        public List<TodoItem> Items { get; set; } = [];
     }
 }
