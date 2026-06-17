@@ -16,7 +16,12 @@ public partial class LeafTileNodeViewModel : TileNodeViewModel
     [ObservableProperty]
     private string _tileName = "";
 
+    [ObservableProperty]
+    private bool _isActive;
+
     partial void OnTileNameChanged(string value) => NotifyLayoutChanged();
+
+    private static event Action<LeafTileNodeViewModel>? ActiveTileChanged;
 
     private readonly Func<TileContentType, string, ObservableObject>? _contentFactory;
     private readonly Func<TileContentType, string>? _nameFactory;
@@ -34,7 +39,12 @@ public partial class LeafTileNodeViewModel : TileNodeViewModel
         _workingDirectory = workingDirectory;
         _contentFactory = contentFactory;
         _nameFactory = nameFactory;
+        ActiveTileChanged += OnActiveTileChanged;
     }
+
+    public void Activate() => ActiveTileChanged?.Invoke(this);
+
+    private void OnActiveTileChanged(LeafTileNodeViewModel active) => IsActive = active == this;
 
     [RelayCommand]
     private void RestartTerminal()
@@ -105,6 +115,8 @@ public partial class LeafTileNodeViewModel : TileNodeViewModel
     [RelayCommand]
     private void Close()
     {
+        ActiveTileChanged -= OnActiveTileChanged;
+
         if (Content is IDisposable disposable)
             disposable.Dispose();
 

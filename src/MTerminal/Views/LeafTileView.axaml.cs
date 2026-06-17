@@ -19,6 +19,18 @@ public partial class LeafTileView : UserControl
         InitializeComponent();
         DataContextChanged += OnDataContextChanged;
         AddHandler(InputElement.KeyDownEvent, OnTileKeyDown, Avalonia.Interactivity.RoutingStrategies.Tunnel);
+        AddHandler(InputElement.PointerPressedEvent, OnTilePointerPressed, Avalonia.Interactivity.RoutingStrategies.Tunnel);
+        AddHandler(InputElement.GotFocusEvent, OnTileGotFocus, Avalonia.Interactivity.RoutingStrategies.Bubble);
+    }
+
+    private void OnTilePointerPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)
+    {
+        (DataContext as LeafTileNodeViewModel)?.Activate();
+    }
+
+    private void OnTileGotFocus(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        (DataContext as LeafTileNodeViewModel)?.Activate();
     }
 
     private void OnTileKeyDown(object? sender, KeyEventArgs e)
@@ -48,11 +60,22 @@ public partial class LeafTileView : UserControl
 
     private void OnLeafPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
+        if (sender is not LeafTileNodeViewModel leaf) return;
+
         if (e.PropertyName is nameof(LeafTileNodeViewModel.Content) or nameof(LeafTileNodeViewModel.ContentType))
-        {
-            if (sender is LeafTileNodeViewModel leaf)
-                UpdateContentDisplay(leaf);
-        }
+            UpdateContentDisplay(leaf);
+        else if (e.PropertyName == nameof(LeafTileNodeViewModel.IsActive))
+            UpdateActiveIndicator(leaf.IsActive);
+    }
+
+    private void UpdateActiveIndicator(bool isActive)
+    {
+        ActiveStrip.IsVisible = isActive;
+        if (isActive)
+            ActiveStrip.Bind(Border.BackgroundProperty, ActiveStrip.GetResourceObservable("AccentHover"));
+
+        TileToolbar.Bind(Border.BackgroundProperty,
+            TileToolbar.GetResourceObservable(isActive ? "BgElevated" : "BgSurface"));
     }
 
     private void UpdateContentDisplay(LeafTileNodeViewModel leaf)
