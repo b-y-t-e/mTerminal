@@ -112,7 +112,7 @@ public partial class TerminalTileView : UserControl
         terminal.Margin = default;
     }
 
-    private static TerminalOptions CreateOptions(TerminalTheme theme) => new()
+private static TerminalOptions CreateOptions(TerminalTheme theme) => new()
     {
         Theme = new ThemeOptions
         {
