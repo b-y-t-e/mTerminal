@@ -1,0 +1,108 @@
+using System.Text.Json;
+using CommunityToolkit.Mvvm.ComponentModel;
+using MTerminal.Models;
+using MTerminal.ViewModels;
+
+namespace MTerminal.Services;
+
+public sealed class TileFactory
+{
+    private readonly SettingsService _settingsService;
+    private readonly Action? _onTileSettingsChanged;
+
+    public TileFactory(SettingsService settingsService, Action? onTileSettingsChanged = null)
+    {
+        _settingsService = settingsService;
+        _onTileSettingsChanged = onTileSettingsChanged;
+    }
+
+    public ObservableObject CreateContent(TileContentType type, string workingDir, ShellProfile? shell = null)
+    {
+        return type switch
+        {
+            TileContentType.Terminal => new TerminalTileViewModel(workingDir, shell, _settingsService),
+            TileContentType.Note => CreateNote(workingDir),
+            TileContentType.Todo => CreateTodo(workingDir),
+            TileContentType.Git => new GitTileViewModel(workingDir, _settingsService) { TileSettingsChanged = _onTileSettingsChanged },
+            _ => throw new ArgumentOutOfRangeException(nameof(type))
+        };
+    }
+
+    public ObservableObject? CreateFromDto(TileNode dto, string workingDir, IReadOnlyList<ShellProfile> availableShells,
+        Action? scheduleSave = null)
+    {
+        if (dto.ContentType == TileContentType.Empty)
+            return null;
+
+        return dto.ContentType switch
+        {
+            TileContentType.Note when dto.NoteFilePath != null =>
+                new NoteTileViewModel(dto.NoteFilePath, _settingsService),
+            TileContentType.Todo when dto.TodoFilePath != null =>
+                new TodoTileViewModel(dto.TodoFilePath, _settingsService),
+            TileContentType.Git =>
+                CreateGitFromDto(workingDir, dto.Settings, scheduleSave),
+            TileContentType.Terminal =>
+                CreateTerminalFromDto(workingDir, dto.ShellName, availableShells),
+            _ => CreateContent(dto.ContentType, workingDir)
+        };
+    }
+
+    public static Dictionary<string, object?>? SerializeSettings(LeafTileNodeViewModel leaf)
+    {
+        if (leaf.Content is GitTileViewModel git && !git.ShowDiffPanel)
+            return new Dictionary<string, object?> { ["showDiffPanel"] = git.ShowDiffPanel };
+        return null;
+    }
+
+    public static void RestoreSettings(ObservableObject content, Dictionary<string, object?>? settings)
+    {
+        if (settings == null || content is not GitTileViewModel git) return;
+        if (settings.TryGetValue("showDiffPanel", out var val) && val is JsonElement el)
+            git.ShowDiffPanel = el.GetBoolean();
+    }
+
+    public static string AllocateTileName(TileContentType type, ref int terminalCount, ref int noteCount, ref int todoCount, ref int gitCount)
+    {
+        return type switch
+        {
+            TileContentType.Terminal => $"Terminal #{++terminalCount}",
+            TileContentType.Note => $"Note #{++noteCount}",
+            TileContentType.Todo => $"Todo #{++todoCount}",
+            TileContentType.Git => $"Git #{++gitCount}",
+            TileContentType.Empty => "",
+            _ => type.ToString()
+        };
+    }
+
+    private NoteTileViewModel CreateNote(string workingDir)
+    {
+        var notesDir = Path.Combine(workingDir, ".mterminal", "notes");
+        var filePath = Path.Combine(notesDir, $"{Guid.NewGuid():N}.md");
+        return new NoteTileViewModel(filePath, _settingsService);
+    }
+
+    private TodoTileViewModel CreateTodo(string workingDir)
+    {
+        var todosDir = Path.Combine(workingDir, ".mterminal", "todos");
+        var filePath = Path.Combine(todosDir, $"{Guid.NewGuid():N}.md");
+        return new TodoTileViewModel(filePath, _settingsService);
+    }
+
+    private GitTileViewModel CreateGitFromDto(string workingDir, Dictionary<string, object?>? settings, Action? scheduleSave)
+    {
+        var git = new GitTileViewModel(workingDir, _settingsService);
+        RestoreSettings(git, settings);
+        git.TileSettingsChanged = scheduleSave;
+        return git;
+    }
+
+    private ObservableObject CreateTerminalFromDto(string workingDir, string? shellName, IReadOnlyList<ShellProfile> availableShells)
+    {
+        ShellProfile? shell = null;
+        if (shellName != null)
+            shell = availableShells.FirstOrDefault(s =>
+                s.Name.Equals(shellName, StringComparison.OrdinalIgnoreCase));
+        return CreateContent(TileContentType.Terminal, workingDir, shell);
+    }
+}

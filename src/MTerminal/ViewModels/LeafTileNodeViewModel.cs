@@ -30,7 +30,7 @@ public partial class LeafTileNodeViewModel : TileNodeViewModel
     public Action<TileNodeViewModel>? RootReplaced { get; set; }
     public Action? RootCleared { get; set; }
 
-    public LeafTileNodeViewModel(TileContentType contentType, ObservableObject content, string workingDirectory,
+    public LeafTileNodeViewModel(TileContentType contentType, ObservableObject? content, string workingDirectory,
         Func<TileContentType, string, ObservableObject>? contentFactory = null,
         Func<TileContentType, string>? nameFactory = null)
     {
@@ -79,7 +79,7 @@ public partial class LeafTileNodeViewModel : TileNodeViewModel
 
     private void Split(Orientation orientation)
     {
-        var newLeaf = new LeafTileNodeViewModel(TileContentType.Empty, null!, _workingDirectory, _contentFactory, _nameFactory)
+        var newLeaf = new LeafTileNodeViewModel(TileContentType.Empty, null, _workingDirectory, _contentFactory, _nameFactory)
         {
             TileName = "",
             LayoutChanged = LayoutChanged,

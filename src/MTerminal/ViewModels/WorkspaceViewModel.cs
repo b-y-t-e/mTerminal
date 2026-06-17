@@ -1,7 +1,6 @@
 using System.Collections.ObjectModel;
-using System.Text.Json;
+using System.Text.RegularExpressions;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using MTerminal.Models;
 using MTerminal.Services;
 
@@ -11,6 +10,8 @@ public partial class WorkspaceViewModel : ObservableObject, IDisposable
 {
     private readonly PersistenceService _persistenceService;
     private readonly SettingsService _settingsService;
+    private readonly TileFactory _tileFactory;
+    private readonly TileTreeSerializer _serializer;
 
     [ObservableProperty]
     private TileNodeViewModel? _rootTile;
@@ -24,21 +25,32 @@ public partial class WorkspaceViewModel : ObservableObject, IDisposable
     private int _todoCount;
     private int _gitCount;
 
+    private static readonly Regex TileNumberRegex = new(@"#(\d+)$", RegexOptions.Compiled);
+
     public WorkspaceViewModel(Workspace workspace, PersistenceService persistenceService, SettingsService settingsService)
     {
         WorkspaceId = workspace.Id;
         WorkingDirectory = workspace.DirectoryPath;
         _persistenceService = persistenceService;
         _settingsService = settingsService;
+        _tileFactory = new TileFactory(settingsService, ScheduleSave);
 
         foreach (var shell in ShellDetector.Detect())
             AvailableShells.Add(shell);
+
+        _serializer = new TileTreeSerializer(
+            _tileFactory,
+            _settingsService,
+            AvailableShells,
+            WorkingDirectory,
+            AllocateTileName,
+            ConfigureLeafCallbacks);
 
         var state = persistenceService.LoadLayout(workspace.Id);
         if (state?.RootTile != null)
         {
             InitCountersFromDto(state.RootTile);
-            RootTile = RestoreTree(state.RootTile);
+            RootTile = _serializer.Deserialize(state.RootTile, ScheduleSave);
         }
         else
         {
@@ -48,13 +60,20 @@ public partial class WorkspaceViewModel : ObservableObject, IDisposable
 
     private LeafTileNodeViewModel CreateLeaf(TileContentType type, ObservableObject? content, string tileName)
     {
-        return new LeafTileNodeViewModel(type, content!, WorkingDirectory, (t, d) => CreateContent(t, d), AllocateTileName)
+        var leaf = new LeafTileNodeViewModel(type, content, WorkingDirectory,
+            (t, d) => _tileFactory.CreateContent(t, d), AllocateTileName)
         {
             TileName = tileName,
-            LayoutChanged = ScheduleSave,
-            RootReplaced = newRoot => RootTile = ConfigureRoot(newRoot),
-            RootCleared = () => { RootTile = CreateLeaf(TileContentType.Empty, null, ""); ScheduleSave(); }
+            LayoutChanged = ScheduleSave
         };
+        ConfigureLeafCallbacks(leaf);
+        return leaf;
+    }
+
+    private void ConfigureLeafCallbacks(LeafTileNodeViewModel leaf)
+    {
+        leaf.RootReplaced = newRoot => RootTile = ConfigureRoot(newRoot);
+        leaf.RootCleared = () => { RootTile = CreateLeaf(TileContentType.Empty, null, ""); ScheduleSave(); };
     }
 
     private TileNodeViewModel ConfigureRoot(TileNodeViewModel node)
@@ -70,8 +89,7 @@ public partial class WorkspaceViewModel : ObservableObject, IDisposable
         node.LayoutChanged = ScheduleSave;
         if (node is LeafTileNodeViewModel leaf)
         {
-            leaf.RootReplaced = newRoot => RootTile = ConfigureRoot(newRoot);
-            leaf.RootCleared = () => { RootTile = CreateLeaf(TileContentType.Empty, null, ""); ScheduleSave(); };
+            ConfigureLeafCallbacks(leaf);
         }
         else if (node is SplitTileNodeViewModel split)
         {
@@ -80,17 +98,8 @@ public partial class WorkspaceViewModel : ObservableObject, IDisposable
         }
     }
 
-    private string AllocateTileName(TileContentType type) => type switch
-    {
-        TileContentType.Terminal => $"Terminal #{++_terminalCount}",
-        TileContentType.Note => $"Note #{++_noteCount}",
-        TileContentType.Todo => $"Todo #{++_todoCount}",
-        TileContentType.Git => $"Git #{++_gitCount}",
-        TileContentType.Empty => "",
-        _ => type.ToString()
-    };
-
-    private static readonly System.Text.RegularExpressions.Regex TileNumberRegex = new(@"#(\d+)$", System.Text.RegularExpressions.RegexOptions.Compiled);
+    private string AllocateTileName(TileContentType type) =>
+        TileFactory.AllocateTileName(type, ref _terminalCount, ref _noteCount, ref _todoCount, ref _gitCount);
 
     private void InitCountersFromDto(TileNode? node)
     {
@@ -121,128 +130,9 @@ public partial class WorkspaceViewModel : ObservableObject, IDisposable
         }
     }
 
-    private ObservableObject CreateContent(TileContentType type, string workingDir, ShellProfile? shell = null)
-    {
-        return type switch
-        {
-            TileContentType.Terminal => new TerminalTileViewModel(workingDir, shell, _settingsService),
-            TileContentType.Note => CreateNoteContent(workingDir),
-            TileContentType.Todo => CreateTodoContent(workingDir),
-            TileContentType.Git => new GitTileViewModel(workingDir, _settingsService) { TileSettingsChanged = ScheduleSave },
-            _ => throw new ArgumentOutOfRangeException(nameof(type))
-        };
-    }
-
-
-    private NoteTileViewModel CreateNoteContent(string workingDir)
-    {
-        var notesDir = Path.Combine(workingDir, ".mterminal", "notes");
-        var filePath = Path.Combine(notesDir, $"{Guid.NewGuid():N}.md");
-        return new NoteTileViewModel(filePath, _settingsService);
-    }
-
-    private TodoTileViewModel CreateTodoContent(string workingDir)
-    {
-        var todosDir = Path.Combine(workingDir, ".mterminal", "todos");
-        var filePath = Path.Combine(todosDir, $"{Guid.NewGuid():N}.md");
-        return new TodoTileViewModel(filePath, _settingsService);
-    }
-
     private void ScheduleSave()
     {
-        _persistenceService.DebouncedSaveLayout(WorkspaceId, () => SerializeTree(RootTile));
-    }
-
-    private TileNode? SerializeTree(TileNodeViewModel? vm)
-    {
-        return vm switch
-        {
-            LeafTileNodeViewModel leaf => new TileNode
-            {
-                IsLeaf = true,
-                ContentType = leaf.ContentType,
-                TileName = leaf.TileName,
-                ShellName = (leaf.Content as TerminalTileViewModel)?.Shell.Name,
-                NoteFilePath = (leaf.Content as NoteTileViewModel)?.FilePath,
-                TodoFilePath = (leaf.Content as TodoTileViewModel)?.FilePath,
-                Settings = SerializeTileSettings(leaf)
-            },
-            SplitTileNodeViewModel split => new TileNode
-            {
-                IsLeaf = false,
-                SplitOrientation = split.Orientation,
-                SplitRatio = split.SplitRatio,
-                First = SerializeTree(split.First),
-                Second = SerializeTree(split.Second)
-            },
-            _ => null
-        };
-    }
-
-    private TileNodeViewModel? RestoreTree(TileNode dto)
-    {
-        if (dto.IsLeaf)
-        {
-            ObservableObject? content = null;
-            if (dto.ContentType != TileContentType.Empty)
-            {
-                if (dto.ContentType == TileContentType.Note && dto.NoteFilePath != null)
-                {
-                    content = new NoteTileViewModel(dto.NoteFilePath, _settingsService);
-                }
-                else if (dto.ContentType == TileContentType.Todo && dto.TodoFilePath != null)
-                {
-                    content = new TodoTileViewModel(dto.TodoFilePath, _settingsService);
-                }
-                else if (dto.ContentType == TileContentType.Git)
-                {
-                    var git = new GitTileViewModel(WorkingDirectory, _settingsService);
-                    RestoreTileSettings(git, dto.Settings);
-                    git.TileSettingsChanged = ScheduleSave;
-                    content = git;
-                }
-                else
-                {
-                    ShellProfile? shell = null;
-                    if (dto.ShellName != null)
-                        shell = AvailableShells.FirstOrDefault(s =>
-                            s.Name.Equals(dto.ShellName, StringComparison.OrdinalIgnoreCase));
-                    content = CreateContent(dto.ContentType, WorkingDirectory, shell);
-                }
-            }
-
-            return CreateLeaf(dto.ContentType, content, dto.TileName ?? AllocateTileName(dto.ContentType));
-        }
-
-        var first = RestoreTree(dto.First!);
-        var second = RestoreTree(dto.Second!);
-        if (first == null || second == null) return first ?? second;
-
-        var split = new SplitTileNodeViewModel(dto.SplitOrientation, first, second)
-        {
-            SplitRatio = dto.SplitRatio,
-            LayoutChanged = ScheduleSave
-        };
-        first.Parent = split;
-        second.Parent = split;
-        return split;
-    }
-
-    private static Dictionary<string, object?>? SerializeTileSettings(LeafTileNodeViewModel leaf)
-    {
-        if (leaf.Content is GitTileViewModel git)
-        {
-            if (!git.ShowDiffPanel)
-                return new Dictionary<string, object?> { ["showDiffPanel"] = git.ShowDiffPanel };
-        }
-        return null;
-    }
-
-    private static void RestoreTileSettings(GitTileViewModel git, Dictionary<string, object?>? settings)
-    {
-        if (settings == null) return;
-        if (settings.TryGetValue("showDiffPanel", out var val) && val is JsonElement el)
-            git.ShowDiffPanel = el.GetBoolean();
+        _persistenceService.DebouncedSaveLayout(WorkspaceId, () => _serializer.Serialize(RootTile));
     }
 
     public void Dispose()
