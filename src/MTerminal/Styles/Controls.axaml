@@ -91,6 +91,7 @@
         <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtle}" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="Margin" Value="5" />
     </Style>
     <Style Selector="Button.chooser-card:pointerover">
         <Setter Property="Background" Value="{DynamicResource InteractiveHover}" />

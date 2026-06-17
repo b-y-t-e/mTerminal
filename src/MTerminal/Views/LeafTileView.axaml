@@ -68,12 +68,11 @@
 
             <!-- Content area + chooser overlay -->
             <Panel>
-                <StackPanel x:Name="ContentChooser"
-                            IsVisible="False"
-                            Orientation="Horizontal"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"
-                            Spacing="10">
+                <WrapPanel x:Name="ContentChooser"
+                           IsVisible="False"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Orientation="Horizontal">
                     <Button Classes="chooser-card"
                             Command="{Binding SelectContentTypeCommand}"
                             CommandParameter="{x:Static m:TileContentType.Terminal}">
@@ -107,7 +106,7 @@
                                        HorizontalAlignment="Center" />
                         </StackPanel>
                     </Button>
-                </StackPanel>
+                </WrapPanel>
                 <Panel x:Name="ContentHost" />
             </Panel>
         </DockPanel>
