@@ -34,12 +34,12 @@
                         <Button Classes="tile-btn"
                                 Command="{Binding SplitVerticalCommand}"
                                 ToolTip.Tip="Split Right">
-                            <mi:MaterialIcon Kind="ArrowSplitVertical" Width="14" Height="14" />
+                            <mi:MaterialIcon Kind="DockRight" Width="14" Height="14" />
                         </Button>
                         <Button Classes="tile-btn"
                                 Command="{Binding SplitHorizontalCommand}"
                                 ToolTip.Tip="Split Down">
-                            <mi:MaterialIcon Kind="ArrowSplitHorizontal" Width="14" Height="14" />
+                            <mi:MaterialIcon Kind="DockBottom" Width="14" Height="14" />
                         </Button>
                         <Button Classes="tile-btn-close"
                                 Command="{Binding CloseCommand}"
