@@ -18,12 +18,12 @@
                 <ListBox.ItemTemplate>
                     <DataTemplate DataType="m:Workspace">
                         <DockPanel>
-                            <Button DockPanel.Dock="Right"
+                           <!-- <Button DockPanel.Dock="Right"
                                     Content="&#215;" Classes="ghost"
                                     Command="{Binding #WorkspaceList.((vm:WorkspacesPanelViewModel)DataContext).RemoveWorkspaceCommand}"
                                     CommandParameter="{Binding}"
                                     VerticalAlignment="Center"
-                                    ToolTip.Tip="Remove workspace" />
+                                    ToolTip.Tip="Remove workspace" />-->
                             <StackPanel Spacing="1">
                                 <TextBlock Text="{Binding Name}" FontWeight="Medium"
                                            FontSize="{DynamicResource FontMd}"
