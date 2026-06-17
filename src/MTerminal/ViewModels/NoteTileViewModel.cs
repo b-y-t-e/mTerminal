@@ -29,8 +29,8 @@ public partial class NoteTileViewModel : ObservableObject, IFileContent, IDispos
         _filePath = filePath;
         _settingsService = settingsService;
         var s = settingsService?.Settings;
-        _fontFamily = s?.NoteFontFamily ?? "Cascadia Mono, Consolas, monospace";
-        _fontSize = s?.NoteFontSize ?? 14;
+        _fontFamily = s?.FontFamily ?? "Cascadia Mono, Consolas, monospace";
+        _fontSize = s?.FontSize ?? 14;
         _isLoading = true;
         LoadFromFile();
         _isLoading = false;
@@ -42,10 +42,10 @@ public partial class NoteTileViewModel : ObservableObject, IFileContent, IDispos
     private void OnSettingsChanged()
     {
         var s = _settingsService!.Settings;
-        if (s.NoteFontFamily != FontFamily)
-            FontFamily = s.NoteFontFamily;
-        if (Math.Abs(s.NoteFontSize - FontSize) > 0.01)
-            FontSize = s.NoteFontSize;
+        if (s.FontFamily != FontFamily)
+            FontFamily = s.FontFamily;
+        if (Math.Abs(s.FontSize - FontSize) > 0.01)
+            FontSize = s.FontSize;
     }
 
     public void RenameFile(string newName)

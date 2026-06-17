@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Media;
 using Avalonia.Styling;
 using MTerminal.Models;
 using MTerminal.Services;
@@ -36,14 +37,16 @@ public partial class App : Application
             RequestedThemeVariant = theme == "Light"
                 ? ThemeVariant.Light
                 : ThemeVariant.Dark;
-            ThemeBridge.Apply(TerminalTheme.GetByName(_settingsService.Settings.TerminalThemeName));
+            ThemeBridge.Apply(TerminalTheme.GetByName(_settingsService.Settings.ColorThemeName));
+            ApplyFontResources();
         };
 
         RequestedThemeVariant = _settingsService.Settings.Theme == "Light"
             ? ThemeVariant.Light
             : ThemeVariant.Dark;
 
-        ThemeBridge.Apply(TerminalTheme.GetByName(_settingsService.Settings.TerminalThemeName));
+        ThemeBridge.Apply(TerminalTheme.GetByName(_settingsService.Settings.ColorThemeName));
+        ApplyFontResources();
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
@@ -55,6 +58,14 @@ public partial class App : Application
         Task.Run(CheckForUpdates);
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private void ApplyFontResources()
+    {
+        var s = _settingsService.Settings;
+        Resources["UiFontFamily"] = new FontFamily(s.FontFamily);
+        Resources["UiFontSize"] = s.FontSize;
+        Resources["LogoFontSize"] = s.FontSize * 1.2;
     }
 
     private async Task CheckForUpdates()

@@ -1,7 +1,10 @@
+using System.ComponentModel;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using Avalonia;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Enums;
@@ -12,6 +15,8 @@ namespace MTerminal.Views;
 
 public partial class WorkspacesPanelView : UserControl
 {
+    private WorkspacesPanelViewModel? _subscribedVm;
+
     public WorkspacesPanelView()
     {
         InitializeComponent();
@@ -54,8 +59,15 @@ public partial class WorkspacesPanelView : UserControl
 
     private void OnDataContextChanged(object? sender, EventArgs e)
     {
+        if (_subscribedVm != null)
+            _subscribedVm.PropertyChanged -= OnVmPropertyChanged;
+
         if (DataContext is WorkspacesPanelViewModel vm)
         {
+            _subscribedVm = vm;
+            vm.PropertyChanged += OnVmPropertyChanged;
+            FontFamily = new FontFamily(vm.FontFamily);
+            FontSize = vm.FontSize;
             vm.FolderPicker = async () =>
             {
                 var topLevel = TopLevel.GetTopLevel(this);
@@ -78,5 +90,23 @@ public partial class WorkspacesPanelView : UserControl
                 return result == ButtonResult.Yes;
             };
         }
+    }
+
+    private void OnVmPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (sender is not WorkspacesPanelViewModel vm) return;
+
+        Dispatcher.UIThread.Post(() =>
+        {
+            switch (e.PropertyName)
+            {
+                case nameof(WorkspacesPanelViewModel.FontFamily):
+                    FontFamily = new FontFamily(vm.FontFamily);
+                    break;
+                case nameof(WorkspacesPanelViewModel.FontSize):
+                    FontSize = vm.FontSize;
+                    break;
+            }
+        });
     }
 }

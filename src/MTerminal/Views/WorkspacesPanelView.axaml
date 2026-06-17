@@ -27,10 +27,11 @@
                                     ToolTip.Tip="Remove workspace" />-->
                             <StackPanel Spacing="1">
                                 <TextBlock Text="{Binding Name}" FontWeight="Medium"
-                                           FontSize="{DynamicResource FontMd}"
                                            Foreground="{DynamicResource TextPrimary}" />
-                                <TextBlock Text="{Binding DirectoryPath}" Classes="caption"
-                                           TextTrimming="CharacterEllipsis" />
+                                <TextBlock Text="{Binding DirectoryPath}"
+                                           Foreground="{DynamicResource TextMuted}"
+                                           TextTrimming="CharacterEllipsis"
+                                           Opacity="0.8" />
                             </StackPanel>
                         </DockPanel>
                     </DataTemplate>
@@ -40,11 +41,10 @@
             <Button Classes="add-workspace"
                     Command="{Binding AddWorkspaceCommand}"
                     Margin="8,0, 8, 2"
-                    FontSize="{DynamicResource FontMd}"
                     HorizontalAlignment="Stretch"
                     Cursor="Hand">
                 <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
-                    <mi:MaterialIcon Kind="Plus" Width="14" Height="14" />
+                    <mi:MaterialIcon Kind="Plus" Width="16" Height="16" />
                     <TextBlock Text="Workspace" VerticalAlignment="Center" />
                 </StackPanel>
             </Button>

@@ -20,14 +20,32 @@
                          PlaceholderText="Arguments (optional)" />
             </StackPanel>
         </StackPanel>
-
-        <!-- Terminal -->
-        <TextBlock Text="TERMINAL" Classes="section" />
+        
+        <!-- Appearance -->
+        <TextBlock Text="APPEARANCE" Classes="section" />
         <StackPanel Spacing="4">
             <TextBlock Text="Color Theme" Classes="label" />
             <ComboBox Classes="setting"
-                      SelectedItem="{Binding TerminalThemeName}"
-                      ItemsSource="{x:Static vm:SettingsViewModel.TerminalThemeNames}" />
+                      SelectedItem="{Binding ColorThemeName}"
+                      ItemsSource="{x:Static vm:SettingsViewModel.ColorThemeNames}" />
+            <TextBlock Text="Font Family" Classes="label" />
+            <TextBox Classes="setting"
+                     Text="{Binding FontFamily}"
+                     PlaceholderText="Font family" />
+            <TextBlock Text="Font Size" Classes="label" />
+            <NumericUpDown Classes="setting"
+                           Value="{Binding FontSize}" Minimum="8" Maximum="48" Increment="1" />
+
+            <TextBlock Text="Theme" Classes="label" />
+            <ComboBox Classes="setting"
+                      SelectedItem="{Binding Theme}"
+                      ItemsSource="{x:Static vm:SettingsViewModel.Themes}" />
+        </StackPanel>
+        
+        <!-- Terminal -->
+        <TextBlock Text="TERMINAL" Classes="section" />
+        <StackPanel Spacing="4">
+
             <TextBlock Text="Font Family" Classes="label" />
             <TextBox Classes="setting"
                      Text="{Binding TerminalFontFamily}"
@@ -37,25 +55,5 @@
                            Value="{Binding TerminalFontSize}" Minimum="8" Maximum="48" Increment="1" />
         </StackPanel>
 
-        <!-- Note -->
-        <TextBlock Text="NOTE" Classes="section" />
-        <StackPanel Spacing="4">
-            <TextBlock Text="Font Family" Classes="label" />
-            <TextBox Classes="setting"
-                     Text="{Binding NoteFontFamily}"
-                     PlaceholderText="Font family" />
-            <TextBlock Text="Font Size" Classes="label" />
-            <NumericUpDown Classes="setting"
-                           Value="{Binding NoteFontSize}" Minimum="8" Maximum="48" Increment="1" />
-        </StackPanel>
-
-        <!-- Appearance -->
-        <TextBlock Text="APPEARANCE" Classes="section" />
-        <StackPanel Spacing="4">
-            <TextBlock Text="Theme" Classes="label" />
-            <ComboBox Classes="setting"
-                      SelectedItem="{Binding Theme}"
-                      ItemsSource="{x:Static vm:SettingsViewModel.Themes}" />
-        </StackPanel>
     </StackPanel>
 </UserControl>

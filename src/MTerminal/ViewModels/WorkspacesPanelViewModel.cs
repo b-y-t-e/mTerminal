@@ -11,20 +11,45 @@ namespace MTerminal.ViewModels;
 public partial class WorkspacesPanelViewModel : ObservableObject
 {
     private readonly WorkspaceService _workspaceService;
+    private readonly SettingsService? _settingsService;
 
     public ObservableCollection<Workspace> Workspaces { get; } = [];
 
     [ObservableProperty]
     private Workspace? _selectedWorkspace;
 
+    [ObservableProperty]
+    private string _fontFamily;
+
+    [ObservableProperty]
+    private double _fontSize;
+
     public Func<Task<string?>>? FolderPicker { get; set; }
     public Func<string, Task<bool>>? ConfirmAction { get; set; }
 
-    public WorkspacesPanelViewModel(WorkspaceService workspaceService)
+    public WorkspacesPanelViewModel(WorkspaceService workspaceService, SettingsService? settingsService = null)
     {
         _workspaceService = workspaceService;
+        _settingsService = settingsService;
+
+        var s = settingsService?.Settings;
+        _fontFamily = s?.FontFamily ?? "Cascadia Mono, Consolas, monospace";
+        _fontSize = s?.FontSize ?? 14;
+
+        if (_settingsService != null)
+            _settingsService.SettingsChanged += OnSettingsChanged;
+
         foreach (var w in workspaceService.Workspaces.OrderBy(w => w.Name, StringComparer.OrdinalIgnoreCase))
             Workspaces.Add(w);
+    }
+
+    private void OnSettingsChanged()
+    {
+        var s = _settingsService!.Settings;
+        if (s.FontFamily != FontFamily)
+            FontFamily = s.FontFamily;
+        if (Math.Abs(s.FontSize - FontSize) > 0.01)
+            FontSize = s.FontSize;
     }
 
     [RelayCommand]

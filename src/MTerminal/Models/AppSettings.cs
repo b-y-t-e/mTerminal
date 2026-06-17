@@ -4,14 +4,16 @@ public sealed class AppSettings
 {
     public string TerminalFontFamily { get; set; } = "Cascadia Mono, Consolas, monospace";
     public double TerminalFontSize { get; set; } = 14;
-    public string NoteFontFamily { get; set; } = "Cascadia Mono, Consolas, monospace";
-    public double NoteFontSize { get; set; } = 14;
+    public string FontFamily { get; set; } = "Cascadia Mono, Consolas, monospace";
+    public double FontSize { get; set; } = 14;
     public string Theme { get; set; } = "Dark";
 
-    public string TerminalThemeName { get; set; } = "Default Dark";
-    public string DefaultShellName { get; set; } = "";
+    public string ColorThemeName { get; set; } = "Monokai";
+    public string DefaultShellName { get; set; } = "Git Bash";
     public string CustomShellPath { get; set; } = "";
     public string CustomShellArgs { get; set; } = "";
+
+    public bool DiffTrimIndent { get; set; } = true;
 
     public double WorkspacesPanelWidth { get; set; } = 240;
 

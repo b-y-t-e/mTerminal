@@ -9,14 +9,14 @@ public partial class SettingsViewModel : ObservableObject
 {
     public static string[] Themes { get; } = ["Dark", "Light"];
     public static string CustomShellOption => "Custom...";
-    public static string[] TerminalThemeNames { get; } = TerminalTheme.BuiltIn.Select(t => t.Name).ToArray();
+    public static string[] ColorThemeNames { get; } = TerminalTheme.BuiltIn.Select(t => t.Name).ToArray();
 
     private readonly SettingsService _settingsService;
 
     public ObservableCollection<string> ShellOptions { get; } = [];
 
     [ObservableProperty]
-    private string _terminalThemeName;
+    private string _colorThemeName;
 
     [ObservableProperty]
     private string _terminalFontFamily;
@@ -25,10 +25,10 @@ public partial class SettingsViewModel : ObservableObject
     private double _terminalFontSize;
 
     [ObservableProperty]
-    private string _noteFontFamily;
+    private string _fontFamily;
 
     [ObservableProperty]
-    private double _noteFontSize;
+    private double _fontSize;
 
     [ObservableProperty]
     private string _theme;
@@ -50,11 +50,11 @@ public partial class SettingsViewModel : ObservableObject
     {
         _settingsService = settingsService;
         var s = settingsService.Settings;
-        _terminalThemeName = s.TerminalThemeName;
+        _colorThemeName = s.ColorThemeName;
         _terminalFontFamily = s.TerminalFontFamily;
         _terminalFontSize = s.TerminalFontSize;
-        _noteFontFamily = s.NoteFontFamily;
-        _noteFontSize = s.NoteFontSize;
+        _fontFamily = s.FontFamily;
+        _fontSize = s.FontSize;
         _theme = s.Theme;
         _customShellPath = s.CustomShellPath;
         _customShellArgs = s.CustomShellArgs;
@@ -79,11 +79,11 @@ public partial class SettingsViewModel : ObservableObject
         }
     }
 
-    partial void OnTerminalThemeNameChanged(string value) { _settingsService.Settings.TerminalThemeName = value; _settingsService.NotifyChanged(); }
+    partial void OnColorThemeNameChanged(string value) { _settingsService.Settings.ColorThemeName = value; _settingsService.NotifyChanged(); }
     partial void OnTerminalFontFamilyChanged(string value) { _settingsService.Settings.TerminalFontFamily = value; _settingsService.NotifyChanged(); }
     partial void OnTerminalFontSizeChanged(double value) { _settingsService.Settings.TerminalFontSize = value; _settingsService.NotifyChanged(); }
-    partial void OnNoteFontFamilyChanged(string value) { _settingsService.Settings.NoteFontFamily = value; _settingsService.NotifyChanged(); }
-    partial void OnNoteFontSizeChanged(double value) { _settingsService.Settings.NoteFontSize = value; _settingsService.NotifyChanged(); }
+    partial void OnFontFamilyChanged(string value) { _settingsService.Settings.FontFamily = value; _settingsService.NotifyChanged(); }
+    partial void OnFontSizeChanged(double value) { _settingsService.Settings.FontSize = value; _settingsService.NotifyChanged(); }
     partial void OnThemeChanged(string value) { _settingsService.Settings.Theme = value; _settingsService.NotifyChanged(); }
 
     partial void OnSelectedShellChanged(string value)

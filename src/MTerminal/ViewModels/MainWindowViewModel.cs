@@ -31,7 +31,7 @@ public partial class MainWindowViewModel : ObservableObject
     {
         _persistenceService = persistenceService;
         _settingsService = settingsService;
-        _workspacesPanel = new WorkspacesPanelViewModel(workspaceService);
+        _workspacesPanel = new WorkspacesPanelViewModel(workspaceService, settingsService);
         _settings = new SettingsViewModel(settingsService);
 
         _workspacesPanel.PropertyChanged += (_, e) =>

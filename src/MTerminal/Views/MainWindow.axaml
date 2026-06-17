@@ -26,7 +26,8 @@
                     </Button>
                     <TextBlock Text="MTerminal" VerticalAlignment="Center"
                                Foreground="{DynamicResource TextSecondary}"
-                               FontWeight="SemiBold" FontSize="{DynamicResource FontMd}" Margin="8,0" />
+                               FontFamily="{DynamicResource UiFontFamily}"
+                               FontWeight="SemiBold" FontSize="{DynamicResource LogoFontSize}" Margin="8,0" />
                 </StackPanel>
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="2">
                     <Button Classes="toolbar"

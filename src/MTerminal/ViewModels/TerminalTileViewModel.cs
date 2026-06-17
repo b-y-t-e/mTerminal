@@ -30,7 +30,7 @@ public partial class TerminalTileViewModel : ObservableObject, IDisposable
         var s = _settingsService.Settings;
         WorkingDirectory = workingDirectory;
         Shell = shell ?? ShellDetector.ResolveDefault(s);
-        _theme = TerminalTheme.GetByName(s.TerminalThemeName);
+        _theme = TerminalTheme.GetByName(s.ColorThemeName);
         _fontFamily = s.TerminalFontFamily;
         _fontSize = s.TerminalFontSize;
 
@@ -40,7 +40,7 @@ public partial class TerminalTileViewModel : ObservableObject, IDisposable
     private void OnSettingsChanged()
     {
         var s = _settingsService.Settings;
-        var newTheme = TerminalTheme.GetByName(s.TerminalThemeName);
+        var newTheme = TerminalTheme.GetByName(s.ColorThemeName);
         if (newTheme.Name != Theme.Name)
             Theme = newTheme;
         if (s.TerminalFontFamily != FontFamily)

@@ -42,8 +42,8 @@ public partial class TodoTileViewModel : ObservableObject, IFileContent, IDispos
         _filePath = filePath;
         _settingsService = settingsService;
         var s = settingsService?.Settings;
-        _fontFamily = s?.NoteFontFamily ?? "Cascadia Mono, Consolas, monospace";
-        _fontSize = s?.NoteFontSize ?? 14;
+        _fontFamily = s?.FontFamily ?? "Cascadia Mono, Consolas, monospace";
+        _fontSize = s?.FontSize ?? 14;
         UpdateSizeMetrics();
         _isLoading = true;
         LoadFromFile();
@@ -68,11 +68,11 @@ public partial class TodoTileViewModel : ObservableObject, IFileContent, IDispos
     private void OnSettingsChanged()
     {
         var s = _settingsService!.Settings;
-        if (s.NoteFontFamily != FontFamily)
-            FontFamily = s.NoteFontFamily;
-        if (Math.Abs(s.NoteFontSize - FontSize) > 0.01)
+        if (s.FontFamily != FontFamily)
+            FontFamily = s.FontFamily;
+        if (Math.Abs(s.FontSize - FontSize) > 0.01)
         {
-            FontSize = s.NoteFontSize;
+            FontSize = s.FontSize;
             UpdateSizeMetrics();
         }
     }
