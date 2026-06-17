@@ -93,7 +93,7 @@ public partial class GitTileView : UserControl
         var h = _lastSize.Height;
         if (w == 0 && h == 0) return;
 
-        var wantVertical = w < 480;
+        var wantVertical = h > w;
         var layoutChanged = !_layoutApplied || wantVertical != _isVerticalLayout;
         _isVerticalLayout = wantVertical;
         _layoutApplied = true;
