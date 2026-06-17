@@ -57,7 +57,7 @@ public partial class App : Application
         base.OnFrameworkInitializationCompleted();
     }
 
-    private static void CheckForUpdates()
+    private async Task CheckForUpdates()
     {
         try
         {
@@ -69,7 +69,23 @@ public partial class App : Application
                 return;
 
             mgr.DownloadUpdates(newVersion);
-            mgr.ApplyUpdatesAndRestart(newVersion);
+
+            var shouldUpdate = await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(async () =>
+            {
+                var window = (ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
+                if (window == null) return false;
+
+                var box = MsBox.Avalonia.MessageBoxManager.GetMessageBoxStandard(
+                    "Update Available",
+                    $"A new version ({newVersion.TargetFullRelease.Version}) is ready to install. Restart now to update?",
+                    MsBox.Avalonia.Enums.ButtonEnum.YesNo,
+                    MsBox.Avalonia.Enums.Icon.Info);
+                var result = await box.ShowWindowDialogAsync(window);
+                return result == MsBox.Avalonia.Enums.ButtonResult.Yes;
+            });
+
+            if (shouldUpdate)
+                mgr.ApplyUpdatesAndRestart(newVersion);
         }
         catch (Exception ex)
         {
