@@ -1,7 +1,11 @@
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Platform.Storage;
+using Avalonia;
+using Avalonia.VisualTree;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Enums;
+using MTerminal.Models;
 using MTerminal.ViewModels;
 
 namespace MTerminal.Views;
@@ -12,6 +16,40 @@ public partial class WorkspacesPanelView : UserControl
     {
         InitializeComponent();
         DataContextChanged += OnDataContextChanged;
+        WorkspaceList.AddHandler(InputElement.PointerReleasedEvent, OnListPointerReleased,
+            Avalonia.Interactivity.RoutingStrategies.Tunnel);
+    }
+
+    private void OnListPointerReleased(object? sender, PointerReleasedEventArgs e)
+    {
+        if (e.InitialPressMouseButton != MouseButton.Right) return;
+        if (DataContext is not WorkspacesPanelViewModel vm) return;
+
+        var item = (e.Source as Visual)?.FindAncestorOfType<ListBoxItem>();
+        if (item?.DataContext is not Workspace workspace) return;
+
+        var menu = new ContextMenu
+        {
+            Items =
+            {
+                new MenuItem
+                {
+                    Header = "Show in Explorer",
+                    Command = vm.OpenInFileManagerCommand,
+                    CommandParameter = workspace
+                },
+                new Separator(),
+                new MenuItem
+                {
+                    Header = "Remove",
+                    Command = vm.RemoveWorkspaceCommand,
+                    CommandParameter = workspace
+                }
+            }
+        };
+
+        menu.Open(item);
+        e.Handled = true;
     }
 
     private void OnDataContextChanged(object? sender, EventArgs e)

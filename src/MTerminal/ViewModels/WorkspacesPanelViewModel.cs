@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MTerminal.Models;
@@ -34,6 +36,18 @@ public partial class WorkspacesPanelViewModel : ObservableObject
         var workspace = _workspaceService.AddWorkspace(path);
         Workspaces.Add(workspace);
         SelectedWorkspace = workspace;
+    }
+
+    [RelayCommand]
+    private void OpenInFileManager(Workspace workspace)
+    {
+        var path = workspace.DirectoryPath;
+        if (!Directory.Exists(path)) return;
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            Process.Start(new ProcessStartInfo("explorer.exe", path) { UseShellExecute = true });
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            Process.Start(new ProcessStartInfo("xdg-open", path) { UseShellExecute = true });
     }
 
     [RelayCommand]
