@@ -189,7 +189,7 @@ public partial class GitTileView : UserControl
             layoutChanged = true;
         }
 
-        var sidebarHeight = showDiff ? h / 2 : h;
+        var sidebarHeight = (_isVerticalLayout && showDiff) ? h / 2 : h;
         var showCommit = sidebarHeight > MinCommitAreaHeight;
         if (CommitArea.IsVisible != showCommit)
             CommitArea.IsVisible = showCommit;
