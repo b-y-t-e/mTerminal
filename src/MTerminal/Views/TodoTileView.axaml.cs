@@ -129,7 +129,7 @@ public partial class TodoTileView : UserControl
                 if (text == null) return;
 
                 var lines = text.Split('\n', StringSplitOptions.None);
-                if (lines.Length > 1)
+                if (lines.Length > 1 || ImagePasteService.ContainsImageLink(text))
                     PasteMultiline(vm, id, lines);
                 else
                     PasteSingleLine(id, text);
@@ -154,6 +154,8 @@ public partial class TodoTileView : UserControl
         var idx = IndexOfItem(vm, id);
         if (idx < 0) return;
 
+        var todoDir = Path.GetDirectoryName(vm.FilePath) ?? ".";
+
         var tb = FindTextBoxByTag(id);
         var current = tb?.Text ?? "";
         var caret = tb?.CaretIndex ?? current.Length;
@@ -167,27 +169,83 @@ public partial class TodoTileView : UserControl
         var after = current[to..];
 
         var firstLine = lines[0].TrimEnd('\r');
-        if (!string.IsNullOrWhiteSpace(firstLine) || !string.IsNullOrEmpty(before))
-            vm.Items[idx].Text = before + firstLine;
 
+        if (ImagePasteService.ImageLineRegex.IsMatch(firstLine))
+        {
+            var imgPath = ImagePasteService.ResolveAndCopyImage(firstLine, todoDir);
+            if (imgPath != null)
+                vm.SetItemImage(vm.Items[idx].Id, imgPath);
+        }
+        else if (!string.IsNullOrWhiteSpace(firstLine) || !string.IsNullOrEmpty(before))
+        {
+            vm.Items[idx].Text = before + firstLine;
+        }
+
+        var lastItemId = vm.Items[idx].Id;
         var insertAt = idx + 1;
         string? lastNewId = null;
+
         for (int i = 1; i < lines.Length; i++)
         {
             var lineText = lines[i].TrimEnd('\r');
-            if (i == lines.Length - 1)
+            var isLast = i == lines.Length - 1;
+            var isImage = ImagePasteService.ImageLineRegex.IsMatch(lineText);
+
+            if (isLast && !string.IsNullOrEmpty(after) && !isImage)
                 lineText += after;
-            if (string.IsNullOrWhiteSpace(lineText))
-                continue;
+
+            if (isImage)
+            {
+                var imgPath = ImagePasteService.ResolveAndCopyImage(lineText, todoDir);
+                if (imgPath != null)
+                    PasteImageToItem(vm, imgPath, ref lastItemId, ref insertAt, ref lastNewId);
+            }
+            else if (!string.IsNullOrWhiteSpace(lineText))
+            {
+                lastNewId = vm.InsertItemAfter(insertAt - 1);
+                var newIdx = IndexOfItem(vm, lastNewId);
+                if (newIdx >= 0)
+                {
+                    vm.Items[newIdx].Text = lineText;
+                    lastItemId = lastNewId;
+                    insertAt = newIdx + 1;
+                }
+            }
+        }
+
+        if (!string.IsNullOrEmpty(after) && lines.Length > 1
+            && ImagePasteService.ImageLineRegex.IsMatch(lines[^1].TrimEnd('\r')))
+        {
             lastNewId = vm.InsertItemAfter(insertAt - 1);
             var newIdx = IndexOfItem(vm, lastNewId);
             if (newIdx >= 0)
-                vm.Items[newIdx].Text = lineText;
-            insertAt = newIdx >= 0 ? newIdx + 1 : insertAt + 1;
+                vm.Items[newIdx].Text = after;
         }
 
         if (lastNewId != null)
             Dispatcher.UIThread.Post(() => FocusItemById(lastNewId), DispatcherPriority.Background);
+    }
+
+    private static void PasteImageToItem(
+        TodoTileViewModel vm, string imgPath,
+        ref string lastItemId, ref int insertAt, ref string? lastNewId)
+    {
+        var lastIdx = IndexOfItem(vm, lastItemId);
+        if (lastIdx >= 0 && string.IsNullOrEmpty(vm.Items[lastIdx].ImagePath))
+        {
+            vm.SetItemImage(lastItemId, imgPath);
+        }
+        else
+        {
+            lastNewId = vm.InsertItemAfter(insertAt - 1);
+            var newIdx = IndexOfItem(vm, lastNewId);
+            if (newIdx >= 0)
+            {
+                vm.SetItemImage(lastNewId, imgPath);
+                lastItemId = lastNewId;
+                insertAt = newIdx + 1;
+            }
+        }
     }
 
     private void PasteSingleLine(string id, string text)

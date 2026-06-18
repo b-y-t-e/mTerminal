@@ -73,4 +73,53 @@ public static class ImagePasteService
         BitmapCache.Clear();
         LruOrder.Clear();
     }
+
+    public static bool ContainsImageLink(string text)
+    {
+        foreach (var line in text.Split('\n'))
+        {
+            if (ImageLineRegex.IsMatch(line.TrimEnd('\r')))
+                return true;
+        }
+        return false;
+    }
+
+    public static string? ResolveAndCopyImage(string markdownLine, string todoDir)
+    {
+        var match = ImageLineRegex.Match(markdownLine);
+        if (!match.Success) return null;
+
+        var filePath = match.Groups[2].Value;
+
+        if (Path.IsPathRooted(filePath))
+        {
+            if (File.Exists(filePath)) return filePath;
+            return null;
+        }
+
+        var inTodo = Path.Combine(todoDir, filePath);
+        if (File.Exists(inTodo))
+            return Path.GetFullPath(inTodo);
+
+        var notesDir = Path.Combine(Path.GetDirectoryName(todoDir) ?? todoDir, "notes");
+        var inNotes = Path.Combine(notesDir, filePath);
+        if (File.Exists(inNotes))
+        {
+            try
+            {
+                Directory.CreateDirectory(todoDir);
+                var destPath = Path.Combine(todoDir, Path.GetFileName(filePath));
+                if (!File.Exists(destPath))
+                    File.Copy(inNotes, destPath);
+                return Path.GetFullPath(destPath);
+            }
+            catch (IOException ex)
+            {
+                System.Diagnostics.Trace.TraceWarning("ResolveAndCopyImage failed: {0}", ex.Message);
+                return Path.GetFullPath(inNotes);
+            }
+        }
+
+        return null;
+    }
 }
