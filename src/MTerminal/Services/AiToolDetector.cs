@@ -38,7 +38,8 @@ public static class AiToolDetector
                 Name = template.Name,
                 Description = template.Description,
                 BinaryName = template.BinaryName,
-                VersionArgs = template.VersionArgs
+                VersionArgs = template.VersionArgs,
+                Url = template.Url
             };
 
             if (customPaths != null
