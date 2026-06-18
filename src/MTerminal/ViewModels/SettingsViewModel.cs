@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using Avalonia.Data.Converters;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MTerminal.Models;
@@ -20,11 +21,15 @@ public partial class SettingsViewModel : ObservableObject
 
     public bool IsGeneralTab => SelectedTab == 0;
     public bool IsProfilesTab => SelectedTab == 1;
+    public bool IsAiToolsTab => SelectedTab == 2;
 
     partial void OnSelectedTabChanged(int value)
     {
         OnPropertyChanged(nameof(IsGeneralTab));
         OnPropertyChanged(nameof(IsProfilesTab));
+        OnPropertyChanged(nameof(IsAiToolsTab));
+        if (value == 2 && !_aiToolsLoaded)
+            _ = LoadAiToolsSafeAsync();
     }
 
     [RelayCommand]
@@ -92,6 +97,15 @@ public partial class SettingsViewModel : ObservableObject
     private string _editProfileShellType = "";
 
     private UserShellProfile? _editingProfile;
+
+    private bool _aiToolsLoaded;
+
+    public ObservableCollection<AiToolViewModel> AiTools { get; } = [];
+
+    [ObservableProperty]
+    private bool _isLoadingAiTools;
+
+    public Func<Task<string?>>? BrowseAiToolFile { get; set; }
 
     public SettingsViewModel(SettingsService settingsService)
     {
@@ -243,5 +257,46 @@ public partial class SettingsViewModel : ObservableObject
     {
         IsEditingProfile = false;
         _editingProfile = null;
+    }
+
+    private async Task LoadAiToolsSafeAsync()
+    {
+        try { await LoadAiToolsAsync(); }
+        catch (Exception ex) { System.Diagnostics.Trace.TraceWarning("Failed to load AI tools: {0}", ex.Message); }
+    }
+
+    private async Task LoadAiToolsAsync()
+    {
+        if (_aiToolsLoaded) return;
+        IsLoadingAiTools = true;
+
+        var customPaths = _settingsService.Settings.CustomAiToolPaths;
+        var tools = await Task.Run(() => AiToolDetector.Detect(customPaths));
+
+        await Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            foreach (var tool in tools)
+            {
+                var vm = new AiToolViewModel(tool)
+                {
+                    BrowseFile = BrowseAiToolFile,
+                    OnCustomPathSet = (binaryName, path) =>
+                    {
+                        _settingsService.Settings.CustomAiToolPaths[binaryName] = path;
+                        _settingsService.NotifyChanged();
+                    }
+                };
+                AiTools.Add(vm);
+            }
+            _aiToolsLoaded = true;
+            IsLoadingAiTools = false;
+        });
+    }
+
+    [RelayCommand]
+    private async Task TestAllToolsAsync()
+    {
+        var tasks = AiTools.Where(t => t.IsInstalled).Select(vm => vm.TestCommand.ExecuteAsync(null));
+        await Task.WhenAll(tasks);
     }
 }

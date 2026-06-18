@@ -114,7 +114,7 @@ public static class ShellDetector
         };
     }
 
-    private static string? FindExecutable(string name)
+    internal static string? FindExecutable(string name)
     {
         var pathEnv = Environment.GetEnvironmentVariable("PATH") ?? "";
         foreach (var dir in pathEnv.Split(Path.PathSeparator))

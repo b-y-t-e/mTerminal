@@ -107,6 +107,11 @@
                                             Command="{Binding Settings.SelectTabCommand}"
                                             CommandParameter="{StaticResource One}"
                                             Content="Profiles" />
+                                    <Button Classes="settings-tab"
+                                            Classes.settings-tab-active="{Binding Settings.IsAiToolsTab}"
+                                            Command="{Binding Settings.SelectTabCommand}"
+                                            CommandParameter="{StaticResource Two}"
+                                            Content="AI Tools" />
                                 </StackPanel>
                             </DockPanel>
                         </Border>

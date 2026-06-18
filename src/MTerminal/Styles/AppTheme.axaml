@@ -32,6 +32,12 @@
     <SolidColorBrush x:Key="DangerSubtle"  Color="#2e1a24" />
     <SolidColorBrush x:Key="DangerText"    Color="#c06878" />
 
+    <!-- Status -->
+    <SolidColorBrush x:Key="StatusSuccess"       Color="#4a9a6a" />
+    <SolidColorBrush x:Key="StatusSuccessSubtle"  Color="#1a2e24" />
+    <SolidColorBrush x:Key="StatusSuccessText"    Color="#6abf8a" />
+    <SolidColorBrush x:Key="StatusMutedSubtle"    Color="#252528" />
+
     <!-- Overlay -->
     <SolidColorBrush x:Key="OverlayModal"   Color="#80000000" />
 
@@ -54,6 +60,7 @@
     <!-- Tab indices -->
     <x:Int32 x:Key="Zero">0</x:Int32>
     <x:Int32 x:Key="One">1</x:Int32>
+    <x:Int32 x:Key="Two">2</x:Int32>
 
     <Thickness x:Key="BorderThin">1</Thickness>
     <Thickness x:Key="BorderBottom">0,0,0,1</Thickness>

@@ -234,5 +234,126 @@
 
         </StackPanel>
 
+        <!-- ═══════════════ TAB: AI Tools ═══════════════ -->
+        <StackPanel Spacing="16" Margin="20,16,20,24"
+                    IsVisible="{Binding IsAiToolsTab}">
+
+            <!-- Header -->
+            <DockPanel>
+                <TextBlock Text="AI CODING TOOLS" Classes="section" Margin="0"
+                           VerticalAlignment="Center" />
+                <Button DockPanel.Dock="Right" Classes="outlined"
+                        Command="{Binding TestAllToolsCommand}"
+                        Padding="10,5">
+                    <StackPanel Orientation="Horizontal" Spacing="5">
+                        <mi:MaterialIcon Kind="PlayCircleOutline" Width="14" Height="14" />
+                        <TextBlock Text="Test All" />
+                    </StackPanel>
+                </Button>
+            </DockPanel>
+
+            <!-- Loading -->
+            <TextBlock Text="Scanning for AI tools..."
+                       Foreground="{DynamicResource TextMuted}"
+                       FontSize="{DynamicResource FontSm}"
+                       IsVisible="{Binding IsLoadingAiTools}" />
+
+            <!-- Tool list -->
+            <ItemsControl ItemsSource="{Binding AiTools}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Background="{DynamicResource BgSurface}"
+                                CornerRadius="{DynamicResource RadiusLg}"
+                                Padding="14,10" Margin="0,0,0,4">
+                            <DockPanel>
+                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal"
+                                            Spacing="4" VerticalAlignment="Center">
+                                    <!-- Status badge: Custom -->
+                                    <Border CornerRadius="{DynamicResource RadiusSm}"
+                                            Padding="6,2"
+                                            Background="{DynamicResource StatusSuccessSubtle}"
+                                            IsVisible="{Binding IsCustomPath}">
+                                        <TextBlock Text="Custom" FontSize="{DynamicResource FontXs}"
+                                                   Foreground="{DynamicResource StatusSuccessText}" />
+                                    </Border>
+                                    <!-- Status badge: Installed (auto-detected) -->
+                                    <Border CornerRadius="{DynamicResource RadiusSm}"
+                                            Padding="6,2"
+                                            Background="{DynamicResource StatusSuccessSubtle}">
+                                        <Border.IsVisible>
+                                            <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                                <Binding Path="IsInstalled" />
+                                                <Binding Path="!IsCustomPath" />
+                                            </MultiBinding>
+                                        </Border.IsVisible>
+                                        <TextBlock Text="Installed" FontSize="{DynamicResource FontXs}"
+                                                   Foreground="{DynamicResource StatusSuccessText}" />
+                                    </Border>
+                                    <!-- Status badge: Not Found -->
+                                    <Border CornerRadius="{DynamicResource RadiusSm}"
+                                            Padding="6,2"
+                                            Background="{DynamicResource StatusMutedSubtle}"
+                                            IsVisible="{Binding !IsInstalled}">
+                                        <TextBlock Text="Not Found" FontSize="{DynamicResource FontXs}"
+                                                   Foreground="{DynamicResource TextMuted}" />
+                                    </Border>
+                                    <!-- Browse button -->
+                                    <Button Classes="tile-btn"
+                                            Command="{Binding BrowsePathCommand}"
+                                            ToolTip.Tip="Set custom path">
+                                        <mi:MaterialIcon Kind="DotsHorizontal" Width="14" Height="14" />
+                                    </Button>
+                                    <!-- Open folder button -->
+                                    <Button Classes="tile-btn"
+                                            Command="{Binding OpenFolderCommand}"
+                                            IsVisible="{Binding IsInstalled}"
+                                            ToolTip.Tip="Open folder">
+                                        <mi:MaterialIcon Kind="FolderOutline" Width="14" Height="14" />
+                                    </Button>
+                                    <!-- Test button -->
+                                    <Button Classes="tile-btn"
+                                            Command="{Binding TestCommand}"
+                                            IsEnabled="{Binding IsInstalled}"
+                                            ToolTip.Tip="Test tool">
+                                        <mi:MaterialIcon Kind="PlayCircleOutline" Width="14" Height="14" />
+                                    </Button>
+                                </StackPanel>
+                                <!-- Tool info -->
+                                <StackPanel VerticalAlignment="Center" Spacing="2">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock Text="{Binding Name}"
+                                                   FontWeight="Medium"
+                                                   Foreground="{DynamicResource TextPrimary}" />
+                                        <TextBlock Text="{Binding DetectedVersion}"
+                                                   FontSize="{DynamicResource FontSm}"
+                                                   Foreground="{DynamicResource TextMuted}"
+                                                   VerticalAlignment="Center"
+                                                   IsVisible="{Binding DetectedVersion, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                                        <TextBlock Text="testing..."
+                                                   FontSize="{DynamicResource FontSm}"
+                                                   Foreground="{DynamicResource TextMuted}"
+                                                   FontStyle="Italic"
+                                                   VerticalAlignment="Center"
+                                                   IsVisible="{Binding IsTesting}" />
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding BinaryName, StringFormat='Binary: {0}'}"
+                                               FontSize="{DynamicResource FontSm}"
+                                               Foreground="{DynamicResource TextMuted}" />
+                                    <TextBlock Text="{Binding ExecutablePath}"
+                                               FontSize="{DynamicResource FontXs}"
+                                               Foreground="{DynamicResource TextMuted}"
+                                               Opacity="0.7"
+                                               TextTrimming="CharacterEllipsis"
+                                               ToolTip.Tip="{Binding ExecutablePath}"
+                                               IsVisible="{Binding ExecutablePath, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                                </StackPanel>
+                            </DockPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+        </StackPanel>
+
     </Panel>
 </UserControl>

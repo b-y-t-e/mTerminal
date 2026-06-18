@@ -16,6 +16,9 @@ public sealed class AppSettings
 
     public List<UserShellProfile> ShellProfiles { get; set; } = [];
 
+    public Dictionary<string, string> CustomAiToolPaths { get; set; } = [];
+    public List<UserAiTool> CustomAiTools { get; set; } = [];
+
     public bool DiffTrimIndent { get; set; } = true;
 
     public string? LastWorkspaceId { get; set; }
