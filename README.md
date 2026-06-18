@@ -7,6 +7,7 @@ Multiplatformowy terminal manager z systemem kafelkowych paneli. Windows, Linux,
 - **Workspaces** — każdy workspace powiązany z katalogiem, przełączanie jednym kliknięciem
 - **Split panes** — dzielenie paneli horyzontalnie/wertykalnie w dowolnych kombinacjach
 - **Terminale** — Git Bash, PowerShell, CMD (auto-detekcja), wybór domyślnego w ustawieniach
+- **Shell Profiles** — nazwane profile z wyborem shella i skryptem startowym, chooser profilu przy tworzeniu terminala
 - **Git tile** — podgląd zmian w stylu GitHub Desktop: diff, commit, stash, historia commitów
 - **Motywy terminala** — Default Dark, Dracula, Nord, Monokai, Solarized Dark, Catppuccin Mocha
 - **Edytor notatek** — AvaloniaEdit z numeracją linii, auto-zapis do `.mterminal/notes/`
