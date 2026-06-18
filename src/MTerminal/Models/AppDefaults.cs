@@ -11,6 +11,9 @@ public static class AppDefaults
     public const double CheckSizeRatio = 1.4;
     public const double LogoFontSizeRatio = 1.2;
 
+    public const int LogRetentionDays = 7;
+    public const string LogSubdirectory = "logs";
+
     public const int SaveDebounceMs = 1000;
     public const int SettingsDebounceMs = 500;
     public const int WatcherDebounceMs = 500;

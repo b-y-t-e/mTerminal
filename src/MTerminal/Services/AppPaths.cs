@@ -1,3 +1,5 @@
+using MTerminal.Models;
+
 namespace MTerminal.Services;
 
 public static class AppPaths
@@ -8,6 +10,9 @@ public static class AppPaths
             return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "MTerminal");
         return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".config", "MTerminal");
     }
+
+    public static string GetLogsDirectory() =>
+        Path.Combine(GetAppDataDirectory(), AppDefaults.LogSubdirectory);
 
     public static string GetWorkspacesDirectory() =>
         Path.Combine(GetAppDataDirectory(), "workspaces");

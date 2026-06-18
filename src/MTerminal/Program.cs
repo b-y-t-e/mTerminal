@@ -1,4 +1,6 @@
+using System.Diagnostics;
 using Avalonia;
+using MTerminal.Services;
 using Velopack;
 
 namespace MTerminal;
@@ -8,13 +10,26 @@ public static class Program
     [STAThread]
     public static void Main(string[] args)
     {
-        VelopackApp.Build().Run();
-        BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+        var logWriter = new FileLogWriter();
+        CrashHandler.Initialize(logWriter);
+        Trace.Listeners.Add(new LogTraceListener(logWriter));
+
+        try
+        {
+            VelopackApp.Build().Run();
+            BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+        }
+        catch (Exception ex)
+        {
+            logWriter.Write("FATAL", ex.Message, ex.ToString());
+            throw;
+        }
     }
 
     public static AppBuilder BuildAvaloniaApp() =>
         AppBuilder.Configure<App>()
             .UsePlatformDetect()
             .WithInterFont()
-            .LogToTrace();
+            .LogToTrace()
+            .AfterSetup(_ => CrashHandler.AttachAvaloniaExceptionHandler());
 }
