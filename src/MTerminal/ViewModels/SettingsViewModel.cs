@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using Avalonia.Data.Converters;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MTerminal.Models;
@@ -28,6 +29,15 @@ public partial class SettingsViewModel : ObservableObject
 
     [RelayCommand]
     private void SelectTab(int tab) => SelectedTab = tab;
+
+    public static string[] ShellTypeNames { get; } = Enum.GetNames<ShellType>();
+
+    public static readonly FuncValueConverter<string, string> ShellTypeConverter = new(shellName =>
+    {
+        if (string.IsNullOrEmpty(shellName)) return "";
+        var t = ShellDetector.GetTypeByName(shellName);
+        return t != ShellType.Other ? $"({t})" : "";
+    });
 
     public ObservableCollection<string> ShellOptions { get; } = [];
     public List<string> ProfileShellOptions { get; } = [];
@@ -64,6 +74,9 @@ public partial class SettingsViewModel : ObservableObject
     private bool _isCustomShell;
 
     [ObservableProperty]
+    private string _customShellType;
+
+    [ObservableProperty]
     private bool _isEditingProfile;
 
     [ObservableProperty]
@@ -74,6 +87,9 @@ public partial class SettingsViewModel : ObservableObject
 
     [ObservableProperty]
     private string _editProfileScript = "";
+
+    [ObservableProperty]
+    private string _editProfileShellType = "";
 
     private UserShellProfile? _editingProfile;
 
@@ -89,6 +105,7 @@ public partial class SettingsViewModel : ObservableObject
         _theme = s.Theme;
         _customShellPath = s.CustomShellPath;
         _customShellArgs = s.CustomShellArgs;
+        _customShellType = s.CustomShellType.ToString();
 
         var detected = ShellDetector.Detect();
         foreach (var shell in detected)
@@ -135,12 +152,32 @@ public partial class SettingsViewModel : ObservableObject
             _settingsService.Settings.DefaultShellName = value;
             _settingsService.Settings.CustomShellPath = "";
             _settingsService.Settings.CustomShellArgs = "";
+            _settingsService.Settings.CustomShellType = ShellType.Other;
         }
         _settingsService.NotifyChanged();
     }
 
     partial void OnCustomShellPathChanged(string value) { _settingsService.Settings.CustomShellPath = value; _settingsService.NotifyChanged(); }
     partial void OnCustomShellArgsChanged(string value) { _settingsService.Settings.CustomShellArgs = value; _settingsService.NotifyChanged(); }
+    partial void OnCustomShellTypeChanged(string value)
+    {
+        if (Enum.TryParse<ShellType>(value, out var t))
+        {
+            _settingsService.Settings.CustomShellType = t;
+            _settingsService.NotifyChanged();
+        }
+    }
+
+    partial void OnEditProfileShellChanged(string value)
+    {
+        EditProfileShellType = GetShellTypeForName(value);
+    }
+
+    private static string GetShellTypeForName(string shellName)
+    {
+        var t = ShellDetector.GetTypeByName(shellName);
+        return t != ShellType.Other ? t.ToString() : "";
+    }
 
     [RelayCommand]
     private void AddProfile()

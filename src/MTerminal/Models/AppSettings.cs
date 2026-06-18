@@ -12,6 +12,7 @@ public sealed class AppSettings
     public string DefaultShellName { get; set; } = "";
     public string CustomShellPath { get; set; } = "";
     public string CustomShellArgs { get; set; } = "";
+    public ShellType CustomShellType { get; set; } = ShellType.Other;
 
     public List<UserShellProfile> ShellProfiles { get; set; } = [];
 

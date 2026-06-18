@@ -4,6 +4,14 @@ namespace MTerminal.Services;
 
 public static class ShellDetector
 {
+    private static Dictionary<string, ShellType>? _typeLookup;
+
+    public static ShellType GetTypeByName(string shellName)
+    {
+        _typeLookup ??= Detect().ToDictionary(s => s.Name, s => s.Type, StringComparer.OrdinalIgnoreCase);
+        return _typeLookup.TryGetValue(shellName, out var t) ? t : ShellType.Other;
+    }
+
     public static List<ShellProfile> Detect()
     {
         var profiles = new List<ShellProfile>();
@@ -20,7 +28,7 @@ public static class ShellDetector
             {
                 if (File.Exists(path))
                 {
-                    profiles.Add(new ShellProfile { Name = "Git Bash", ExecutablePath = path, Args = ["--login", "-i"] });
+                    profiles.Add(new ShellProfile { Name = "Git Bash", ExecutablePath = path, Args = ["--login", "-i"], Type = ShellType.Bash });
                     break;
                 }
             }
@@ -28,22 +36,27 @@ public static class ShellDetector
             var pwsh = FindExecutable("pwsh.exe")
                        ?? FindExecutable("powershell.exe");
             if (pwsh != null)
-                profiles.Add(new ShellProfile { Name = "PowerShell", ExecutablePath = pwsh });
+                profiles.Add(new ShellProfile { Name = "PowerShell", ExecutablePath = pwsh, Type = ShellType.PowerShell });
 
             var cmd = FindExecutable("cmd.exe");
             if (cmd != null)
-                profiles.Add(new ShellProfile { Name = "CMD", ExecutablePath = cmd });
+                profiles.Add(new ShellProfile { Name = "CMD", ExecutablePath = cmd, Type = ShellType.Cmd });
         }
         else
         {
             var shell = Environment.GetEnvironmentVariable("SHELL") ?? "/bin/bash";
-            profiles.Add(new ShellProfile { Name = Path.GetFileName(shell), ExecutablePath = shell, Args = ["-l"] });
+            var shellName = Path.GetFileNameWithoutExtension(shell);
+            profiles.Add(new ShellProfile { Name = Path.GetFileName(shell), ExecutablePath = shell, Args = ["-l"], Type = InferType(shell) });
 
-            if (shell != "/bin/bash" && File.Exists("/bin/bash"))
-                profiles.Add(new ShellProfile { Name = "bash", ExecutablePath = "/bin/bash", Args = ["-l"] });
+            if (shellName != "bash" && File.Exists("/bin/bash"))
+                profiles.Add(new ShellProfile { Name = "bash", ExecutablePath = "/bin/bash", Args = ["-l"], Type = ShellType.Bash });
 
-            if (File.Exists("/bin/zsh"))
-                profiles.Add(new ShellProfile { Name = "zsh", ExecutablePath = "/bin/zsh", Args = ["-l"] });
+            if (shellName != "zsh" && File.Exists("/bin/zsh"))
+                profiles.Add(new ShellProfile { Name = "zsh", ExecutablePath = "/bin/zsh", Args = ["-l"], Type = ShellType.Zsh });
+
+            var fishPath = File.Exists("/usr/bin/fish") ? "/usr/bin/fish" : File.Exists("/bin/fish") ? "/bin/fish" : null;
+            if (fishPath != null && shellName != "fish")
+                profiles.Add(new ShellProfile { Name = "fish", ExecutablePath = fishPath, Args = ["-l"], Type = ShellType.Fish });
         }
 
         return profiles;
@@ -62,7 +75,8 @@ public static class ShellDetector
             {
                 Name = "Custom",
                 ExecutablePath = settings.CustomShellPath,
-                Args = args
+                Args = args,
+                Type = settings.CustomShellType
             };
         }
 
@@ -73,8 +87,9 @@ public static class ShellDetector
             if (match != null) return match;
         }
 
+        var fallbackExe = OperatingSystem.IsWindows() ? "powershell.exe" : "bash";
         return detected.FirstOrDefault()
-            ?? new ShellProfile { Name = "Default", ExecutablePath = OperatingSystem.IsWindows() ? "powershell.exe" : "bash" };
+            ?? new ShellProfile { Name = "Default", ExecutablePath = fallbackExe, Type = InferType(fallbackExe) };
     }
 
     public static ShellProfile ResolveFromUserProfile(UserShellProfile userProfile, AppSettings settings)
@@ -83,6 +98,20 @@ public static class ShellDetector
         var match = detected.FirstOrDefault(s =>
             s.Name.Equals(userProfile.ShellName, StringComparison.OrdinalIgnoreCase));
         return match ?? ResolveDefault(settings);
+    }
+
+    public static ShellType InferType(string executablePath)
+    {
+        var name = Path.GetFileNameWithoutExtension(executablePath).ToLowerInvariant();
+        return name switch
+        {
+            "pwsh" or "powershell" => ShellType.PowerShell,
+            "cmd" => ShellType.Cmd,
+            "bash" or "sh" => ShellType.Bash,
+            "zsh" => ShellType.Zsh,
+            "fish" => ShellType.Fish,
+            _ => ShellType.Other
+        };
     }
 
     private static string? FindExecutable(string name)
