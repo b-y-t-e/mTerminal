@@ -21,7 +21,7 @@ public static class AiToolDetector
         new() { Name = "Grok Build", BinaryName = "grok-build", Description = "xAI terminal agent", Url = "https://x.ai" },
         new() { Name = "Kilo Code", BinaryName = "kilo", Description = "Multi-agent coding CLI", Url = "https://kilocode.ai" },
         new() { Name = "Kimi Code", BinaryName = "kimi", Description = "Moonshot AI coding agent", Url = "https://github.com/MoonshotAI/kimi-code" },
-        new() { Name = "OpenCode", BinaryName = "opencode", Description = "Open-source AI coding agent", VersionArgs = "version", Url = "https://opencode.ai" },
+        new() { Name = "OpenCode", BinaryName = "opencode", Description = "Open-source AI coding agent", VersionArgs = "--version", Url = "https://opencode.ai" },
         new() { Name = "Pi Agent", BinaryName = "pi", Description = "Minimal BYOK coding agent", Url = "https://github.com/mariozechner/pi-coding-agent" },
         new() { Name = "Qwen Code", BinaryName = "qwen", Description = "Alibaba terminal agent", Url = "https://github.com/QwenLM/qwen-code" },
         new() { Name = "Trae", BinaryName = "trae", Description = "ByteDance coding agent", Url = "https://github.com/bytedance/trae-agent" },

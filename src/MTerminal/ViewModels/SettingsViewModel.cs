@@ -82,6 +82,9 @@ public partial class SettingsViewModel : ObservableObject
     private string _customShellType;
 
     [ObservableProperty]
+    private bool _gitHideMTerminalDir;
+
+    [ObservableProperty]
     private bool _isEditingProfile;
 
     [ObservableProperty]
@@ -137,6 +140,7 @@ public partial class SettingsViewModel : ObservableObject
         _customShellPath = s.CustomShellPath;
         _customShellArgs = s.CustomShellArgs;
         _customShellType = s.CustomShellType.ToString();
+        _gitHideMTerminalDir = s.GitHideMTerminalDir;
 
         var detected = ShellDetector.Detect();
         foreach (var shell in detected)
@@ -170,6 +174,7 @@ public partial class SettingsViewModel : ObservableObject
     partial void OnFontFamilyChanged(string value) { _settingsService.Settings.FontFamily = value; _settingsService.NotifyChanged(); }
     partial void OnFontSizeChanged(double value) { _settingsService.Settings.FontSize = value; _settingsService.NotifyChanged(); }
     partial void OnThemeChanged(string value) { _settingsService.Settings.Theme = value; _settingsService.NotifyChanged(); }
+    partial void OnGitHideMTerminalDirChanged(bool value) { _settingsService.Settings.GitHideMTerminalDir = value; _settingsService.NotifyChanged(); }
 
     partial void OnSelectedShellChanged(string value)
     {
@@ -314,6 +319,8 @@ public partial class SettingsViewModel : ObservableObject
             _aiToolsLoaded = true;
             IsLoadingAiTools = false;
         });
+
+        _ = TestAllToolsAsync();
     }
 
     [RelayCommand]

@@ -133,6 +133,29 @@
                 </Border>
             </StackPanel>
 
+            <!-- Git -->
+            <StackPanel Spacing="6">
+                <TextBlock Text="GIT" Classes="section" Margin="0" />
+                <Border CornerRadius="{DynamicResource RadiusLg}" ClipToBounds="True">
+                    <Border Background="{DynamicResource BgSurface}" Padding="0">
+                        <DockPanel>
+                            <Border DockPanel.Dock="Left" Width="3"
+                                    Background="{DynamicResource AccentDefault}" />
+                            <Border Padding="12,10">
+                                <StackPanel Spacing="10">
+                                    <DockPanel>
+                                        <TextBlock Text="Hide .mterminal" Classes="label"
+                                                   VerticalAlignment="Center" Width="120" />
+                                        <ToggleSwitch IsChecked="{Binding GitHideMTerminalDir}"
+                                                      OnContent="On" OffContent="Off" />
+                                    </DockPanel>
+                                </StackPanel>
+                            </Border>
+                        </DockPanel>
+                    </Border>
+                </Border>
+            </StackPanel>
+
         </StackPanel>
 
         <!-- ═══════════════ TAB: Profiles ═══════════════ -->
