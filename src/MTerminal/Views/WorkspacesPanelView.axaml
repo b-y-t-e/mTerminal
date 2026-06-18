@@ -17,24 +17,29 @@
                      Background="Transparent"
                      Margin="3, 4">
                 <ListBox.ItemTemplate>
-                    <DataTemplate DataType="m:Workspace">
-                        <DockPanel Margin="0,0,0, 0">
-                           <!-- <Button DockPanel.Dock="Right"
-                                    Content="&#215;" Classes="ghost"
-                                    Command="{Binding #WorkspaceList.((vm:WorkspacesPanelViewModel)DataContext).RemoveWorkspaceCommand}"
-                                    CommandParameter="{Binding}"
-                                    VerticalAlignment="Center"
-                                    ToolTip.Tip="Remove workspace" />-->
-                            <StackPanel Spacing="1">
-                                <TextBlock Text="{Binding Name}" FontWeight="Medium"
-                                           Foreground="{DynamicResource TextPrimary}" />
+                    <DataTemplate DataType="vm:WorkspaceItemViewModel">
+                        <StackPanel Spacing="1">
+                            <TextBlock Text="{Binding Name}" FontWeight="Medium"
+                                       Foreground="{DynamicResource TextPrimary}" />
+                            <DockPanel>
+                                <StackPanel DockPanel.Dock="Right"
+                                            Orientation="Horizontal" Spacing="3"
+                                            IsVisible="{Binding BranchName, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                            VerticalAlignment="Center"
+                                            Margin="6,0,0,0">
+                                    <mi:MaterialIcon Kind="SourceBranch" Width="10" Height="10"
+                                                     Foreground="{DynamicResource AccentDefault}" />
+                                    <TextBlock Text="{Binding BranchName}"
+                                               FontSize="{DynamicResource FontXs}"
+                                               Foreground="{DynamicResource AccentDefault}" />
+                                </StackPanel>
                                 <TextBlock Text="{Binding DirectoryPath}"
                                            Foreground="{DynamicResource TextMuted}"
                                            FontSize="{DynamicResource UiFontSizeSm}"
                                            TextTrimming="CharacterEllipsis"
                                            Opacity="0.8" />
-                            </StackPanel>
-                        </DockPanel>
+                            </DockPanel>
+                        </StackPanel>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>

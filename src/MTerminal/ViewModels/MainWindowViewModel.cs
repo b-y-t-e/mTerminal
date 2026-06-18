@@ -37,7 +37,7 @@ public partial class MainWindowViewModel : ObservableObject
         _workspacesPanel.PropertyChanged += (_, e) =>
         {
             if (e.PropertyName == nameof(WorkspacesPanelViewModel.SelectedWorkspace))
-                SwitchToWorkspace(_workspacesPanel.SelectedWorkspace);
+                SwitchToWorkspace(_workspacesPanel.SelectedWorkspace?.Workspace);
         };
 
         if (_workspacesPanel.Workspaces.Count > 0)
@@ -60,6 +60,7 @@ public partial class MainWindowViewModel : ObservableObject
         foreach (var vm in _workspaceCache.Values)
             vm.Dispose();
         _workspaceCache.Clear();
+        _workspacesPanel.Dispose();
     }
 
     private void SwitchToWorkspace(Workspace? workspace)

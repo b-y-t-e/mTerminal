@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MTerminal.Models;
@@ -8,15 +9,16 @@ using MTerminal.Services;
 
 namespace MTerminal.ViewModels;
 
-public partial class WorkspacesPanelViewModel : ObservableObject
+public partial class WorkspacesPanelViewModel : ObservableObject, IDisposable
 {
     private readonly WorkspaceService _workspaceService;
     private readonly SettingsService? _settingsService;
+    private readonly DispatcherTimer _branchTimer;
 
-    public ObservableCollection<Workspace> Workspaces { get; } = [];
+    public ObservableCollection<WorkspaceItemViewModel> Workspaces { get; } = [];
 
     [ObservableProperty]
-    private Workspace? _selectedWorkspace;
+    private WorkspaceItemViewModel? _selectedWorkspace;
 
     [ObservableProperty]
     private string _fontFamily;
@@ -40,7 +42,31 @@ public partial class WorkspacesPanelViewModel : ObservableObject
             _settingsService.SettingsChanged += OnSettingsChanged;
 
         foreach (var w in workspaceService.Workspaces.OrderBy(w => w.Name, StringComparer.OrdinalIgnoreCase))
-            Workspaces.Add(w);
+            Workspaces.Add(new WorkspaceItemViewModel(w));
+
+        _branchTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(30) };
+        _branchTimer.Tick += async (_, _) =>
+        {
+            try { await RefreshAllBranchesAsync(); }
+            catch (Exception ex) { System.Diagnostics.Trace.TraceWarning("Branch refresh failed: {0}", ex.Message); }
+        };
+        _branchTimer.Start();
+
+        _ = RefreshAllBranchesAsync();
+    }
+
+    private async Task RefreshAllBranchesAsync()
+    {
+        foreach (var item in Workspaces.ToList())
+        {
+            try
+            {
+                var branch = await GitService.GetBranchNameAsync(item.DirectoryPath);
+                if (branch != item.BranchName)
+                    item.BranchName = branch;
+            }
+            catch (Exception ex) { Trace.TraceWarning("Branch lookup failed for {0}: {1}", item.DirectoryPath, ex.Message); }
+        }
     }
 
     private void OnSettingsChanged()
@@ -59,17 +85,21 @@ public partial class WorkspacesPanelViewModel : ObservableObject
         if (string.IsNullOrEmpty(path)) return;
 
         var workspace = _workspaceService.AddWorkspace(path);
+        var item = new WorkspaceItemViewModel(workspace);
         var index = 0;
-        while (index < Workspaces.Count && string.Compare(Workspaces[index].Name, workspace.Name, StringComparison.OrdinalIgnoreCase) < 0)
+        while (index < Workspaces.Count && string.Compare(Workspaces[index].Name, item.Name, StringComparison.OrdinalIgnoreCase) < 0)
             index++;
-        Workspaces.Insert(index, workspace);
-        SelectedWorkspace = workspace;
+        Workspaces.Insert(index, item);
+        SelectedWorkspace = item;
+
+        try { item.BranchName = await GitService.GetBranchNameAsync(item.DirectoryPath); }
+        catch (Exception ex) { Trace.TraceWarning("Branch lookup failed: {0}", ex.Message); }
     }
 
     [RelayCommand]
-    private void OpenInFileManager(Workspace workspace)
+    private void OpenInFileManager(WorkspaceItemViewModel item)
     {
-        var path = workspace.DirectoryPath;
+        var path = item.DirectoryPath;
         if (!Directory.Exists(path)) return;
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -81,17 +111,24 @@ public partial class WorkspacesPanelViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task RemoveWorkspaceAsync(Workspace workspace)
+    private async Task RemoveWorkspaceAsync(WorkspaceItemViewModel item)
     {
         if (ConfirmAction != null)
         {
-            var confirmed = await ConfirmAction($"Remove workspace \"{workspace.Name}\"?");
+            var confirmed = await ConfirmAction($"Remove workspace \"{item.Name}\"?");
             if (!confirmed) return;
         }
 
-        _workspaceService.RemoveWorkspace(workspace.Id);
-        Workspaces.Remove(workspace);
-        if (SelectedWorkspace == workspace)
+        _workspaceService.RemoveWorkspace(item.Id);
+        Workspaces.Remove(item);
+        if (SelectedWorkspace == item)
             SelectedWorkspace = Workspaces.FirstOrDefault();
+    }
+
+    public void Dispose()
+    {
+        _branchTimer.Stop();
+        if (_settingsService != null)
+            _settingsService.SettingsChanged -= OnSettingsChanged;
     }
 }

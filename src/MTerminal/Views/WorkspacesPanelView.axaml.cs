@@ -31,7 +31,7 @@ public partial class WorkspacesPanelView : UserControl
         if (DataContext is not WorkspacesPanelViewModel vm) return;
 
         var item = (e.Source as Visual)?.FindAncestorOfType<ListBoxItem>();
-        if (item?.DataContext is not Workspace workspace) return;
+        if (item?.DataContext is not WorkspaceItemViewModel workspaceItem) return;
 
         var menu = new ContextMenu
         {
@@ -41,14 +41,14 @@ public partial class WorkspacesPanelView : UserControl
                 {
                     Header = "Show in Explorer",
                     Command = vm.OpenInFileManagerCommand,
-                    CommandParameter = workspace
+                    CommandParameter = workspaceItem
                 },
                 new Separator(),
                 new MenuItem
                 {
                     Header = "Remove",
                     Command = vm.RemoveWorkspaceCommand,
-                    CommandParameter = workspace
+                    CommandParameter = workspaceItem
                 }
             }
         };
