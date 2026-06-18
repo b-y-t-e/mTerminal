@@ -2,9 +2,11 @@ using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+using MTerminal.Services;
 using MTerminal.ViewModels;
 
 namespace MTerminal.Views;
@@ -105,6 +107,110 @@ public partial class TodoTileView : UserControl
             var idx = IndexOfItem(vm, id);
             FocusItemAt(Math.Min(vm.Items.Count - 1, idx + 10));
             e.Handled = true;
+        }
+        else if (e.Key == Key.V && e.KeyModifiers == KeyModifiers.Control)
+        {
+            HandleImagePaste(e, vm, id);
+        }
+    }
+
+    private async void HandleImagePaste(KeyEventArgs e, TodoTileViewModel vm, string id)
+    {
+        e.Handled = true;
+        try
+        {
+            var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+            if (clipboard == null) return;
+
+            var bitmap = await ImagePasteService.TryGetClipboardBitmapAsync(clipboard);
+            if (bitmap == null)
+            {
+                var text = await clipboard.TryGetTextAsync();
+                if (text == null) return;
+
+                var lines = text.Split('\n', StringSplitOptions.None);
+                if (lines.Length > 1)
+                    PasteMultiline(vm, id, lines);
+                else
+                    PasteSingleLine(id, text);
+                return;
+            }
+
+            using (bitmap)
+            {
+                var dir = Path.GetDirectoryName(vm.FilePath) ?? ".";
+                var fileName = ImagePasteService.SaveBitmapToDirectory(bitmap, dir);
+                vm.SetItemImage(id, Path.Combine(dir, fileName));
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Trace.TraceWarning("TodoTile paste failed: {0}", ex.Message);
+        }
+    }
+
+    private void PasteMultiline(TodoTileViewModel vm, string id, string[] lines)
+    {
+        var idx = IndexOfItem(vm, id);
+        if (idx < 0) return;
+
+        var tb = FindTextBoxByTag(id);
+        var current = tb?.Text ?? "";
+        var caret = tb?.CaretIndex ?? current.Length;
+        int selStart = tb?.SelectionStart ?? caret;
+        int selEnd = tb?.SelectionEnd ?? caret;
+        int from = Math.Min(selStart, selEnd);
+        int to = Math.Max(selStart, selEnd);
+        if (selStart == selEnd) { from = caret; to = caret; }
+
+        var before = current[..from];
+        var after = current[to..];
+
+        var firstLine = lines[0].TrimEnd('\r');
+        if (!string.IsNullOrWhiteSpace(firstLine) || !string.IsNullOrEmpty(before))
+            vm.Items[idx].Text = before + firstLine;
+
+        var insertAt = idx + 1;
+        string? lastNewId = null;
+        for (int i = 1; i < lines.Length; i++)
+        {
+            var lineText = lines[i].TrimEnd('\r');
+            if (i == lines.Length - 1)
+                lineText += after;
+            if (string.IsNullOrWhiteSpace(lineText))
+                continue;
+            lastNewId = vm.InsertItemAfter(insertAt - 1);
+            var newIdx = IndexOfItem(vm, lastNewId);
+            if (newIdx >= 0)
+                vm.Items[newIdx].Text = lineText;
+            insertAt = newIdx >= 0 ? newIdx + 1 : insertAt + 1;
+        }
+
+        if (lastNewId != null)
+            Dispatcher.UIThread.Post(() => FocusItemById(lastNewId), DispatcherPriority.Background);
+    }
+
+    private void PasteSingleLine(string id, string text)
+    {
+        var tb = FindTextBoxByTag(id);
+        if (tb == null) return;
+
+        var selStart = tb.SelectionStart;
+        var selEnd = tb.SelectionEnd;
+        var current = tb.Text ?? "";
+
+        if (selStart != selEnd)
+        {
+            var from = Math.Min(selStart, selEnd);
+            var to = Math.Max(selStart, selEnd);
+            tb.Text = current[..from] + text + current[to..];
+            tb.CaretIndex = from + text.Length;
+        }
+        else
+        {
+            var caret = tb.CaretIndex;
+            tb.Text = current.Insert(caret, text);
+            tb.CaretIndex = caret + text.Length;
         }
     }
 

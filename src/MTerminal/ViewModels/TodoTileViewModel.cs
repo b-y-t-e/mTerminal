@@ -12,6 +12,7 @@ namespace MTerminal.ViewModels;
 public partial class TodoTileViewModel : ObservableObject, IFileContent, IDisposable
 {
     private static readonly Regex MdLineRegex = new(@"^(?:- )?\[([ xX])\] (.*)$", RegexOptions.Compiled);
+    private static readonly Regex ImageLinkRegex = new(@"\s*!\[[^\]]*\]\(([^)]+)\)\s*$", RegexOptions.Compiled);
 
     [ObservableProperty]
     private string _fontFamily;
@@ -213,19 +214,48 @@ public partial class TodoTileViewModel : ObservableObject, IFileContent, IDispos
             }), null, AppDefaults.SaveDebounceMs, Timeout.Infinite);
     }
 
-    private static List<TodoItem> ParseMarkdown(string[] lines)
+    public void SetItemImage(string id, string absolutePath)
     {
+        for (int i = 0; i < Items.Count; i++)
+        {
+            if (Items[i].Id == id)
+            {
+                Items[i].ImagePath = absolutePath;
+                ScheduleSave();
+                return;
+            }
+        }
+    }
+
+    private List<TodoItem> ParseMarkdown(string[] lines)
+    {
+        var baseDir = Path.GetDirectoryName(_filePath) ?? ".";
         var items = new List<TodoItem>();
         foreach (var line in lines)
         {
             var match = MdLineRegex.Match(line);
             if (match.Success)
             {
+                var text = match.Groups[2].Value;
+                string? imagePath = null;
+
+                var imgMatch = ImageLinkRegex.Match(text);
+                if (imgMatch.Success)
+                {
+                    var imgFile = imgMatch.Groups[1].Value;
+                    var resolved = Path.IsPathRooted(imgFile)
+                        ? imgFile
+                        : Path.Combine(baseDir, imgFile);
+                    imagePath = resolved;
+                    text = text[..imgMatch.Index].TrimEnd();
+                }
+
                 items.Add(new TodoItem
                 {
                     Id = Guid.NewGuid().ToString("N"),
-                    Text = match.Groups[2].Value,
-                    IsDone = match.Groups[1].Value != " "
+                    Text = text,
+                    IsDone = match.Groups[1].Value != " ",
+                    ImagePath = imagePath
                 });
             }
         }
@@ -248,7 +278,17 @@ public partial class TodoTileViewModel : ObservableObject, IFileContent, IDispos
 
     private void SaveToFile(List<TodoItem> snapshot, string path)
     {
-        var lines = snapshot.Select(item => $"[{(item.IsDone ? "x" : " ")}] {item.Text}");
+        var baseDir = Path.GetDirectoryName(path) ?? ".";
+        var lines = snapshot.Select(item =>
+        {
+            var line = $"[{(item.IsDone ? "x" : " ")}] {item.Text}";
+            if (!string.IsNullOrEmpty(item.ImagePath))
+            {
+                var relative = Path.GetRelativePath(baseDir, item.ImagePath);
+                line += $" ![]({relative.Replace('\\', '/')})";
+            }
+            return line;
+        });
         var w = _watcher;
         if (w != null) w.EnableRaisingEvents = false;
         FileHelper.WriteWithRetry(path, p => File.WriteAllLines(p, lines));

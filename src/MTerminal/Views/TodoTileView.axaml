@@ -3,8 +3,13 @@
              xmlns:vm="using:MTerminal.ViewModels"
              xmlns:m="using:MTerminal.Models"
              xmlns:mi="using:Material.Icons.Avalonia"
+             xmlns:v="using:MTerminal.Views"
              x:Class="MTerminal.Views.TodoTileView"
              x:DataType="vm:TodoTileViewModel">
+
+    <UserControl.Resources>
+        <v:FilePathToBitmapConverter x:Key="FilePathToBitmap" />
+    </UserControl.Resources>
 
     <UserControl.Styles>
         <!-- Item row — tight, borderless -->
@@ -84,27 +89,35 @@
                 <DataTemplate x:DataType="m:TodoItem">
                     <Border Classes="todo-item"
                             Padding="{Binding $parent[ItemsControl].((vm:TodoTileViewModel)DataContext).ItemPadding}">
-                        <DockPanel>
-                            <Button DockPanel.Dock="Right"
-                                    Classes="ghost todo-delete"
-                                    Command="{Binding $parent[ItemsControl].((vm:TodoTileViewModel)DataContext).RemoveItemCommand}"
-                                    CommandParameter="{Binding Id}"
-                                    ToolTip.Tip="Remove">
-                                <mi:MaterialIcon Kind="Close" Width="12" Height="12" />
-                            </Button>
-                            <Viewbox Width="{Binding $parent[ItemsControl].((vm:TodoTileViewModel)DataContext).CheckSize}"
-                                     Height="{Binding $parent[ItemsControl].((vm:TodoTileViewModel)DataContext).CheckSize}"
-                                     VerticalAlignment="Center">
-                                <CheckBox Classes="todo-check"
-                                          IsChecked="{Binding IsDone, Mode=OneWay}"
-                                          Command="{Binding $parent[ItemsControl].((vm:TodoTileViewModel)DataContext).ToggleItemCommand}"
-                                          CommandParameter="{Binding Id}" />
-                            </Viewbox>
-                            <TextBox Classes="todo-inline"
-                                     Classes.todo-done="{Binding IsDone}"
-                                     Text="{Binding Text, Mode=TwoWay}"
-                                     Tag="{Binding Id}" />
-                        </DockPanel>
+                        <StackPanel>
+                            <DockPanel>
+                                <Button DockPanel.Dock="Right"
+                                        Classes="ghost todo-delete"
+                                        Command="{Binding $parent[ItemsControl].((vm:TodoTileViewModel)DataContext).RemoveItemCommand}"
+                                        CommandParameter="{Binding Id}"
+                                        ToolTip.Tip="Remove">
+                                    <mi:MaterialIcon Kind="Close" Width="12" Height="12" />
+                                </Button>
+                                <Viewbox Width="{Binding $parent[ItemsControl].((vm:TodoTileViewModel)DataContext).CheckSize}"
+                                         Height="{Binding $parent[ItemsControl].((vm:TodoTileViewModel)DataContext).CheckSize}"
+                                         VerticalAlignment="Center">
+                                    <CheckBox Classes="todo-check"
+                                              IsChecked="{Binding IsDone, Mode=OneWay}"
+                                              Command="{Binding $parent[ItemsControl].((vm:TodoTileViewModel)DataContext).ToggleItemCommand}"
+                                              CommandParameter="{Binding Id}" />
+                                </Viewbox>
+                                <TextBox Classes="todo-inline"
+                                         Classes.todo-done="{Binding IsDone}"
+                                         Text="{Binding Text, Mode=TwoWay}"
+                                         Tag="{Binding Id}" />
+                            </DockPanel>
+                            <Image Source="{Binding ImagePath, Converter={StaticResource FilePathToBitmap}}"
+                                   IsVisible="{Binding ImagePath, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                   MaxWidth="300" MaxHeight="200"
+                                   Stretch="Uniform"
+                                   Margin="28,4,0,4"
+                                   HorizontalAlignment="Left" />
+                        </StackPanel>
                     </Border>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
