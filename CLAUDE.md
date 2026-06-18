@@ -64,11 +64,35 @@ Persystencja profilu w layout: `TileNode.UserProfileId` → przy deserializacji 
 
 ## Settings UI
 
-Dialog Settings jako modal overlay z responsywnym rozmiarem (50% szerokości / 80% wysokości okna, min 420×400). Dwie zakładki:
+Dialog Settings jako modal overlay z responsywnym rozmiarem (50% szerokości / 80% wysokości okna, min 420×400). Trzy zakładki:
 - **General** — Default Shell, Appearance (theme, color theme, font), Terminal (font)
 - **Profiles** — CRUD profili shella (lista + inline edit z akcentowym borderem)
+- **AI Tools** — autodetekcja CLI AI coding tools, test wersji, custom tools
 
-`SettingsViewModel.SelectedTab` steruje widocznością zakładek. Style tab-buttons: `settings-tab` / `settings-tab-active` w `Controls.axaml`.
+`SettingsViewModel.SelectedTab` steruje widocznością zakładek (0=General, 1=Profiles, 2=AI Tools). Style tab-buttons: `settings-tab` / `settings-tab-active` w `Controls.axaml`.
+
+## AI Tools
+
+Zakładka AI Tools w Settings wykrywa zainstalowane CLI AI coding tools i pozwala zarządzać custom tools.
+
+**Modele:** `AiToolInfo` (runtime DTO z detekcji), `UserAiTool` (persystowany custom tool z Id/Name/BinaryName/VersionArgs/CustomPath).
+
+**AiToolDetector** (statyczny, wzorowany na `ShellDetector`):
+- `Detect(customPaths, userTools)` — skanuje PATH + znane domowe lokalizacje (`~/.local/bin`, `~/go/bin`, `~/.{tool}/bin`, `%APPDATA%/npm`, `~/.cargo/bin`) z rozszerzeniami `.exe`/`.cmd`/`.bat` na Windows. Custom paths mają priorytet nad auto-detect. User tools mergowane z wbudowaną listą 18 narzędzi.
+- `TestAsync(AiToolInfo)` — uruchamia version command z 5s timeout, zwraca pierwszą linię stdout.
+- `FindInHomeDirs` — fallback gdy narzędzie nie jest na systemowym PATH (GUI app nie widzi ścieżek z shell profile).
+
+**AiToolViewModel** — MVVM wrapper z niezależnymi komendami per narzędzie (TestCommand, OpenFolderCommand, BrowsePathCommand, OpenUrlCommand, DeleteCommand). `BrowseFile` callback podpięty z View (file picker). `OnCustomPathSet` callback zapisuje do settings.
+
+**Lazy loading:** Detekcja uruchamiana przy pierwszym wejściu na tab AI Tools (`OnSelectedTabChanged`), nie przy starcie aplikacji.
+
+**Sortowanie:** Zainstalowane narzędzia na górze (alfabetycznie), niewykryte pod spodem (alfabetycznie).
+
+**Persystencja w AppSettings:**
+- `CustomAiToolPaths` (Dict<string,string>) — nadpisane ścieżki dla wbudowanych narzędzi
+- `CustomAiTools` (List<UserAiTool>) — user-defined tools z CRUD w UI
+
+**UI karty narzędzia:** Left status strip (3px, zielony/szary), nazwa + wersja, binary w monospace + ścieżka, badge (CUSTOM/NOT FOUND), przyciski (delete/browse/folder/url/test). "Add Custom Tool" jako `add-row` na końcu listy.
 
 ## Restart shell
 
@@ -87,7 +111,7 @@ Dialog Settings jako modal overlay z responsywnym rozmiarem (50% szerokości / 8
 ## Persystencja
 
 - `%APPDATA%/MTerminal/` (Windows) lub `~/.config/MTerminal/` (Linux)
-- `settings.json` — ustawienia (fonty, theme terminala, default shell, shell profiles, stan okna)
+- `settings.json` — ustawienia (fonty, theme terminala, default shell, shell profiles, custom AI tool paths/tools, stan okna)
 - `workspaces.json` — lista workspace'ów (id, nazwa, ścieżka)
 - `workspaces/{id}.json` — layout tile'ów per workspace (shell name, user profile id, tile name)
 - `logs/` — logi aplikacji (dzienne pliki, retencja 7 dni)
