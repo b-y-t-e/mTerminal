@@ -62,16 +62,40 @@ public partial class GitTileViewModel : ObservableObject, IDisposable
     private bool _diffTrimIndent = true;
 
     [ObservableProperty]
+    private bool _gitHideMTerminalDir = true;
+
+    [ObservableProperty]
     private bool _diffSkipEmptyLines = true;
 
     [ObservableProperty]
     private CommitLogEntry? _selectedCommit;
 
     [ObservableProperty]
+    private bool _isPushing;
+
+    [ObservableProperty]
+    private bool _isFetching;
+
+    [ObservableProperty]
+    private int _unpushedCount;
+
+    [ObservableProperty]
+    private bool _hasRemote;
+
+    [ObservableProperty]
+    private bool _canUndoLastCommit;
+
+    [ObservableProperty]
+    private bool _showCommitSuggestions;
+
+    [ObservableProperty]
     private string _fontFamily;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DiffFontSize))]
     private double _fontSize;
+
+    public double DiffFontSize => Math.Round(FontSize * 0.8, 1);
 
     [ObservableProperty]
     private double _checkSize = 20.0;
@@ -81,8 +105,11 @@ public partial class GitTileViewModel : ObservableObject, IDisposable
 
     public ObservableCollection<GitFileChange> Changes { get; } = [];
     public ObservableCollection<CommitLogEntry> CommitLog { get; } = [];
+    public ObservableCollection<string> CommitSuggestions { get; } = [];
 
     public Action? TileSettingsChanged { get; set; }
+    public Func<string, string, IEnumerable<string>?, Task<string?>>? PromptInput { get; set; }
+    public Func<string, string, Task>? ShowError { get; set; }
 
     private readonly SettingsService? _settingsService;
     private readonly GitService _gitService;
@@ -103,6 +130,7 @@ public partial class GitTileViewModel : ObservableObject, IDisposable
         _fontFamily = s?.FontFamily ?? AppDefaults.FontFamily;
         _fontSize = s?.FontSize ?? AppDefaults.FontSize;
         _diffTrimIndent = s?.DiffTrimIndent ?? true;
+        _gitHideMTerminalDir = s?.GitHideMTerminalDir ?? true;
         UpdateSizeMetrics();
 
         if (_settingsService != null)
@@ -124,6 +152,11 @@ public partial class GitTileViewModel : ObservableObject, IDisposable
         {
             FontSize = s.FontSize;
             UpdateSizeMetrics();
+        }
+        if (s.GitHideMTerminalDir != GitHideMTerminalDir)
+        {
+            GitHideMTerminalDir = s.GitHideMTerminalDir;
+            Dispatcher.UIThread.Post(async () => { try { await RefreshAsync(); } catch { } });
         }
     }
 
@@ -156,7 +189,11 @@ public partial class GitTileViewModel : ObservableObject, IDisposable
 
             var oldSelected = SelectedChange?.FilePath;
 
-            ReconcileChanges(status.Changes);
+            var changes = GitHideMTerminalDir
+                ? status.Changes.Where(c => !c.FilePath.StartsWith(".mterminal/") && !c.FilePath.StartsWith(".mterminal\\")).ToList()
+                : status.Changes;
+
+            ReconcileChanges(changes);
 
             SelectedChange = (oldSelected != null
                 ? Changes.FirstOrDefault(c => c.FilePath == oldSelected)
@@ -167,6 +204,10 @@ public partial class GitTileViewModel : ObservableObject, IDisposable
                 CommitLog.Add(entry);
 
             StashCount = status.StashCount;
+            UnpushedCount = status.UnpushedCount;
+            HasRemote = status.HasRemote;
+            CanUndoLastCommit = status.CommitLog.Count > 0
+                && (!status.HasRemote || status.UnpushedCount > 0);
 
             _watcher.UpdateIgnoredDirs(await _gitService.GetIgnoredDirsAsync(ct));
             _watcher.Start();
@@ -360,6 +401,15 @@ public partial class GitTileViewModel : ObservableObject, IDisposable
     }
 
     [RelayCommand]
+    private async Task CopyCommitHash(CommitLogEntry? commit)
+    {
+        if (commit == null) return;
+        var clipboard = GetClipboard?.Invoke();
+        if (clipboard == null) return;
+        await clipboard.SetTextAsync(commit.Hash);
+    }
+
+    [RelayCommand]
     private async Task DiscardChanges(object parameter)
     {
         List<GitFileChange> files;
@@ -495,6 +545,118 @@ public partial class GitTileViewModel : ObservableObject, IDisposable
             try { await RefreshAsync(); }
             catch { }
         });
+    }
+
+    [RelayCommand]
+    private async Task PushAsync()
+    {
+        if (IsPushing || string.IsNullOrEmpty(BranchName)) return;
+        IsPushing = true;
+        try
+        {
+            await _gitService.PushAsync(BranchName);
+            await RefreshAsync();
+        }
+        catch (Exception ex)
+        {
+            Trace.TraceWarning("Git push failed: {0}", ex.Message);
+            if (ShowError != null) await ShowError("Push failed", ex.Message);
+        }
+        finally { IsPushing = false; }
+    }
+
+    [RelayCommand]
+    private async Task FetchAsync()
+    {
+        if (IsFetching) return;
+        IsFetching = true;
+        try
+        {
+            await _gitService.FetchAsync();
+            await RefreshAsync();
+        }
+        catch (Exception ex)
+        {
+            Trace.TraceWarning("Git fetch failed: {0}", ex.Message);
+            if (ShowError != null) await ShowError("Fetch failed", ex.Message);
+        }
+        finally { IsFetching = false; }
+    }
+
+    [RelayCommand]
+    private async Task UndoLastCommitAsync()
+    {
+        if (!CanUndoLastCommit) return;
+        if (ConfirmAction != null && !await ConfirmAction("Undo last commit? Changes will be moved back to staging."))
+            return;
+        try
+        {
+            await _gitService.UndoLastCommitAsync();
+            await RefreshAsync();
+        }
+        catch (Exception ex)
+        {
+            Trace.TraceWarning("Git undo commit failed: {0}", ex.Message);
+            if (ShowError != null) await ShowError("Undo failed", ex.Message);
+        }
+    }
+
+    [RelayCommand]
+    private async Task CreateTagAsync(CommitLogEntry? commit)
+    {
+        if (commit == null || PromptInput == null) return;
+        try
+        {
+            var recentTags = await _gitService.GetTagListAsync();
+            var tagName = await PromptInput("Add tag", $"Tag for {commit.Hash[..Math.Min(7, commit.Hash.Length)]}", recentTags);
+            if (string.IsNullOrWhiteSpace(tagName)) return;
+            await _gitService.CreateTagAsync(tagName.Trim(), commit.Hash);
+            await RefreshAsync();
+        }
+        catch (Exception ex)
+        {
+            Trace.TraceWarning("Git create tag failed: {0}", ex.Message);
+            if (ShowError != null) await ShowError("Tag failed", ex.Message);
+        }
+    }
+
+    [RelayCommand]
+    private async Task LoadCommitSuggestionsAsync()
+    {
+        try
+        {
+            var messages = await _gitService.GetRecentMessagesAsync();
+            CommitSuggestions.Clear();
+
+            var top3 = messages
+                .GroupBy(m => m, StringComparer.OrdinalIgnoreCase)
+                .Where(g => g.Count() > 1)
+                .OrderByDescending(g => g.Count())
+                .Take(3)
+                .Select(g => g.Key)
+                .ToList();
+
+            var top3Set = new HashSet<string>(top3, StringComparer.OrdinalIgnoreCase);
+            var recent = messages
+                .Where(m => !top3Set.Contains(m))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Take(10)
+                .ToList();
+
+            foreach (var m in top3) CommitSuggestions.Add(m);
+            foreach (var m in recent) CommitSuggestions.Add(m);
+
+            ShowCommitSuggestions = CommitSuggestions.Count > 0;
+        }
+        catch (Exception ex) { Trace.TraceWarning("Git load suggestions failed: {0}", ex.Message); }
+    }
+
+    [RelayCommand]
+    private void SelectCommitSuggestion(string? message)
+    {
+        if (string.IsNullOrEmpty(message)) return;
+        CommitMessage = message;
+        ShowCommitSuggestions = false;
     }
 
     public void Dispose()

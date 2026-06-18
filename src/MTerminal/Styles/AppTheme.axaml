@@ -32,6 +32,9 @@
     <SolidColorBrush x:Key="DangerSubtle"  Color="#2e1a24" />
     <SolidColorBrush x:Key="DangerText"    Color="#c06878" />
 
+    <!-- Git tags -->
+    <SolidColorBrush x:Key="TagColor"      Color="#6DBF8B" />
+
     <!-- Status -->
     <SolidColorBrush x:Key="StatusSuccess"       Color="#4a9a6a" />
     <SolidColorBrush x:Key="StatusSuccessSubtle"  Color="#1a2e24" />

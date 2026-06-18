@@ -172,6 +172,21 @@
                    LastChildFill="True"
                    Background="{DynamicResource BgSurface}">
 
+            <!-- 0. Branch header — Top -->
+            <Border DockPanel.Dock="Top"
+                    Padding="8,3"
+                    IsVisible="{Binding IsGitRepo}">
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <mi:MaterialIcon Kind="SourceBranch" Width="12" Height="12"
+                                     Foreground="{DynamicResource AccentDefault}" />
+                    <TextBlock Text="{Binding BranchName}"
+                               FontFamily="{DynamicResource UiFontFamily}"
+                               FontSize="{DynamicResource UiFontSizeSm}"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextPrimary}" />
+                </StackPanel>
+            </Border>
+
             <!-- 1. Tab bar — Top -->
             <Border DockPanel.Dock="Top"
                     BorderBrush="{DynamicResource BorderSubtle}"
@@ -180,6 +195,26 @@
                     <StackPanel DockPanel.Dock="Right"
                                 Orientation="Horizontal" Spacing="0"
                                 Margin="0,0,4,0">
+                        <Button Classes="tile-btn"
+                                Command="{Binding FetchCommand}"
+                                ToolTip.Tip="Fetch from remote"
+                                IsVisible="{Binding IsGitRepo}">
+                            <mi:MaterialIcon Kind="CloudDownload" Width="13" Height="13" />
+                        </Button>
+                        <Button Classes="tile-btn"
+                                Command="{Binding PushCommand}"
+                                ToolTip.Tip="Push to remote"
+                                IsVisible="{Binding IsGitRepo}">
+                            <StackPanel Orientation="Horizontal" Spacing="2">
+                                <mi:MaterialIcon Kind="CloudUpload" Width="13" Height="13" />
+                                <TextBlock Text="{Binding UnpushedCount, StringFormat='({0})'}"
+                                           IsVisible="{Binding UnpushedCount}"
+                                           FontFamily="{DynamicResource UiFontFamily}"
+                                           FontSize="{DynamicResource FontXs}"
+                                           Foreground="{DynamicResource TextMuted}"
+                                           VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
                         <Button Classes="tile-btn"
                                 Command="{Binding ToggleDiffPanelCommand}"
                                 ToolTip.Tip="Toggle diff panel">
@@ -240,9 +275,51 @@
                     IsVisible="{Binding IsGitRepo}">
                 <StackPanel Spacing="4"
                             IsVisible="{Binding !ShowHistory}">
-                    <TextBox Classes="commit-summary"
-                             Text="{Binding CommitMessage, Mode=TwoWay}"
-                             PlaceholderText="Summary (required)" />
+                    <Grid>
+                        <TextBox x:Name="CommitSummaryBox"
+                                 Classes="commit-summary"
+                                 Text="{Binding CommitMessage, Mode=TwoWay}"
+                                 Padding="8,5,28,5"
+                                 PlaceholderText="Summary (required)" />
+                        <Button Classes="tile-btn"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                Margin="0,0,2,0"
+                                Command="{Binding LoadCommitSuggestionsCommand}"
+                                ToolTip.Tip="Message suggestions">
+                            <mi:MaterialIcon Kind="ClockOutline" Width="12" Height="12" />
+                        </Button>
+                        <Popup x:Name="CommitSuggestionsPopup"
+                               PlacementTarget="{Binding #CommitSummaryBox}"
+                               Placement="Bottom"
+                               IsOpen="{Binding ShowCommitSuggestions, Mode=TwoWay}"
+                               IsLightDismissEnabled="True"
+                               MaxHeight="220"
+                               MinWidth="200">
+                            <Border Background="{DynamicResource BgElevated}"
+                                    BorderBrush="{DynamicResource BorderSubtle}"
+                                    BorderThickness="1"
+                                    CornerRadius="{DynamicResource RadiusMd}"
+                                    BoxShadow="0 4 16 0 #40000000"
+                                    Padding="2">
+                                <ListBox x:Name="SuggestionsListBox"
+                                         ItemsSource="{Binding CommitSuggestions}"
+                                         Classes="git-log"
+                                         Margin="0">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding}"
+                                                       FontFamily="{DynamicResource UiFontFamily}"
+                                                       FontSize="{DynamicResource UiFontSizeSm}"
+                                                       Foreground="{DynamicResource TextPrimary}"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       MaxWidth="300" />
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </Border>
+                        </Popup>
+                    </Grid>
                     <TextBox Classes="commit-desc"
                              Text="{Binding CommitDescription, Mode=TwoWay}"
                              PlaceholderText="Description" />
@@ -250,6 +327,15 @@
                         <StackPanel DockPanel.Dock="Right"
                                     Orientation="Horizontal" Spacing="3"
                                     VerticalAlignment="Center">
+                            <Button Classes="git-compact"
+                                    Command="{Binding UndoLastCommitCommand}"
+                                    ToolTip.Tip="Undo last commit (soft reset)"
+                                    IsVisible="{Binding CanUndoLastCommit}">
+                                <StackPanel Orientation="Horizontal" Spacing="3">
+                                    <mi:MaterialIcon Kind="UndoVariant" Width="11" Height="11" />
+                                    <TextBlock Text="Undo" />
+                                </StackPanel>
+                            </Button>
                             <Button Classes="git-compact"
                                     Command="{Binding StashCommand}"
                                     ToolTip.Tip="Stash all changes">
@@ -359,7 +445,8 @@
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
-                <ListBox Classes="git-log"
+                <ListBox x:Name="HistoryListBox"
+                         Classes="git-log"
                          IsVisible="{Binding ShowHistory}"
                          ItemsSource="{Binding CommitLog}"
                          SelectedItem="{Binding SelectedCommit}"
@@ -373,8 +460,24 @@
                                            FontSize="{DynamicResource UiFontSizeSm}"
                                            Foreground="{DynamicResource AccentDefault}"
                                            VerticalAlignment="Center"
-                                           Margin="0,0,8,0"
+                                           Margin="0,0,4,0"
                                            Width="52" />
+                                <TextBlock DockPanel.Dock="Left"
+                                           Text="*"
+                                           IsVisible="{Binding IsLocal}"
+                                           FontFamily="{DynamicResource UiFontFamily}"
+                                           FontSize="{DynamicResource UiFontSizeSm}"
+                                           Foreground="{DynamicResource DangerText}"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,4,0" />
+                                <TextBlock DockPanel.Dock="Left"
+                                           Text="{Binding TagsDisplay}"
+                                           IsVisible="{Binding HasTags}"
+                                           FontFamily="{DynamicResource UiFontFamily}"
+                                           FontSize="{DynamicResource FontXs}"
+                                           Foreground="{DynamicResource TagColor}"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,4,0" />
                                 <TextBlock Text="{Binding Message}"
                                            FontFamily="{DynamicResource UiFontFamily}"
                                            FontSize="{DynamicResource UiFontSizeSm}"
@@ -393,8 +496,6 @@
              ══════════════════════ -->
         <GridSplitter x:Name="MainSplitter"
                       Grid.Column="1"
-                      Width="3"
-                      Background="{DynamicResource BorderSubtle}"
                       ResizeBehavior="PreviousAndNext" />
 
         <!-- ══════════════════════════════════════
@@ -489,7 +590,7 @@
                             OldContent="{Binding OldContent}"
                             NewContent="{Binding NewContent}"
                             EditorFontFamily="{Binding FontFamily}"
-                            EditorFontSize="{Binding FontSize}"
+                            EditorFontSize="{Binding DiffFontSize}"
                             SplitMode="{Binding SplitDiff}"
                             SkipEmptyLines="{Binding DiffSkipEmptyLines}" />
             </DockPanel>

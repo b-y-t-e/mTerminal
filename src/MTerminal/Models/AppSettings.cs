@@ -20,6 +20,7 @@ public sealed class AppSettings
     public List<UserAiTool> CustomAiTools { get; set; } = [];
 
     public bool DiffTrimIndent { get; set; } = true;
+    public bool GitHideMTerminalDir { get; set; } = true;
 
     public string? LastWorkspaceId { get; set; }
     public double WorkspacesPanelWidth { get; set; } = 240;

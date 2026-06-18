@@ -26,6 +26,9 @@ public partial class GitTileView : UserControl
         AddHandler(KeyDownEvent, OnFilesListKeyDown, Avalonia.Interactivity.RoutingStrategies.Tunnel);
         FilesListBox.AddHandler(Avalonia.Input.InputElement.PointerReleasedEvent, OnFilesPointerReleased,
             Avalonia.Interactivity.RoutingStrategies.Tunnel);
+        HistoryListBox.AddHandler(Avalonia.Input.InputElement.PointerReleasedEvent, OnHistoryPointerReleased,
+            Avalonia.Interactivity.RoutingStrategies.Tunnel);
+        SuggestionsListBox.SelectionChanged += OnSuggestionSelected;
     }
 
     private void OnFilesListKeyDown(object? sender, KeyEventArgs e)
@@ -98,6 +101,24 @@ public partial class GitTileView : UserControl
                 "Confirm", message, ButtonEnum.YesNo, Icon.Question);
             var result = await box.ShowWindowDialogAsync(window);
             return result == ButtonResult.Yes;
+        };
+
+        vm.PromptInput = async (title, placeholder, suggestions) =>
+        {
+            var window = TopLevel.GetTopLevel(this) as Window;
+            if (window == null) return null;
+
+            var dialog = new InputDialog(title, placeholder, suggestions);
+            return await dialog.ShowDialog<string?>(window);
+        };
+
+        vm.ShowError = async (title, message) =>
+        {
+            var window = TopLevel.GetTopLevel(this) as Window;
+            if (window == null) return;
+
+            var box = MessageBoxManager.GetMessageBoxStandard(title, message, ButtonEnum.Ok, Icon.Error);
+            await box.ShowWindowDialogAsync(window);
         };
 
         FontFamily = new FontFamily(vm.FontFamily);
@@ -175,6 +196,42 @@ public partial class GitTileView : UserControl
 
         if (layoutChanged)
             ApplyLayout(showDiff);
+    }
+
+    private void OnHistoryPointerReleased(object? sender, PointerReleasedEventArgs e)
+    {
+        if (e.InitialPressMouseButton != MouseButton.Right) return;
+        if (DataContext is not GitTileViewModel vm) return;
+
+        var item = (e.Source as Visual)?.FindAncestorOfType<ListBoxItem>();
+        if (item?.DataContext is not CommitLogEntry commit) return;
+
+        var menu = new ContextMenu();
+        menu.Items.Add(new MenuItem
+        {
+            Header = "Add tag...",
+            Command = vm.CreateTagCommand,
+            CommandParameter = commit
+        });
+        menu.Items.Add(new Separator());
+        menu.Items.Add(new MenuItem
+        {
+            Header = "Copy commit hash",
+            Command = vm.CopyCommitHashCommand,
+            CommandParameter = commit
+        });
+        menu.Open(item);
+        e.Handled = true;
+    }
+
+    private void OnSuggestionSelected(object? sender, SelectionChangedEventArgs e)
+    {
+        if (e.AddedItems is not { Count: > 0 }) return;
+        if (e.AddedItems[0] is not string msg) return;
+        if (DataContext is not GitTileViewModel vm) return;
+
+        vm.SelectCommitSuggestionCommand.Execute(msg);
+        SuggestionsListBox.SelectedIndex = -1;
     }
 
     private void ApplyLayout(bool showDiff)

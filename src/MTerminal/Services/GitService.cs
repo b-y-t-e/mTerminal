@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using MTerminal.Models;
 
 namespace MTerminal.Services;
@@ -9,6 +10,8 @@ public sealed class GitStatusResult
     public List<GitFileChange> Changes { get; init; } = [];
     public List<CommitLogEntry> CommitLog { get; init; } = [];
     public int StashCount { get; init; }
+    public int UnpushedCount { get; init; }
+    public bool HasRemote { get; init; }
 }
 
 public sealed class DiffResult
@@ -18,7 +21,7 @@ public sealed class DiffResult
     public string NewContent { get; init; } = "";
 }
 
-public sealed class GitService(string workingDirectory)
+public sealed partial class GitService(string workingDirectory)
 {
     private readonly GitCommandRunner _git = new(workingDirectory);
 
@@ -30,25 +33,47 @@ public sealed class GitService(string workingDirectory)
         if (checkResult.Trim() != "true")
             return new GitStatusResult { IsGitRepo = false };
 
-        var branchTask = _git.RunAsync("rev-parse --abbrev-ref HEAD", ct);
+        var branch = (await _git.RunAsync("rev-parse --abbrev-ref HEAD", ct)).Trim();
+
         var statusTask = _git.RunAsync("-c core.quotePath=false status --porcelain -uall", ct);
         var logTask = _git.RunAsync("log --oneline -30", ct);
         var stashTask = _git.RunAsync("stash list", ct);
+        var tagsTask = GetTagsMapInternalAsync(ct);
+        var unpushedTask = GetUnpushedHashesAsync(branch, ct);
 
-        await Task.WhenAll(branchTask, statusTask, logTask, stashTask);
+        await Task.WhenAll(statusTask, logTask, stashTask, tagsTask, unpushedTask);
         ct.ThrowIfCancellationRequested();
 
         var changes = ParseChanges(await statusTask);
         var commitLog = ParseCommitLog(await logTask);
         var stashLines = (await stashTask).Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        var tagsMap = await tagsTask;
+        var unpushedResult = await unpushedTask;
+        var unpushedHashes = unpushedResult.Hashes;
+        var hasRemote = unpushedResult.HasRemote;
+
+        var decoratedLog = commitLog.Select(e =>
+        {
+            var shortHash = e.Hash[..Math.Min(7, e.Hash.Length)];
+            var entryTags = tagsMap.TryGetValue(shortHash, out var t) ? t : [];
+            return new CommitLogEntry
+            {
+                Hash = e.Hash,
+                Message = e.Message,
+                Tags = entryTags,
+                IsPushed = !hasRemote || !unpushedHashes.Contains(shortHash)
+            };
+        }).ToList();
 
         return new GitStatusResult
         {
             IsGitRepo = true,
-            BranchName = (await branchTask).Trim(),
+            BranchName = branch,
             Changes = changes,
-            CommitLog = commitLog,
-            StashCount = stashLines.Length
+            CommitLog = decoratedLog,
+            StashCount = stashLines.Length,
+            UnpushedCount = unpushedHashes.Count,
+            HasRemote = hasRemote
         };
     }
 
@@ -170,5 +195,132 @@ public sealed class GitService(string workingDirectory)
                 : new CommitLogEntry { Hash = line, Message = "" });
         }
         return entries;
+    }
+
+    private async Task<Dictionary<string, List<string>>> GetTagsMapInternalAsync(CancellationToken ct)
+    {
+        // %(*objectname:short) dereferences annotated tags to the commit hash; empty for lightweight tags
+        var output = await _git.RunAsync(
+            "tag -l --format=\"%(objectname:short) %(*objectname:short) %(refname:short)\"",
+            throwOnError: false, ct);
+        var map = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+        foreach (var line in output.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var parts = line.Trim().Trim('"').Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length < 2) continue;
+
+            string tagHash, deref, tagName;
+            if (parts.Length >= 3)
+            {
+                tagHash = parts[0];
+                deref = parts[1];
+                tagName = parts[2];
+            }
+            else
+            {
+                tagHash = parts[0];
+                deref = "";
+                tagName = parts[1];
+            }
+
+            var commitHash = deref.Length > 0 ? deref : tagHash;
+            if (!map.TryGetValue(commitHash, out var list))
+            {
+                list = [];
+                map[commitHash] = list;
+            }
+            list.Add(tagName);
+        }
+        return map;
+    }
+
+    private readonly record struct UnpushedResult(HashSet<string> Hashes, bool HasRemote);
+
+    private async Task<UnpushedResult> GetUnpushedHashesAsync(string branch, CancellationToken ct)
+    {
+        if (branch == "HEAD") // detached HEAD
+            return new UnpushedResult([], false);
+
+        var upstream = (await _git.RunAsync("rev-parse --abbrev-ref @{upstream}", throwOnError: false, ct)).Trim();
+        if (string.IsNullOrWhiteSpace(upstream) || upstream.Contains(' '))
+            return new UnpushedResult([], false);
+
+        var output = await _git.RunAsync($"log \"{upstream.Trim()}..HEAD\" --oneline", throwOnError: false, ct);
+        var hashes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var line in output.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var spaceIdx = line.IndexOf(' ');
+            var hash = spaceIdx > 0 ? line[..spaceIdx] : line.Trim();
+            if (hash.Length > 0)
+                hashes.Add(hash[..Math.Min(7, hash.Length)]);
+        }
+        return new UnpushedResult(hashes, true);
+    }
+
+    public async Task PushAsync(string branch, CancellationToken ct = default)
+    {
+        var upstream = (await _git.RunAsync("rev-parse --abbrev-ref @{upstream}", throwOnError: false, ct)).Trim();
+        if (string.IsNullOrWhiteSpace(upstream) || upstream.Contains(' '))
+            await _git.RunAsync($"push -u origin \"{branch}\"", ct);
+        else
+            await _git.RunAsync("push", ct);
+    }
+
+    public async Task FetchAsync(CancellationToken ct = default)
+    {
+        await _git.RunAsync("fetch --all --prune", ct);
+    }
+
+    public async Task CreateTagAsync(string tagName, string commitHash, CancellationToken ct = default)
+    {
+        if (!IsValidTagName(tagName))
+            throw new ArgumentException($"Invalid tag name: {tagName}");
+        if (!IsValidCommitHash(commitHash))
+            throw new ArgumentException($"Invalid commit hash: {commitHash}");
+        await _git.RunAsync($"tag \"{tagName}\" {commitHash}", ct);
+    }
+
+    private static bool IsValidTagName(string name) =>
+        !string.IsNullOrWhiteSpace(name) && TagNameRegex().IsMatch(name);
+
+    private static bool IsValidCommitHash(string hash) =>
+        !string.IsNullOrWhiteSpace(hash) && hash.Length <= 40 && CommitHashRegex().IsMatch(hash);
+
+    [GeneratedRegex(@"^[a-zA-Z0-9._/\-]+$")]
+    private static partial Regex TagNameRegex();
+
+    [GeneratedRegex(@"^[a-f0-9]+$")]
+    private static partial Regex CommitHashRegex();
+
+    public async Task UndoLastCommitAsync(CancellationToken ct = default)
+    {
+        await _git.RunAsync("reset --soft HEAD~1", ct);
+    }
+
+    public async Task<List<string>> GetRecentMessagesAsync(int count = 50, CancellationToken ct = default)
+    {
+        var output = await _git.RunAsync($"log --format=%s -{count}", throwOnError: false, ct);
+        return output.Split('\n', StringSplitOptions.RemoveEmptyEntries)
+                     .Select(l => l.Trim())
+                     .Where(l => l.Length > 0)
+                     .ToList();
+    }
+
+    public async Task<List<string>> GetTagListAsync(int count = 10, CancellationToken ct = default)
+    {
+        var output = await _git.RunAsync("tag -l --sort=-creatordate", throwOnError: false, ct);
+        return output.Split('\n', StringSplitOptions.RemoveEmptyEntries)
+                     .Select(l => l.Trim())
+                     .Where(l => l.Length > 0)
+                     .Take(count)
+                     .ToList();
+    }
+
+    public static async Task<string> GetBranchNameAsync(string directory)
+    {
+        var runner = new GitCommandRunner(directory);
+        var result = await runner.RunAsync("rev-parse --abbrev-ref HEAD", throwOnError: false);
+        var branch = result.Trim();
+        return string.IsNullOrEmpty(branch) || branch.Contains(' ') ? "" : branch;
     }
 }
