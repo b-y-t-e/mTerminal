@@ -9,6 +9,8 @@ public partial class TerminalTileViewModel : ObservableObject, IDisposable
 {
     public string WorkingDirectory { get; }
     public ShellProfile Shell { get; }
+    public string? StartupScript { get; }
+    public string? UserProfileId { get; }
 
     [ObservableProperty]
     private string _fontFamily;
@@ -24,12 +26,15 @@ public partial class TerminalTileViewModel : ObservableObject, IDisposable
     internal Control? CachedControl { get; set; }
     internal bool IsLaunched { get; set; }
 
-    public TerminalTileViewModel(string workingDirectory, ShellProfile? shell, SettingsService settingsService)
+    public TerminalTileViewModel(string workingDirectory, ShellProfile? shell, SettingsService settingsService,
+        string? startupScript = null, string? userProfileId = null)
     {
         _settingsService = settingsService;
         var s = _settingsService.Settings;
         WorkingDirectory = workingDirectory;
         Shell = shell ?? ShellDetector.ResolveDefault(s);
+        StartupScript = string.IsNullOrWhiteSpace(startupScript) ? null : startupScript;
+        UserProfileId = userProfileId;
         _theme = TerminalTheme.GetByName(s.ColorThemeName);
         _fontFamily = s.TerminalFontFamily;
         _fontSize = s.TerminalFontSize;

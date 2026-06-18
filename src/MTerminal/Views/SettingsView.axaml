@@ -1,59 +1,216 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:MTerminal.ViewModels"
+             xmlns:mi="using:Material.Icons.Avalonia"
              x:Class="MTerminal.Views.SettingsView"
              x:DataType="vm:SettingsViewModel">
 
-    <StackPanel Spacing="12" Margin="16">
-        <!-- Default Shell -->
-        <StackPanel Spacing="4">
-            <TextBlock Text="Default Shell" Classes="label" />
-            <ComboBox Classes="setting"
-                      SelectedItem="{Binding SelectedShell}"
-                      ItemsSource="{Binding ShellOptions}" />
-            <StackPanel Spacing="4" IsVisible="{Binding IsCustomShell}">
-                <TextBox Classes="setting"
-                         Text="{Binding CustomShellPath}"
-                         PlaceholderText="Path to executable" />
-                <TextBox Classes="setting"
-                         Text="{Binding CustomShellArgs}"
-                         PlaceholderText="Arguments (optional)" />
+    <Panel>
+
+        <!-- ═══════════════ TAB: General ═══════════════ -->
+        <StackPanel Spacing="20" Margin="20,16,20,24"
+                    IsVisible="{Binding IsGeneralTab}">
+
+            <!-- Default Shell -->
+            <StackPanel Spacing="8">
+                <TextBlock Text="DEFAULT SHELL" Classes="section" Margin="0" />
+                <Border Background="{DynamicResource BgSurface}"
+                        CornerRadius="{DynamicResource RadiusLg}"
+                        Padding="14,12">
+                    <StackPanel Spacing="10">
+                        <ComboBox Classes="setting"
+                                  SelectedItem="{Binding SelectedShell}"
+                                  ItemsSource="{Binding ShellOptions}" />
+                        <StackPanel Spacing="8" IsVisible="{Binding IsCustomShell}">
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Path" Classes="label" />
+                                <TextBox Classes="setting"
+                                         Text="{Binding CustomShellPath}"
+                                         PlaceholderText="Path to executable" />
+                            </StackPanel>
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Arguments" Classes="label" />
+                                <TextBox Classes="setting"
+                                         Text="{Binding CustomShellArgs}"
+                                         PlaceholderText="Arguments (optional)" />
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
             </StackPanel>
-        </StackPanel>
-        
-        <!-- Appearance -->
-        <TextBlock Text="APPEARANCE" Classes="section" />
-        <StackPanel Spacing="4">
-            <TextBlock Text="Color Theme" Classes="label" />
-            <ComboBox Classes="setting"
-                      SelectedItem="{Binding ColorThemeName}"
-                      ItemsSource="{x:Static vm:SettingsViewModel.ColorThemeNames}" />
-            <TextBlock Text="Font Family" Classes="label" />
-            <TextBox Classes="setting"
-                     Text="{Binding FontFamily}"
-                     PlaceholderText="Font family" />
-            <TextBlock Text="Font Size" Classes="label" />
-            <NumericUpDown Classes="setting"
-                           Value="{Binding FontSize}" Minimum="8" Maximum="48" Increment="1" />
 
-            <TextBlock Text="Theme" Classes="label" />
-            <ComboBox Classes="setting"
-                      SelectedItem="{Binding Theme}"
-                      ItemsSource="{x:Static vm:SettingsViewModel.Themes}" />
-        </StackPanel>
-        
-        <!-- Terminal -->
-        <TextBlock Text="TERMINAL" Classes="section" />
-        <StackPanel Spacing="4">
+            <!-- Appearance -->
+            <StackPanel Spacing="8">
+                <TextBlock Text="APPEARANCE" Classes="section" Margin="0" />
+                <Border Background="{DynamicResource BgSurface}"
+                        CornerRadius="{DynamicResource RadiusLg}"
+                        Padding="14,12">
+                    <StackPanel Spacing="12">
+                        <DockPanel>
+                            <TextBlock Text="Theme" Classes="label"
+                                       VerticalAlignment="Center" Width="110" />
+                            <ComboBox Classes="setting"
+                                      SelectedItem="{Binding Theme}"
+                                      ItemsSource="{x:Static vm:SettingsViewModel.Themes}" />
+                        </DockPanel>
+                        <DockPanel>
+                            <TextBlock Text="Color Theme" Classes="label"
+                                       VerticalAlignment="Center" Width="110" />
+                            <ComboBox Classes="setting"
+                                      SelectedItem="{Binding ColorThemeName}"
+                                      ItemsSource="{x:Static vm:SettingsViewModel.ColorThemeNames}" />
+                        </DockPanel>
+                        <DockPanel>
+                            <TextBlock Text="Font Family" Classes="label"
+                                       VerticalAlignment="Center" Width="110" />
+                            <TextBox Classes="setting"
+                                     Text="{Binding FontFamily}"
+                                     PlaceholderText="Font family" />
+                        </DockPanel>
+                        <DockPanel>
+                            <TextBlock Text="Font Size" Classes="label"
+                                       VerticalAlignment="Center" Width="110" />
+                            <NumericUpDown Classes="setting"
+                                           Value="{Binding FontSize}" Minimum="8" Maximum="48" Increment="1" />
+                        </DockPanel>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
 
-            <TextBlock Text="Font Family" Classes="label" />
-            <TextBox Classes="setting"
-                     Text="{Binding TerminalFontFamily}"
-                     PlaceholderText="Font family" />
-            <TextBlock Text="Font Size" Classes="label" />
-            <NumericUpDown Classes="setting"
-                           Value="{Binding TerminalFontSize}" Minimum="8" Maximum="48" Increment="1" />
+            <!-- Terminal -->
+            <StackPanel Spacing="8">
+                <TextBlock Text="TERMINAL" Classes="section" Margin="0" />
+                <Border Background="{DynamicResource BgSurface}"
+                        CornerRadius="{DynamicResource RadiusLg}"
+                        Padding="14,12">
+                    <StackPanel Spacing="12">
+                        <DockPanel>
+                            <TextBlock Text="Font Family" Classes="label"
+                                       VerticalAlignment="Center" Width="110" />
+                            <TextBox Classes="setting"
+                                     Text="{Binding TerminalFontFamily}"
+                                     PlaceholderText="Font family" />
+                        </DockPanel>
+                        <DockPanel>
+                            <TextBlock Text="Font Size" Classes="label"
+                                       VerticalAlignment="Center" Width="110" />
+                            <NumericUpDown Classes="setting"
+                                           Value="{Binding TerminalFontSize}" Minimum="8" Maximum="48" Increment="1" />
+                        </DockPanel>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
         </StackPanel>
 
-    </StackPanel>
+        <!-- ═══════════════ TAB: Profiles ═══════════════ -->
+        <StackPanel Spacing="16" Margin="20,16,20,24"
+                    IsVisible="{Binding IsProfilesTab}">
+
+            <!-- Header with Add button -->
+            <DockPanel>
+                <TextBlock Text="SHELL PROFILES" Classes="section" Margin="0"
+                           VerticalAlignment="Center" />
+                <Button DockPanel.Dock="Right" Classes="outlined"
+                        Command="{Binding AddProfileCommand}"
+                        Padding="10,5"
+                        IsVisible="{Binding !IsEditingProfile}">
+                    <StackPanel Orientation="Horizontal" Spacing="5">
+                        <mi:MaterialIcon Kind="Plus" Width="14" Height="14" />
+                        <TextBlock Text="Add" />
+                    </StackPanel>
+                </Button>
+            </DockPanel>
+
+            <!-- Profile list -->
+            <ItemsControl ItemsSource="{Binding ShellProfiles}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Background="{DynamicResource BgSurface}"
+                                CornerRadius="{DynamicResource RadiusLg}"
+                                Padding="14,10" Margin="0,0,0,4">
+                            <DockPanel>
+                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="2"
+                                            VerticalAlignment="Center">
+                                    <Button Classes="tile-btn"
+                                            Command="{Binding $parent[ItemsControl].((vm:SettingsViewModel)DataContext).EditProfileCommand}"
+                                            CommandParameter="{Binding}"
+                                            ToolTip.Tip="Edit">
+                                        <mi:MaterialIcon Kind="Pencil" Width="14" Height="14" />
+                                    </Button>
+                                    <Button Classes="tile-btn-close"
+                                            Command="{Binding $parent[ItemsControl].((vm:SettingsViewModel)DataContext).DeleteProfileCommand}"
+                                            CommandParameter="{Binding}"
+                                            ToolTip.Tip="Delete">
+                                        <mi:MaterialIcon Kind="Close" Width="14" Height="14" />
+                                    </Button>
+                                </StackPanel>
+                                <StackPanel VerticalAlignment="Center" Spacing="2">
+                                    <TextBlock Text="{Binding Name}"
+                                               FontWeight="Medium"
+                                               Foreground="{DynamicResource TextPrimary}" />
+                                    <TextBlock Text="{Binding ShellName}"
+                                               FontSize="{DynamicResource FontSm}"
+                                               Foreground="{DynamicResource TextMuted}" />
+                                </StackPanel>
+                            </DockPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <!-- Empty state -->
+            <TextBlock Text="No profiles yet. Add one to quickly launch terminals with a specific shell and startup script."
+                       Foreground="{DynamicResource TextMuted}"
+                       FontSize="{DynamicResource FontSm}"
+                       TextWrapping="Wrap"
+                       Margin="0,4"
+                       IsVisible="{Binding !ShellProfiles.Count}" />
+
+            <!-- Edit / Add panel -->
+            <Border IsVisible="{Binding IsEditingProfile}"
+                    Background="{DynamicResource BgSurface}"
+                    CornerRadius="{DynamicResource RadiusLg}"
+                    BorderBrush="{DynamicResource AccentDefault}"
+                    BorderThickness="{DynamicResource BorderThin}"
+                    Padding="16,14">
+                <StackPanel Spacing="12">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Name" Classes="label" />
+                        <TextBox Classes="setting"
+                                 Text="{Binding EditProfileName}"
+                                 PlaceholderText="Profile name" />
+                    </StackPanel>
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Shell" Classes="label" />
+                        <ComboBox Classes="setting"
+                                  SelectedItem="{Binding EditProfileShell}"
+                                  ItemsSource="{Binding ProfileShellOptions}" />
+                    </StackPanel>
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Startup Script" Classes="label" />
+                        <TextBox Classes="setting"
+                                 Text="{Binding EditProfileScript}"
+                                 AcceptsReturn="True"
+                                 TextWrapping="Wrap"
+                                 MinHeight="72"
+                                 MaxHeight="140"
+                                 PlaceholderText="Commands to run after shell starts..." />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
+                        <Button Classes="accent"
+                                Command="{Binding SaveProfileCommand}"
+                                Content="Save"
+                                Padding="16,5" />
+                        <Button Classes="toolbar"
+                                Command="{Binding CancelEditProfileCommand}"
+                                Content="Cancel"
+                                Padding="12,5" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+
+    </Panel>
 </UserControl>

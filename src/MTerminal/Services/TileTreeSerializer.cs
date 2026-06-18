@@ -7,6 +7,7 @@ namespace MTerminal.Services;
 public sealed class TileTreeSerializer
 {
     private readonly TileFactory _tileFactory;
+    private readonly SettingsService _settingsService;
     private readonly IReadOnlyList<ShellProfile> _availableShells;
     private readonly string _workingDirectory;
     private readonly Func<TileContentType, string> _nameAllocator;
@@ -21,6 +22,7 @@ public sealed class TileTreeSerializer
         Action<LeafTileNodeViewModel> configureLeaf)
     {
         _tileFactory = tileFactory;
+        _settingsService = settingsService;
         _availableShells = availableShells;
         _workingDirectory = workingDirectory;
         _nameAllocator = nameAllocator;
@@ -37,6 +39,7 @@ public sealed class TileTreeSerializer
                 ContentType = leaf.ContentType,
                 TileName = leaf.TileName,
                 ShellName = (leaf.Content as TerminalTileViewModel)?.Shell.Name,
+                UserProfileId = (leaf.Content as TerminalTileViewModel)?.UserProfileId,
                 NoteFilePath = (leaf.Content as NoteTileViewModel)?.FilePath,
                 TodoFilePath = (leaf.Content as TodoTileViewModel)?.FilePath,
                 Settings = TileFactory.SerializeSettings(leaf)
@@ -61,7 +64,9 @@ public sealed class TileTreeSerializer
 
             var tileName = dto.TileName ?? _nameAllocator(dto.ContentType);
             var leaf = new LeafTileNodeViewModel(dto.ContentType, content, _workingDirectory,
-                (t, d) => _tileFactory.CreateContent(t, d), _nameAllocator)
+                (t, d) => _tileFactory.CreateContent(t, d), _nameAllocator,
+                () => _settingsService.Settings.ShellProfiles,
+                (profile, dir) => _tileFactory.CreateContent(TileContentType.Terminal, dir, profile))
             {
                 TileName = tileName,
                 LayoutChanged = scheduleSave

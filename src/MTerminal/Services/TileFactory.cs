@@ -28,6 +28,15 @@ public sealed class TileFactory
         };
     }
 
+    public ObservableObject CreateContent(TileContentType type, string workingDir, UserShellProfile userProfile)
+    {
+        if (type != TileContentType.Terminal)
+            return CreateContent(type, workingDir);
+
+        var shell = ShellDetector.ResolveFromUserProfile(userProfile, _settingsService.Settings);
+        return new TerminalTileViewModel(workingDir, shell, _settingsService, userProfile.StartupScript, userProfile.Id);
+    }
+
     public ObservableObject? CreateFromDto(TileNode dto, string workingDir, IReadOnlyList<ShellProfile> availableShells,
         Action? scheduleSave = null)
     {
@@ -43,7 +52,7 @@ public sealed class TileFactory
             TileContentType.Git =>
                 CreateGitFromDto(workingDir, dto.Settings, scheduleSave),
             TileContentType.Terminal =>
-                CreateTerminalFromDto(workingDir, dto.ShellName, availableShells),
+                CreateTerminalFromDto(workingDir, dto.ShellName, dto.UserProfileId, availableShells),
             _ => CreateContent(dto.ContentType, workingDir)
         };
     }
@@ -97,8 +106,17 @@ public sealed class TileFactory
         return git;
     }
 
-    private ObservableObject CreateTerminalFromDto(string workingDir, string? shellName, IReadOnlyList<ShellProfile> availableShells)
+    private ObservableObject CreateTerminalFromDto(string workingDir, string? shellName, string? userProfileId,
+        IReadOnlyList<ShellProfile> availableShells)
     {
+        if (userProfileId != null)
+        {
+            var profile = _settingsService.Settings.ShellProfiles
+                .FirstOrDefault(p => p.Id == userProfileId);
+            if (profile != null)
+                return CreateContent(TileContentType.Terminal, workingDir, profile);
+        }
+
         ShellProfile? shell = null;
         if (shellName != null)
             shell = availableShells.FirstOrDefault(s =>

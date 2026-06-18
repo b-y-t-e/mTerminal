@@ -15,6 +15,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        SizeChanged += (_, _) => UpdateSettingsDialogSize();
     }
 
     public void BindWindowState(SettingsService settingsService)
@@ -51,6 +52,8 @@ public partial class MainWindow : Window
             {
                 if (e.PropertyName == nameof(MainWindowViewModel.IsPanelOpen))
                     UpdatePanelVisibility(vm.IsPanelOpen);
+                else if (e.PropertyName == nameof(MainWindowViewModel.IsSettingsOpen))
+                    UpdateSettingsDialogSize();
             };
             UpdatePanelVisibility(vm.IsPanelOpen);
         }
@@ -97,6 +100,14 @@ public partial class MainWindow : Window
     private void SettingsDialog_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
         e.Handled = true;
+    }
+
+    private void UpdateSettingsDialogSize()
+    {
+        if (SettingsDialog == null) return;
+        var bounds = ClientSize;
+        SettingsDialog.Width = Math.Max(420, bounds.Width * 0.5);
+        SettingsDialog.Height = Math.Max(400, bounds.Height * 0.8);
     }
 
     protected override void OnClosing(WindowClosingEventArgs e)

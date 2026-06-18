@@ -13,6 +13,8 @@ public sealed class AppSettings
     public string CustomShellPath { get; set; } = "";
     public string CustomShellArgs { get; set; } = "";
 
+    public List<UserShellProfile> ShellProfiles { get; set; } = [];
+
     public bool DiffTrimIndent { get; set; } = true;
 
     public string? LastWorkspaceId { get; set; }

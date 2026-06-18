@@ -51,6 +51,10 @@
     <TransformOperations x:Key="VerticalSmallScrollThumbScaleTransform">none</TransformOperations>
     <TransformOperations x:Key="HorizontalSmallScrollThumbScaleTransform">none</TransformOperations>
 
+    <!-- Tab indices -->
+    <x:Int32 x:Key="Zero">0</x:Int32>
+    <x:Int32 x:Key="One">1</x:Int32>
+
     <Thickness x:Key="BorderThin">1</Thickness>
     <Thickness x:Key="BorderBottom">0,0,0,1</Thickness>
     <Thickness x:Key="BorderTop">0,1,0,0</Thickness>

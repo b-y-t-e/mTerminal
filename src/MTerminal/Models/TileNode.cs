@@ -9,6 +9,7 @@ public sealed class TileNode
     public TileContentType ContentType { get; set; }
     public string? TileName { get; set; }
     public string? ShellName { get; set; }
+    public string? UserProfileId { get; set; }
     public string? NoteFilePath { get; set; }
     public string? TodoFilePath { get; set; }
 

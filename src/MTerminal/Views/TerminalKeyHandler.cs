@@ -1,5 +1,3 @@
-using System.Reflection;
-using System.Text;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -17,8 +15,8 @@ namespace MTerminal.Views;
 // - WriterStream is not exposed publicly (requires reflection)
 public sealed class TerminalKeyHandler
 {
+    private TerminalControl? _terminalControl;
     private TerminalView? _terminalView;
-    private FieldInfo? _ptyField;
     private string? _lastSelectedText;
     private bool _registered;
 
@@ -26,8 +24,8 @@ public sealed class TerminalKeyHandler
     {
         var tv = tc.GetVisualDescendants().OfType<TerminalView>().FirstOrDefault();
         if (tv == null || tv == _terminalView) return;
+        _terminalControl = tc;
         _terminalView = tv;
-        _ptyField = typeof(TerminalView).GetField("_ptyConnection", BindingFlags.NonPublic | BindingFlags.Instance);
 
         // Pre-capture selection text on mouse release — TerminalView clears it on
         // the next keydown (even Ctrl alone), so it's gone before Ctrl+C arrives.
@@ -56,7 +54,7 @@ public sealed class TerminalKeyHandler
     {
         try
         {
-            if (_terminalView == null) return;
+            if (_terminalControl == null || _terminalView == null) return;
 
             if (e.Key == Key.V && e.KeyModifiers == KeyModifiers.Control)
             {
@@ -69,7 +67,7 @@ public sealed class TerminalKeyHandler
             else if (e.KeyModifiers == KeyModifiers.Alt && TryGetChar(e, out var ch))
             {
                 e.Handled = true;
-                WriteToPty($"\x1b{ch}");
+                PtyWriter.Write(_terminalControl, $"\x1b{ch}");
             }
             else if (e.Key == Key.C && e.KeyModifiers == KeyModifiers.Control && !string.IsNullOrEmpty(_lastSelectedText))
             {
@@ -84,19 +82,6 @@ public sealed class TerminalKeyHandler
         {
             System.Diagnostics.Trace.TraceWarning("Terminal key handler failed: {0}", ex.Message);
         }
-    }
-
-    // Reflection: TerminalView._ptyConnection.WriterStream is the only way to
-    // write directly to PTY — SendToPtyAsync and WriterStream are both private.
-    private void WriteToPty(string data)
-    {
-        var pty = _ptyField?.GetValue(_terminalView);
-        if (pty == null) return;
-        var stream = pty.GetType().GetProperty("WriterStream")?.GetValue(pty) as System.IO.Stream;
-        if (stream == null) return;
-        var bytes = Encoding.UTF8.GetBytes(data);
-        stream.Write(bytes);
-        stream.Flush();
     }
 
     private static bool TryGetChar(KeyEventArgs e, out char ch)

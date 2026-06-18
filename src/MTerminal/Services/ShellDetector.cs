@@ -77,6 +77,14 @@ public static class ShellDetector
             ?? new ShellProfile { Name = "Default", ExecutablePath = OperatingSystem.IsWindows() ? "powershell.exe" : "bash" };
     }
 
+    public static ShellProfile ResolveFromUserProfile(UserShellProfile userProfile, AppSettings settings)
+    {
+        var detected = Detect();
+        var match = detected.FirstOrDefault(s =>
+            s.Name.Equals(userProfile.ShellName, StringComparison.OrdinalIgnoreCase));
+        return match ?? ResolveDefault(settings);
+    }
+
     private static string? FindExecutable(string name)
     {
         var pathEnv = Environment.GetEnvironmentVariable("PATH") ?? "";

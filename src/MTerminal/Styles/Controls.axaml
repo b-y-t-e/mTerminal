@@ -180,6 +180,37 @@
         <Setter Property="Background" Value="{DynamicResource InteractivePressed}" />
     </Style>
 
+    <!-- ======== BUTTON: settings-tab ======== -->
+    <Style Selector="Button.settings-tab">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource TextMuted}" />
+        <Setter Property="Padding" Value="12,8" />
+        <Setter Property="Margin" Value="0,0,2,0" />
+        <Setter Property="CornerRadius" Value="0" />
+        <Setter Property="BorderThickness" Value="0,0,0,2" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="FontSize" Value="{DynamicResource FontMd}" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    <Style Selector="Button.settings-tab:pointerover">
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondary}" />
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="Button.settings-tab:pressed">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="Button.settings-tab.settings-tab-active">
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AccentDefault}" />
+    </Style>
+    <Style Selector="Button.settings-tab.settings-tab-active:pointerover">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="Button.settings-tab.settings-tab-active:pressed">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+
     <!-- ======== TEXT: section header ======== -->
     <Style Selector="TextBlock.section">
         <Setter Property="FontSize" Value="{DynamicResource FontSm}" />

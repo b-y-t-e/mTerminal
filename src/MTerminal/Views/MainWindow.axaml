@@ -74,10 +74,11 @@
             <Panel IsVisible="{Binding IsSettingsOpen}">
                 <Border Background="{DynamicResource OverlayModal}"
                         PointerPressed="SettingsOverlay_PointerPressed" />
-                <Border HorizontalAlignment="Center"
+                <Border x:Name="SettingsDialog"
+                        HorizontalAlignment="Center"
                         VerticalAlignment="Center"
-                        MaxWidth="380"
-                        MaxHeight="600"
+                        MinWidth="420"
+                        MinHeight="400"
                         CornerRadius="{DynamicResource RadiusXl}"
                         Background="{DynamicResource BgElevated}"
                         BorderBrush="{DynamicResource BorderSubtle}"
@@ -86,16 +87,27 @@
                         Padding="0"
                         PointerPressed="SettingsDialog_PointerPressed">
                     <DockPanel>
-                        <Border DockPanel.Dock="Top" Padding="16,12"
+                        <Border DockPanel.Dock="Top" Padding="16,10,16,0"
                                 BorderBrush="{DynamicResource BorderSubtle}"
                                 BorderThickness="{DynamicResource BorderBottom}">
                             <DockPanel>
                                 <Button DockPanel.Dock="Right" Classes="toolbar"
-                                        Command="{Binding ToggleSettingsCommand}">
+                                        Command="{Binding ToggleSettingsCommand}"
+                                        VerticalAlignment="Top" Margin="0,2,0,0">
                                     <mi:MaterialIcon Kind="Close" Width="16" Height="16" />
                                 </Button>
-                                <TextBlock Text="SETTINGS" Classes="section"
-                                           VerticalAlignment="Center" Margin="0" />
+                                <StackPanel Orientation="Horizontal" Spacing="0">
+                                    <Button Classes="settings-tab"
+                                            Classes.settings-tab-active="{Binding Settings.IsGeneralTab}"
+                                            Command="{Binding Settings.SelectTabCommand}"
+                                            CommandParameter="{StaticResource Zero}"
+                                            Content="General" />
+                                    <Button Classes="settings-tab"
+                                            Classes.settings-tab-active="{Binding Settings.IsProfilesTab}"
+                                            Command="{Binding Settings.SelectTabCommand}"
+                                            CommandParameter="{StaticResource One}"
+                                            Content="Profiles" />
+                                </StackPanel>
                             </DockPanel>
                         </Border>
                         <ScrollViewer VerticalScrollBarVisibility="Auto"

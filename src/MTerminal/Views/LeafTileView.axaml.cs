@@ -66,6 +66,8 @@ public partial class LeafTileView : UserControl
             UpdateContentDisplay(leaf);
         else if (e.PropertyName == nameof(LeafTileNodeViewModel.IsActive))
             UpdateActiveIndicator(leaf.IsActive);
+        else if (e.PropertyName == nameof(LeafTileNodeViewModel.IsChoosingProfile))
+            UpdateChooserVisibility(leaf);
     }
 
     private void UpdateActiveIndicator(bool isActive)
@@ -80,7 +82,8 @@ public partial class LeafTileView : UserControl
     {
         if (leaf.ContentType == TileContentType.Empty)
         {
-            ContentChooser.IsVisible = true;
+            ContentChooser.IsVisible = !leaf.IsChoosingProfile;
+            ProfileChooser.IsVisible = leaf.IsChoosingProfile;
             ContentHost.IsVisible = false;
             ContentHost.Children.Clear();
             _currentContentVm = null;
@@ -88,9 +91,17 @@ public partial class LeafTileView : UserControl
         else
         {
             ContentChooser.IsVisible = false;
+            ProfileChooser.IsVisible = false;
             ContentHost.IsVisible = true;
             SetContent(leaf.Content);
         }
+    }
+
+    private void UpdateChooserVisibility(LeafTileNodeViewModel leaf)
+    {
+        if (leaf.ContentType != TileContentType.Empty) return;
+        ContentChooser.IsVisible = !leaf.IsChoosingProfile;
+        ProfileChooser.IsVisible = leaf.IsChoosingProfile;
     }
 
     private void SetContent(object? contentVm)

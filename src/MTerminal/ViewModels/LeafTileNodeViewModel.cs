@@ -19,26 +19,37 @@ public partial class LeafTileNodeViewModel : TileNodeViewModel
     [ObservableProperty]
     private bool _isActive;
 
+    [ObservableProperty]
+    private bool _isChoosingProfile;
+
     partial void OnTileNameChanged(string value) => NotifyLayoutChanged();
 
     private static event Action<LeafTileNodeViewModel>? ActiveTileChanged;
 
     private readonly Func<TileContentType, string, ObservableObject>? _contentFactory;
     private readonly Func<TileContentType, string>? _nameFactory;
+    private readonly Func<IReadOnlyList<UserShellProfile>>? _profilesProvider;
+    private readonly Func<UserShellProfile, string, ObservableObject>? _profileContentFactory;
     private readonly string _workingDirectory;
+
+    public IReadOnlyList<UserShellProfile>? AvailableProfiles { get; private set; }
 
     public Action<TileNodeViewModel>? RootReplaced { get; set; }
     public Action? RootCleared { get; set; }
 
     public LeafTileNodeViewModel(TileContentType contentType, ObservableObject? content, string workingDirectory,
         Func<TileContentType, string, ObservableObject>? contentFactory = null,
-        Func<TileContentType, string>? nameFactory = null)
+        Func<TileContentType, string>? nameFactory = null,
+        Func<IReadOnlyList<UserShellProfile>>? profilesProvider = null,
+        Func<UserShellProfile, string, ObservableObject>? profileContentFactory = null)
     {
         _contentType = contentType;
         _content = content;
         _workingDirectory = workingDirectory;
         _contentFactory = contentFactory;
         _nameFactory = nameFactory;
+        _profilesProvider = profilesProvider;
+        _profileContentFactory = profileContentFactory;
         ActiveTileChanged += OnActiveTileChanged;
     }
 
@@ -67,6 +78,49 @@ public partial class LeafTileNodeViewModel : TileNodeViewModel
     {
         if (ContentType != TileContentType.Empty) return;
 
+        if (type == TileContentType.Terminal)
+        {
+            var profiles = _profilesProvider?.Invoke();
+            if (profiles != null && profiles.Count > 0)
+            {
+                AvailableProfiles = profiles;
+                OnPropertyChanged(nameof(AvailableProfiles));
+                IsChoosingProfile = true;
+                return;
+            }
+        }
+
+        CreateContentDirect(type);
+    }
+
+    [RelayCommand]
+    private void SelectDefaultTerminal()
+    {
+        IsChoosingProfile = false;
+        CreateContentDirect(TileContentType.Terminal);
+    }
+
+    [RelayCommand]
+    private void SelectProfile(UserShellProfile profile)
+    {
+        IsChoosingProfile = false;
+        var newContent = _profileContentFactory?.Invoke(profile, _workingDirectory);
+        if (newContent == null) return;
+
+        Content = newContent;
+        ContentType = TileContentType.Terminal;
+        TileName = _nameFactory?.Invoke(TileContentType.Terminal) ?? "Terminal";
+        NotifyLayoutChanged();
+    }
+
+    [RelayCommand]
+    private void CancelProfileSelection()
+    {
+        IsChoosingProfile = false;
+    }
+
+    private void CreateContentDirect(TileContentType type)
+    {
         var newContent = _contentFactory?.Invoke(type, _workingDirectory);
         if (newContent == null) return;
 
@@ -79,7 +133,8 @@ public partial class LeafTileNodeViewModel : TileNodeViewModel
 
     private void Split(Orientation orientation)
     {
-        var newLeaf = new LeafTileNodeViewModel(TileContentType.Empty, null, _workingDirectory, _contentFactory, _nameFactory)
+        var newLeaf = new LeafTileNodeViewModel(TileContentType.Empty, null, _workingDirectory,
+            _contentFactory, _nameFactory, _profilesProvider, _profileContentFactory)
         {
             TileName = "",
             LayoutChanged = LayoutChanged,

@@ -61,7 +61,10 @@ public partial class WorkspaceViewModel : ObservableObject, IDisposable
     private LeafTileNodeViewModel CreateLeaf(TileContentType type, ObservableObject? content, string tileName)
     {
         var leaf = new LeafTileNodeViewModel(type, content, WorkingDirectory,
-            (t, d) => _tileFactory.CreateContent(t, d), AllocateTileName)
+            (t, d) => _tileFactory.CreateContent(t, d),
+            AllocateTileName,
+            () => _settingsService.Settings.ShellProfiles,
+            (profile, dir) => _tileFactory.CreateContent(TileContentType.Terminal, dir, profile))
         {
             TileName = tileName,
             LayoutChanged = ScheduleSave

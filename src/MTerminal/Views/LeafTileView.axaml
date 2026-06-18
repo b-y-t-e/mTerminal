@@ -121,6 +121,58 @@
                         </StackPanel>
                     </Button>
                 </WrapPanel>
+
+                <!-- Profile chooser -->
+                <WrapPanel x:Name="ProfileChooser"
+                           IsVisible="False"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Orientation="Horizontal">
+                    <Button Classes="chooser-card"
+                            Command="{Binding CancelProfileSelectionCommand}">
+                        <StackPanel Spacing="4" HorizontalAlignment="Center">
+                            <mi:MaterialIcon Kind="ArrowLeft" Width="22" Height="22"
+                                             HorizontalAlignment="Center"
+                                             Foreground="{DynamicResource TextMuted}" />
+                            <TextBlock Text="Back" FontSize="{DynamicResource FontSm}"
+                                       HorizontalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="chooser-card"
+                            Command="{Binding SelectDefaultTerminalCommand}">
+                        <StackPanel Spacing="4" HorizontalAlignment="Center">
+                            <mi:MaterialIcon Kind="Console" Width="22" Height="22"
+                                             HorizontalAlignment="Center"
+                                             Foreground="{DynamicResource TextMuted}" />
+                            <TextBlock Text="Default" FontSize="{DynamicResource FontSm}"
+                                       HorizontalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <ItemsControl x:Name="ProfileItems"
+                                  ItemsSource="{Binding AvailableProfiles}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Classes="chooser-card"
+                                        Command="{Binding $parent[UserControl].((vm:LeafTileNodeViewModel)DataContext).SelectProfileCommand}"
+                                        CommandParameter="{Binding}">
+                                    <StackPanel Spacing="4" HorizontalAlignment="Center">
+                                        <mi:MaterialIcon Kind="ScriptOutline" Width="22" Height="22"
+                                                         HorizontalAlignment="Center"
+                                                         Foreground="{DynamicResource TextMuted}" />
+                                        <TextBlock Text="{Binding Name}" FontSize="{DynamicResource FontSm}"
+                                                   HorizontalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </WrapPanel>
+
                 <Panel x:Name="ContentHost" />
             </Panel>
         </DockPanel>
