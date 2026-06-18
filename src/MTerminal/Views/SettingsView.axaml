@@ -115,62 +115,68 @@
         </StackPanel>
 
         <!-- ═══════════════ TAB: Profiles ═══════════════ -->
-        <StackPanel Spacing="16" Margin="20,16,20,24"
+        <StackPanel Spacing="12" Margin="20,16,20,24"
                     IsVisible="{Binding IsProfilesTab}">
 
-            <!-- Header with Add button -->
-            <DockPanel>
+            <!-- Header -->
+            <DockPanel Margin="0,0,0,2">
                 <TextBlock Text="SHELL PROFILES" Classes="section" Margin="0"
                            VerticalAlignment="Center" />
-                <Button DockPanel.Dock="Right" Classes="outlined"
-                        Command="{Binding AddProfileCommand}"
-                        Padding="10,5"
-                        IsVisible="{Binding !IsEditingProfile}">
-                    <StackPanel Orientation="Horizontal" Spacing="5">
-                        <mi:MaterialIcon Kind="Plus" Width="14" Height="14" />
-                        <TextBlock Text="Add" />
-                    </StackPanel>
-                </Button>
             </DockPanel>
 
             <!-- Profile list -->
             <ItemsControl ItemsSource="{Binding ShellProfiles}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border Background="{DynamicResource BgSurface}"
-                                CornerRadius="{DynamicResource RadiusLg}"
-                                Padding="14,10" Margin="0,0,0,4">
-                            <DockPanel>
-                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="2"
-                                            VerticalAlignment="Center">
-                                    <Button Classes="tile-btn"
-                                            Command="{Binding $parent[ItemsControl].((vm:SettingsViewModel)DataContext).EditProfileCommand}"
-                                            CommandParameter="{Binding}"
-                                            ToolTip.Tip="Edit">
-                                        <mi:MaterialIcon Kind="Pencil" Width="14" Height="14" />
-                                    </Button>
-                                    <Button Classes="tile-btn-close"
-                                            Command="{Binding $parent[ItemsControl].((vm:SettingsViewModel)DataContext).DeleteProfileCommand}"
-                                            CommandParameter="{Binding}"
-                                            ToolTip.Tip="Delete">
-                                        <mi:MaterialIcon Kind="Close" Width="14" Height="14" />
-                                    </Button>
-                                </StackPanel>
-                                <StackPanel VerticalAlignment="Center" Spacing="2">
-                                    <TextBlock Text="{Binding Name}"
-                                               FontWeight="Medium"
-                                               Foreground="{DynamicResource TextPrimary}" />
-                                    <StackPanel Orientation="Horizontal" Spacing="6">
-                                        <TextBlock Text="{Binding ShellName}"
-                                                   FontSize="{DynamicResource FontSm}"
-                                                   Foreground="{DynamicResource TextMuted}" />
-                                        <TextBlock FontSize="{DynamicResource FontSm}"
-                                                   Foreground="{DynamicResource TextMuted}"
-                                                   Opacity="0.6"
-                                                   Text="{Binding ShellName, Converter={x:Static vm:SettingsViewModel.ShellTypeConverter}}" />
-                                    </StackPanel>
-                                </StackPanel>
-                            </DockPanel>
+                        <Border CornerRadius="{DynamicResource RadiusLg}"
+                                ClipToBounds="True"
+                                Margin="0,0,0,3">
+                            <Border Background="{DynamicResource BgSurface}" Padding="0">
+                                <DockPanel>
+                                    <!-- Left accent strip -->
+                                    <Border DockPanel.Dock="Left" Width="3"
+                                            Background="{DynamicResource AccentDefault}" />
+
+                                    <!-- Content -->
+                                    <Border Padding="12,9,10,9">
+                                        <DockPanel>
+                                            <!-- Right: actions -->
+                                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal"
+                                                        Spacing="2" VerticalAlignment="Center">
+                                                <Button Classes="tile-btn"
+                                                        Command="{Binding $parent[ItemsControl].((vm:SettingsViewModel)DataContext).EditProfileCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        ToolTip.Tip="Edit">
+                                                    <mi:MaterialIcon Kind="Pencil" Width="13" Height="13" />
+                                                </Button>
+                                                <Button Classes="tile-btn-close"
+                                                        Command="{Binding $parent[ItemsControl].((vm:SettingsViewModel)DataContext).DeleteProfileCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        ToolTip.Tip="Delete">
+                                                    <mi:MaterialIcon Kind="Close" Width="13" Height="13" />
+                                                </Button>
+                                            </StackPanel>
+
+                                            <!-- Left: info -->
+                                            <StackPanel VerticalAlignment="Center" Spacing="1">
+                                                <TextBlock Text="{Binding Name}"
+                                                           FontWeight="Medium"
+                                                           Foreground="{DynamicResource TextPrimary}" />
+                                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                                    <TextBlock Text="{Binding ShellName}"
+                                                               FontSize="{DynamicResource FontXs}"
+                                                               Foreground="{DynamicResource TextMuted}"
+                                                               FontFamily="Consolas,Cascadia Code,monospace" />
+                                                    <TextBlock FontSize="{DynamicResource FontXs}"
+                                                               Foreground="{DynamicResource TextMuted}"
+                                                               Opacity="0.6"
+                                                               Text="{Binding ShellName, Converter={x:Static vm:SettingsViewModel.ShellTypeConverter}}" />
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </DockPanel>
+                                    </Border>
+                                </DockPanel>
+                            </Border>
                         </Border>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
@@ -184,6 +190,16 @@
                        Margin="0,4"
                        IsVisible="{Binding !ShellProfiles.Count}" />
 
+            <!-- Add Profile row -->
+            <Button Classes="add-row"
+                    Command="{Binding AddProfileCommand}"
+                    IsVisible="{Binding !IsEditingProfile}">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <mi:MaterialIcon Kind="Plus" Width="13" Height="13" />
+                    <TextBlock Text="Add Profile" />
+                </StackPanel>
+            </Button>
+
             <!-- Edit / Add panel -->
             <Border IsVisible="{Binding IsEditingProfile}"
                     Background="{DynamicResource BgSurface}"
@@ -192,23 +208,28 @@
                     BorderThickness="{DynamicResource BorderThin}"
                     Padding="16,14">
                 <StackPanel Spacing="12">
-                    <StackPanel Spacing="4">
-                        <TextBlock Text="Name" Classes="label" />
+                    <TextBlock Text="PROFILE" Classes="section" Margin="0,0,0,2" />
+                    <DockPanel>
+                        <TextBlock Text="Name" Classes="label"
+                                   VerticalAlignment="Center" Width="90" />
                         <TextBox Classes="setting"
                                  Text="{Binding EditProfileName}"
                                  PlaceholderText="Profile name" />
-                    </StackPanel>
-                    <StackPanel Spacing="4">
-                        <TextBlock Text="Shell" Classes="label" />
-                        <ComboBox Classes="setting"
-                                  SelectedItem="{Binding EditProfileShell}"
-                                  ItemsSource="{Binding ProfileShellOptions}" />
-                        <TextBlock Text="{Binding EditProfileShellType, StringFormat='Type: {0}'}"
-                                   FontSize="{DynamicResource FontSm}"
-                                   Foreground="{DynamicResource TextMuted}"
-                                   Margin="2,0,0,0"
-                                   IsVisible="{Binding EditProfileShellType, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-                    </StackPanel>
+                    </DockPanel>
+                    <DockPanel>
+                        <TextBlock Text="Shell" Classes="label"
+                                   VerticalAlignment="Center" Width="90" />
+                        <StackPanel Spacing="4">
+                            <ComboBox Classes="setting"
+                                      SelectedItem="{Binding EditProfileShell}"
+                                      ItemsSource="{Binding ProfileShellOptions}" />
+                            <TextBlock Text="{Binding EditProfileShellType, StringFormat='Type: {0}'}"
+                                       FontSize="{DynamicResource FontSm}"
+                                       Foreground="{DynamicResource TextMuted}"
+                                       Margin="2,0,0,0"
+                                       IsVisible="{Binding EditProfileShellType, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                        </StackPanel>
+                    </DockPanel>
                     <StackPanel Spacing="4">
                         <TextBlock Text="Startup Script" Classes="label" />
                         <TextBox Classes="setting"
@@ -235,11 +256,11 @@
         </StackPanel>
 
         <!-- ═══════════════ TAB: AI Tools ═══════════════ -->
-        <StackPanel Spacing="16" Margin="20,16,20,24"
+        <StackPanel Spacing="12" Margin="20,16,20,24"
                     IsVisible="{Binding IsAiToolsTab}">
 
             <!-- Header -->
-            <DockPanel>
+            <DockPanel Margin="0,0,0,2">
                 <TextBlock Text="AI CODING TOOLS" Classes="section" Margin="0"
                            VerticalAlignment="Center" />
                 <Button DockPanel.Dock="Right" Classes="outlined"
@@ -262,96 +283,181 @@
             <ItemsControl ItemsSource="{Binding AiTools}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border Background="{DynamicResource BgSurface}"
-                                CornerRadius="{DynamicResource RadiusLg}"
-                                Padding="14,10" Margin="0,0,0,4">
-                            <DockPanel>
-                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal"
-                                            Spacing="4" VerticalAlignment="Center">
-                                    <!-- Status badge: Custom -->
-                                    <Border CornerRadius="{DynamicResource RadiusSm}"
-                                            Padding="6,2"
-                                            Background="{DynamicResource StatusSuccessSubtle}"
-                                            IsVisible="{Binding IsCustomPath}">
-                                        <TextBlock Text="Custom" FontSize="{DynamicResource FontXs}"
-                                                   Foreground="{DynamicResource StatusSuccessText}" />
+                        <Border CornerRadius="{DynamicResource RadiusLg}"
+                                ClipToBounds="True"
+                                Margin="0,0,0,3">
+                            <Border Background="{DynamicResource BgSurface}"
+                                    Padding="0">
+                                <DockPanel>
+                                    <!-- Left status strip -->
+                                    <Panel DockPanel.Dock="Left" Width="3">
+                                        <Border Background="{DynamicResource StatusSuccess}"
+                                                IsVisible="{Binding IsInstalled}" />
+                                        <Border Background="{DynamicResource BorderSubtle}"
+                                                IsVisible="{Binding !IsInstalled}" />
+                                    </Panel>
+
+                                    <!-- Content area -->
+                                    <Border Padding="12,9,10,9">
+                                        <DockPanel>
+                                            <!-- Right: actions -->
+                                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal"
+                                                        Spacing="2" VerticalAlignment="Center">
+                                                <!-- Status badge: Custom path -->
+                                                <Border CornerRadius="{DynamicResource RadiusSm}"
+                                                        Padding="6,2"
+                                                        Background="{DynamicResource StatusSuccessSubtle}"
+                                                        IsVisible="{Binding IsCustomPath}">
+                                                    <TextBlock Text="CUSTOM" FontSize="9"
+                                                               FontWeight="SemiBold"
+                                                               LetterSpacing="0.8"
+                                                               Foreground="{DynamicResource StatusSuccessText}" />
+                                                </Border>
+                                                <!-- Status badge: Not Found -->
+                                                <Border CornerRadius="{DynamicResource RadiusSm}"
+                                                        Padding="6,2"
+                                                        Background="{DynamicResource StatusMutedSubtle}"
+                                                        IsVisible="{Binding !IsInstalled}">
+                                                    <TextBlock Text="NOT FOUND" FontSize="9"
+                                                               FontWeight="SemiBold"
+                                                               LetterSpacing="0.8"
+                                                               Foreground="{DynamicResource TextMuted}" />
+                                                </Border>
+                                                <!-- Delete (user-defined only) -->
+                                                <Button Classes="tile-btn-close"
+                                                        Command="{Binding DeleteCommand}"
+                                                        IsVisible="{Binding IsUserDefined}"
+                                                        ToolTip.Tip="Remove custom tool">
+                                                    <mi:MaterialIcon Kind="Close" Width="13" Height="13" />
+                                                </Button>
+                                                <!-- Browse -->
+                                                <Button Classes="tile-btn"
+                                                        Command="{Binding BrowsePathCommand}"
+                                                        ToolTip.Tip="Set custom path">
+                                                    <mi:MaterialIcon Kind="DotsHorizontal" Width="13" Height="13" />
+                                                </Button>
+                                                <!-- Open folder -->
+                                                <Button Classes="tile-btn"
+                                                        Command="{Binding OpenFolderCommand}"
+                                                        IsVisible="{Binding IsInstalled}"
+                                                        ToolTip.Tip="Open folder">
+                                                    <mi:MaterialIcon Kind="FolderOutline" Width="13" Height="13" />
+                                                </Button>
+                                                <!-- Test -->
+                                                <Button Classes="tile-btn"
+                                                        Command="{Binding TestCommand}"
+                                                        IsEnabled="{Binding IsInstalled}"
+                                                        ToolTip.Tip="Test tool">
+                                                    <mi:MaterialIcon Kind="PlayCircleOutline" Width="13" Height="13" />
+                                                </Button>
+                                            </StackPanel>
+
+                                            <!-- Left: info -->
+                                            <StackPanel VerticalAlignment="Center" Spacing="1">
+                                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                                    <TextBlock Text="{Binding Name}"
+                                                               FontWeight="Medium"
+                                                               Foreground="{DynamicResource TextPrimary}" />
+                                                    <TextBlock Text="{Binding DetectedVersion}"
+                                                               FontSize="{DynamicResource FontSm}"
+                                                               Foreground="{DynamicResource TextMuted}"
+                                                               Opacity="0.8"
+                                                               VerticalAlignment="Center"
+                                                               IsVisible="{Binding DetectedVersion, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                                                    <TextBlock Text="testing..."
+                                                               FontSize="{DynamicResource FontSm}"
+                                                               Foreground="{DynamicResource AccentDefault}"
+                                                               FontStyle="Italic"
+                                                               VerticalAlignment="Center"
+                                                               IsVisible="{Binding IsTesting}" />
+                                                </StackPanel>
+                                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                                    <TextBlock Text="{Binding BinaryName}"
+                                                               FontSize="{DynamicResource FontXs}"
+                                                               Foreground="{DynamicResource TextMuted}"
+                                                               FontFamily="Consolas,Cascadia Code,monospace" />
+                                                    <TextBlock Text="·"
+                                                               FontSize="{DynamicResource FontXs}"
+                                                               Foreground="{DynamicResource TextFaint}"
+                                                               VerticalAlignment="Center"
+                                                               IsVisible="{Binding ExecutablePath, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                                                    <TextBlock Text="{Binding ExecutablePath}"
+                                                               FontSize="{DynamicResource FontXs}"
+                                                               Foreground="{DynamicResource TextMuted}"
+                                                               Opacity="0.6"
+                                                               TextTrimming="CharacterEllipsis"
+                                                               ToolTip.Tip="{Binding ExecutablePath}"
+                                                               IsVisible="{Binding ExecutablePath, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </DockPanel>
                                     </Border>
-                                    <!-- Status badge: Installed (auto-detected) -->
-                                    <Border CornerRadius="{DynamicResource RadiusSm}"
-                                            Padding="6,2"
-                                            Background="{DynamicResource StatusSuccessSubtle}">
-                                        <Border.IsVisible>
-                                            <MultiBinding Converter="{x:Static BoolConverters.And}">
-                                                <Binding Path="IsInstalled" />
-                                                <Binding Path="!IsCustomPath" />
-                                            </MultiBinding>
-                                        </Border.IsVisible>
-                                        <TextBlock Text="Installed" FontSize="{DynamicResource FontXs}"
-                                                   Foreground="{DynamicResource StatusSuccessText}" />
-                                    </Border>
-                                    <!-- Status badge: Not Found -->
-                                    <Border CornerRadius="{DynamicResource RadiusSm}"
-                                            Padding="6,2"
-                                            Background="{DynamicResource StatusMutedSubtle}"
-                                            IsVisible="{Binding !IsInstalled}">
-                                        <TextBlock Text="Not Found" FontSize="{DynamicResource FontXs}"
-                                                   Foreground="{DynamicResource TextMuted}" />
-                                    </Border>
-                                    <!-- Browse button -->
-                                    <Button Classes="tile-btn"
-                                            Command="{Binding BrowsePathCommand}"
-                                            ToolTip.Tip="Set custom path">
-                                        <mi:MaterialIcon Kind="DotsHorizontal" Width="14" Height="14" />
-                                    </Button>
-                                    <!-- Open folder button -->
-                                    <Button Classes="tile-btn"
-                                            Command="{Binding OpenFolderCommand}"
-                                            IsVisible="{Binding IsInstalled}"
-                                            ToolTip.Tip="Open folder">
-                                        <mi:MaterialIcon Kind="FolderOutline" Width="14" Height="14" />
-                                    </Button>
-                                    <!-- Test button -->
-                                    <Button Classes="tile-btn"
-                                            Command="{Binding TestCommand}"
-                                            IsEnabled="{Binding IsInstalled}"
-                                            ToolTip.Tip="Test tool">
-                                        <mi:MaterialIcon Kind="PlayCircleOutline" Width="14" Height="14" />
-                                    </Button>
-                                </StackPanel>
-                                <!-- Tool info -->
-                                <StackPanel VerticalAlignment="Center" Spacing="2">
-                                    <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <TextBlock Text="{Binding Name}"
-                                                   FontWeight="Medium"
-                                                   Foreground="{DynamicResource TextPrimary}" />
-                                        <TextBlock Text="{Binding DetectedVersion}"
-                                                   FontSize="{DynamicResource FontSm}"
-                                                   Foreground="{DynamicResource TextMuted}"
-                                                   VerticalAlignment="Center"
-                                                   IsVisible="{Binding DetectedVersion, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-                                        <TextBlock Text="testing..."
-                                                   FontSize="{DynamicResource FontSm}"
-                                                   Foreground="{DynamicResource TextMuted}"
-                                                   FontStyle="Italic"
-                                                   VerticalAlignment="Center"
-                                                   IsVisible="{Binding IsTesting}" />
-                                    </StackPanel>
-                                    <TextBlock Text="{Binding BinaryName, StringFormat='Binary: {0}'}"
-                                               FontSize="{DynamicResource FontSm}"
-                                               Foreground="{DynamicResource TextMuted}" />
-                                    <TextBlock Text="{Binding ExecutablePath}"
-                                               FontSize="{DynamicResource FontXs}"
-                                               Foreground="{DynamicResource TextMuted}"
-                                               Opacity="0.7"
-                                               TextTrimming="CharacterEllipsis"
-                                               ToolTip.Tip="{Binding ExecutablePath}"
-                                               IsVisible="{Binding ExecutablePath, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-                                </StackPanel>
-                            </DockPanel>
+                                </DockPanel>
+                            </Border>
                         </Border>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
+
+            <!-- Add Custom Tool row -->
+            <Button Classes="add-row"
+                    Command="{Binding AddAiToolCommand}"
+                    IsVisible="{Binding !IsEditingAiTool}">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <mi:MaterialIcon Kind="Plus" Width="13" Height="13" />
+                    <TextBlock Text="Add Custom Tool" />
+                </StackPanel>
+            </Button>
+
+            <!-- Edit custom tool form -->
+            <Border IsVisible="{Binding IsEditingAiTool}"
+                    Background="{DynamicResource BgSurface}"
+                    CornerRadius="{DynamicResource RadiusLg}"
+                    BorderBrush="{DynamicResource AccentDefault}"
+                    BorderThickness="{DynamicResource BorderThin}"
+                    Padding="16,14">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="NEW CUSTOM TOOL" Classes="section" Margin="0,0,0,2" />
+                    <DockPanel>
+                        <TextBlock Text="Name" Classes="label"
+                                   VerticalAlignment="Center" Width="90" />
+                        <TextBox Classes="setting"
+                                 Text="{Binding EditAiToolName}"
+                                 PlaceholderText="Display name" />
+                    </DockPanel>
+                    <DockPanel>
+                        <TextBlock Text="Binary" Classes="label"
+                                   VerticalAlignment="Center" Width="90" />
+                        <TextBox Classes="setting"
+                                 Text="{Binding EditAiToolBinary}"
+                                 PlaceholderText="Command name" />
+                    </DockPanel>
+                    <DockPanel>
+                        <TextBlock Text="Version Args" Classes="label"
+                                   VerticalAlignment="Center" Width="90" />
+                        <TextBox Classes="setting"
+                                 Text="{Binding EditAiToolVersionArgs}"
+                                 PlaceholderText="--version" />
+                    </DockPanel>
+                    <DockPanel>
+                        <TextBlock Text="Path" Classes="label"
+                                   VerticalAlignment="Center" Width="90" />
+                        <TextBox Classes="setting"
+                                 Text="{Binding EditAiToolPath}"
+                                 PlaceholderText="Optional — leave empty for PATH" />
+                    </DockPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
+                        <Button Classes="accent"
+                                Command="{Binding SaveAiToolCommand}"
+                                Content="Save"
+                                Padding="16,5" />
+                        <Button Classes="toolbar"
+                                Command="{Binding CancelEditAiToolCommand}"
+                                Content="Cancel"
+                                Padding="12,5" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
 
         </StackPanel>
 

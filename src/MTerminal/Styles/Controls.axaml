@@ -180,6 +180,27 @@
         <Setter Property="Background" Value="{DynamicResource InteractivePressed}" />
     </Style>
 
+    <!-- ======== BUTTON: add-row (subtle add action at bottom of list) ======== -->
+    <Style Selector="Button.add-row">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFaint}" />
+        <Setter Property="Padding" Value="14,9" />
+        <Setter Property="CornerRadius" Value="{DynamicResource RadiusLg}" />
+        <Setter Property="BorderThickness" Value="{DynamicResource BorderThin}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtle}" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FontSize" Value="{DynamicResource FontSm}" />
+    </Style>
+    <Style Selector="Button.add-row:pointerover">
+        <Setter Property="Background" Value="{DynamicResource InteractiveHover}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondary}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderStrong}" />
+    </Style>
+    <Style Selector="Button.add-row:pressed">
+        <Setter Property="Background" Value="{DynamicResource InteractivePressed}" />
+    </Style>
+
     <!-- ======== BUTTON: settings-tab ======== -->
     <Style Selector="Button.settings-tab">
         <Setter Property="Background" Value="Transparent" />

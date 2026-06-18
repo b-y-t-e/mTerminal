@@ -27,8 +27,11 @@ public partial class AiToolViewModel : ObservableObject
     [ObservableProperty]
     private bool _isCustomPath;
 
+    public bool IsUserDefined => Tool.IsUserDefined;
+
     public Func<Task<string?>>? BrowseFile { get; set; }
     public Action<string, string>? OnCustomPathSet { get; set; }
+    public Action<AiToolViewModel>? OnDeleteRequested { get; set; }
 
     public AiToolViewModel(AiToolInfo tool)
     {
@@ -73,5 +76,11 @@ public partial class AiToolViewModel : ObservableObject
         DetectedVersion = null;
 
         OnCustomPathSet?.Invoke(BinaryName, path);
+    }
+
+    [RelayCommand]
+    private void Delete()
+    {
+        OnDeleteRequested?.Invoke(this);
     }
 }

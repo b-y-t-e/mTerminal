@@ -23,7 +23,7 @@ public static class AiToolDetector
         new() { Name = "Pi Agent", BinaryName = "pi", Description = "Minimal BYOK coding agent" },
     ];
 
-    public static List<AiToolInfo> Detect(Dictionary<string, string>? customPaths = null)
+    public static List<AiToolInfo> Detect(Dictionary<string, string>? customPaths = null, List<UserAiTool>? userTools = null)
     {
         var results = new List<AiToolInfo>();
 
@@ -52,6 +52,36 @@ public static class AiToolDetector
             }
 
             results.Add(tool);
+        }
+
+        if (userTools != null)
+        {
+            foreach (var ut in userTools)
+            {
+                var tool = new AiToolInfo
+                {
+                    Name = ut.Name,
+                    Description = "Custom tool",
+                    BinaryName = ut.BinaryName,
+                    VersionArgs = ut.VersionArgs,
+                    IsUserDefined = true,
+                    UserToolId = ut.Id
+                };
+
+                if (!string.IsNullOrEmpty(ut.CustomPath) && File.Exists(ut.CustomPath))
+                {
+                    tool.ExecutablePath = ut.CustomPath;
+                    tool.IsInstalled = true;
+                    tool.IsCustomPath = true;
+                }
+                else
+                {
+                    tool.ExecutablePath = FindTool(ut.BinaryName);
+                    tool.IsInstalled = tool.ExecutablePath != null;
+                }
+
+                results.Add(tool);
+            }
         }
 
         return results;

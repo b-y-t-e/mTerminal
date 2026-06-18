@@ -107,6 +107,23 @@ public partial class SettingsViewModel : ObservableObject
 
     public Func<Task<string?>>? BrowseAiToolFile { get; set; }
 
+    [ObservableProperty]
+    private bool _isEditingAiTool;
+
+    [ObservableProperty]
+    private string _editAiToolName = "";
+
+    [ObservableProperty]
+    private string _editAiToolBinary = "";
+
+    [ObservableProperty]
+    private string _editAiToolVersionArgs = "--version";
+
+    [ObservableProperty]
+    private string _editAiToolPath = "";
+
+    private UserAiTool? _editingAiTool;
+
     public SettingsViewModel(SettingsService settingsService)
     {
         _settingsService = settingsService;
@@ -271,7 +288,8 @@ public partial class SettingsViewModel : ObservableObject
         IsLoadingAiTools = true;
 
         var customPaths = _settingsService.Settings.CustomAiToolPaths;
-        var tools = await Task.Run(() => AiToolDetector.Detect(customPaths));
+        var userTools = _settingsService.Settings.CustomAiTools;
+        var tools = await Task.Run(() => AiToolDetector.Detect(customPaths, userTools));
 
         await Dispatcher.UIThread.InvokeAsync(() =>
         {
@@ -284,7 +302,8 @@ public partial class SettingsViewModel : ObservableObject
                     {
                         _settingsService.Settings.CustomAiToolPaths[binaryName] = path;
                         _settingsService.NotifyChanged();
-                    }
+                    },
+                    OnDeleteRequested = DeleteAiTool
                 };
                 AiTools.Add(vm);
             }
@@ -298,5 +317,61 @@ public partial class SettingsViewModel : ObservableObject
     {
         var tasks = AiTools.Where(t => t.IsInstalled).Select(vm => vm.TestCommand.ExecuteAsync(null));
         await Task.WhenAll(tasks);
+    }
+
+    [RelayCommand]
+    private void AddAiTool()
+    {
+        _editingAiTool = new UserAiTool();
+        EditAiToolName = "";
+        EditAiToolBinary = "";
+        EditAiToolVersionArgs = "--version";
+        EditAiToolPath = "";
+        IsEditingAiTool = true;
+    }
+
+    [RelayCommand]
+    private void SaveAiTool()
+    {
+        if (_editingAiTool == null || string.IsNullOrWhiteSpace(EditAiToolName) || string.IsNullOrWhiteSpace(EditAiToolBinary))
+            return;
+
+        _editingAiTool.Name = EditAiToolName.Trim();
+        _editingAiTool.BinaryName = EditAiToolBinary.Trim();
+        _editingAiTool.VersionArgs = EditAiToolVersionArgs.Trim();
+        _editingAiTool.CustomPath = EditAiToolPath.Trim();
+
+        if (!_settingsService.Settings.CustomAiTools.Contains(_editingAiTool))
+            _settingsService.Settings.CustomAiTools.Add(_editingAiTool);
+
+        _settingsService.NotifyChanged();
+        IsEditingAiTool = false;
+        _editingAiTool = null;
+
+        _ = ReloadAiToolsAsync();
+    }
+
+    [RelayCommand]
+    private void CancelEditAiTool()
+    {
+        IsEditingAiTool = false;
+        _editingAiTool = null;
+    }
+
+    private void DeleteAiTool(AiToolViewModel vm)
+    {
+        var id = vm.Tool.UserToolId;
+        if (id == null) return;
+
+        _settingsService.Settings.CustomAiTools.RemoveAll(t => t.Id == id);
+        AiTools.Remove(vm);
+        _settingsService.NotifyChanged();
+    }
+
+    private async Task ReloadAiToolsAsync()
+    {
+        _aiToolsLoaded = false;
+        AiTools.Clear();
+        await LoadAiToolsAsync();
     }
 }
