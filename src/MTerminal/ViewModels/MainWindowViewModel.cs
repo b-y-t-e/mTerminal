@@ -78,6 +78,7 @@ public partial class MainWindowViewModel : ObservableObject
         }
 
         CurrentWorkspace = vm;
+        vm.ActivateLastTile();
         _settingsService.Settings.LastWorkspaceId = workspace.Id;
         _settingsService.DebouncedSave();
     }

@@ -16,6 +16,8 @@ public partial class WorkspaceViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private TileNodeViewModel? _rootTile;
 
+    private LeafTileNodeViewModel? _lastActiveLeaf;
+
     public string WorkspaceId { get; }
     public string WorkingDirectory { get; }
     public ObservableCollection<ShellProfile> AvailableShells { get; } = [];
@@ -50,7 +52,9 @@ public partial class WorkspaceViewModel : ObservableObject, IDisposable
         if (state?.RootTile != null)
         {
             InitCountersFromDto(state.RootTile);
-            RootTile = _serializer.Deserialize(state.RootTile, ScheduleSave);
+            var (root, activeLeaf) = _serializer.Deserialize(state.RootTile, ScheduleSave);
+            RootTile = root;
+            _lastActiveLeaf = activeLeaf;
         }
         else
         {
@@ -73,10 +77,24 @@ public partial class WorkspaceViewModel : ObservableObject, IDisposable
         return leaf;
     }
 
+    public void ActivateLastTile()
+    {
+        _lastActiveLeaf?.Activate();
+    }
+
     private void ConfigureLeafCallbacks(LeafTileNodeViewModel leaf)
     {
         leaf.RootReplaced = newRoot => RootTile = ConfigureRoot(newRoot);
         leaf.RootCleared = () => { RootTile = CreateLeaf(TileContentType.Empty, null, ""); ScheduleSave(); };
+        leaf.PropertyChanged -= OnLeafPropertyChanged;
+        leaf.PropertyChanged += OnLeafPropertyChanged;
+    }
+
+    private void OnLeafPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(LeafTileNodeViewModel.IsActive)
+            && sender is LeafTileNodeViewModel leaf && leaf.IsActive)
+            _lastActiveLeaf = leaf;
     }
 
     private TileNodeViewModel ConfigureRoot(TileNodeViewModel node)
@@ -143,10 +161,14 @@ public partial class WorkspaceViewModel : ObservableObject, IDisposable
         DisposeTree(RootTile);
     }
 
-    private static void DisposeTree(TileNodeViewModel? node)
+    private void DisposeTree(TileNodeViewModel? node)
     {
-        if (node is LeafTileNodeViewModel leaf && leaf.Content is IDisposable d)
-            d.Dispose();
+        if (node is LeafTileNodeViewModel leaf)
+        {
+            leaf.PropertyChanged -= OnLeafPropertyChanged;
+            if (leaf.Content is IDisposable d)
+                d.Dispose();
+        }
         else if (node is SplitTileNodeViewModel split)
         {
             DisposeTree(split.First);

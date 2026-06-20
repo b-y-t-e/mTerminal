@@ -42,6 +42,7 @@ public sealed class TileTreeSerializer
                 UserProfileId = (leaf.Content as TerminalTileViewModel)?.UserProfileId,
                 NoteFilePath = (leaf.Content as NoteTileViewModel)?.FilePath,
                 TodoFilePath = (leaf.Content as TodoTileViewModel)?.FilePath,
+                IsActive = leaf.IsActive,
                 Settings = TileFactory.SerializeSettings(leaf)
             },
             SplitTileNodeViewModel split => new TileNode
@@ -56,7 +57,14 @@ public sealed class TileTreeSerializer
         };
     }
 
-    public TileNodeViewModel? Deserialize(TileNode dto, Action scheduleSave)
+    public (TileNodeViewModel? Root, LeafTileNodeViewModel? ActiveLeaf) Deserialize(TileNode dto, Action scheduleSave)
+    {
+        LeafTileNodeViewModel? activeLeaf = null;
+        var root = DeserializeNode(dto, scheduleSave, ref activeLeaf);
+        return (root, activeLeaf);
+    }
+
+    private TileNodeViewModel? DeserializeNode(TileNode dto, Action scheduleSave, ref LeafTileNodeViewModel? activeLeaf)
     {
         if (dto.IsLeaf)
         {
@@ -72,11 +80,13 @@ public sealed class TileTreeSerializer
                 LayoutChanged = scheduleSave
             };
             _configureLeaf(leaf);
+            if (dto.IsActive)
+                activeLeaf = leaf;
             return leaf;
         }
 
-        var first = Deserialize(dto.First!, scheduleSave);
-        var second = Deserialize(dto.Second!, scheduleSave);
+        var first = DeserializeNode(dto.First!, scheduleSave, ref activeLeaf);
+        var second = DeserializeNode(dto.Second!, scheduleSave, ref activeLeaf);
         if (first == null || second == null) return first ?? second;
 
         var split = new SplitTileNodeViewModel(dto.SplitOrientation, first, second)
