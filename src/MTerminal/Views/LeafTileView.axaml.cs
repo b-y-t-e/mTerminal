@@ -2,6 +2,8 @@ using System.ComponentModel;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
+using Avalonia.Threading;
+using Avalonia.VisualTree;
 using MTerminal.Models;
 using MTerminal.ViewModels;
 
@@ -76,6 +78,9 @@ public partial class LeafTileView : UserControl
             ActiveStrip.GetResourceObservable(isActive ? "AccentHover" : "BgSurface"));
         TileToolbar.Bind(Border.BackgroundProperty,
             TileToolbar.GetResourceObservable(isActive ? "BgElevated" : "BgSurface"));
+
+        if (isActive)
+            Dispatcher.UIThread.Post(FocusContent, DispatcherPriority.Input);
     }
 
     private void UpdateContentDisplay(LeafTileNodeViewModel leaf)
@@ -195,5 +200,13 @@ public partial class LeafTileView : UserControl
 
         TileNameEditor.IsVisible = false;
         TileNameLabel.IsVisible = true;
+    }
+
+    private void FocusContent()
+    {
+        var focusable = ContentHost.GetVisualDescendants()
+            .OfType<InputElement>()
+            .FirstOrDefault(e => e.Focusable);
+        focusable?.Focus();
     }
 }
