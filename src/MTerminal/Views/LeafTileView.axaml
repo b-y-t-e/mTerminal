@@ -74,7 +74,7 @@
             </Border>
 
             <!-- Content area + chooser overlay -->
-            <Panel>
+            <Panel Margin="6,0">
                 <WrapPanel x:Name="ContentChooser"
                            IsVisible="False"
                            HorizontalAlignment="Center"
@@ -173,7 +173,7 @@
                     <Button Classes="chooser-card"
                             Command="{Binding SelectDefaultTerminalCommand}">
                         <Grid>
-                            <Border Background="{DynamicResource AccentDefault}"
+                            <Border Background="{DynamicResource TileAccentTerminal}"
                                     Width="3" CornerRadius="2"
                                     HorizontalAlignment="Left"
                                     VerticalAlignment="Stretch"
@@ -182,7 +182,7 @@
                                 <mi:MaterialIcon Kind="Console" Width="22" Height="22"
                                                  HorizontalAlignment="Center"
                                                  Foreground="{DynamicResource TextMuted}" />
-                                <TextBlock Text="Default" FontSize="{DynamicResource FontSm}"
+                                <TextBlock Text="Default shell" FontSize="{DynamicResource FontSm}"
                                            HorizontalAlignment="Center" />
                             </StackPanel>
                         </Grid>
@@ -200,7 +200,7 @@
                                         Command="{Binding $parent[UserControl].((vm:LeafTileNodeViewModel)DataContext).SelectProfileCommand}"
                                         CommandParameter="{Binding}">
                                     <Grid>
-                                        <Border Background="{DynamicResource AccentDefault}"
+                                        <Border Background="{DynamicResource TileAccentTerminal}"
                                                 Width="3" CornerRadius="2"
                                                 HorizontalAlignment="Left"
                                                 VerticalAlignment="Stretch"
