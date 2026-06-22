@@ -146,10 +146,12 @@ public partial class MarkdownTileViewModel : ObservableObject, IFileContent, IDi
             Directory.CreateDirectory(dir);
             _watcher = new FileSystemWatcher(dir, name)
             {
-                NotifyFilter = NotifyFilters.LastWrite,
+                NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName,
                 EnableRaisingEvents = true
             };
             _watcher.Changed += OnFileChanged;
+            _watcher.Created += OnFileChanged;
+            _watcher.Renamed += (_, e) => OnFileChanged(e, e);
         }
         catch (Exception ex)
         {
