@@ -28,6 +28,7 @@ public static class PtyWriter
 
     public static void AttachStartupScript(TerminalControl terminal, string script, string tileId)
     {
+        
         terminal.ShellReady += OnShellReady;
         void OnShellReady(object? s, EventArgs args)
         {
