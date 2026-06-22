@@ -10,8 +10,10 @@ public partial class TerminalTileViewModel : ObservableObject, IDisposable
     public string WorkingDirectory { get; }
     public ShellProfile Shell { get; }
     public string? StartupScript { get; }
+    public string? FallbackScript { get; }
     public string? UserProfileId { get; }
     public string TileId { get; set; } = "";
+    public bool IsDirectLaunch { get; }
 
     [ObservableProperty]
     private string _fontFamily;
@@ -28,14 +30,17 @@ public partial class TerminalTileViewModel : ObservableObject, IDisposable
     internal bool IsLaunched { get; set; }
 
     public TerminalTileViewModel(string workingDirectory, ShellProfile? shell, SettingsService settingsService,
-        string? startupScript = null, string? userProfileId = null)
+        string? startupScript = null, string? fallbackScript = null, string? userProfileId = null,
+        bool isDirectLaunch = false)
     {
         _settingsService = settingsService;
         var s = _settingsService.Settings;
         WorkingDirectory = workingDirectory;
         Shell = shell ?? ShellDetector.ResolveDefault(s);
         StartupScript = string.IsNullOrWhiteSpace(startupScript) ? null : startupScript;
+        FallbackScript = string.IsNullOrWhiteSpace(fallbackScript) ? null : fallbackScript;
         UserProfileId = userProfileId;
+        IsDirectLaunch = isDirectLaunch;
         _theme = TerminalTheme.GetByName(s.ColorThemeName);
         _fontFamily = s.TerminalFontFamily;
         _fontSize = s.TerminalFontSize;

@@ -18,6 +18,7 @@ public sealed class SettingsService
         Directory.CreateDirectory(appDir);
         _filePath = AppPaths.GetSettingsFilePath();
         Load();
+        SeedDefaultProfiles();
     }
 
     public void Load()
@@ -32,6 +33,67 @@ public sealed class SettingsService
         {
             Settings = new AppSettings();
         }
+    }
+
+    private void SeedDefaultProfiles()
+    {
+        var defaults = new List<UserShellProfile>
+        {
+            new()
+            {
+                Name = "Claude Code",
+                ShellName = "",
+                RequiredAiToolBinaryName = "claude",
+                StartupScript = "claude --resume ${tileId}",
+                FallbackScript = "claude --session-id ${tileId}"
+            },
+            new()
+            {
+                Name = "OpenCode",
+                ShellName = "",
+                RequiredAiToolBinaryName = "opencode",
+                StartupScript = "opencode --session ${tileId}",
+                FallbackScript = "opencode"
+            },
+            new()
+            {
+                Name = "Codex",
+                ShellName = "",
+                RequiredAiToolBinaryName = "codex",
+                StartupScript = "codex resume ${tileId}",
+                FallbackScript = "codex"
+            },
+            new()
+            {
+                Name = "Pi Agent",
+                ShellName = "",
+                RequiredAiToolBinaryName = "pi",
+                StartupScript = "pi --session ${tileId}",
+                FallbackScript = "pi"
+            }
+        };
+
+        var dirty = false;
+        foreach (var profile in defaults)
+        {
+            var existing = Settings.ShellProfiles
+                .FirstOrDefault(p => p.Name.Equals(profile.Name, StringComparison.OrdinalIgnoreCase));
+            if (existing != null)
+            {
+                if (existing.StartupScript != profile.StartupScript ||
+                    existing.FallbackScript != profile.FallbackScript)
+                {
+                    existing.StartupScript = profile.StartupScript;
+                    existing.FallbackScript = profile.FallbackScript;
+                    dirty = true;
+                }
+                continue;
+            }
+            Settings.ShellProfiles.Add(profile);
+            dirty = true;
+        }
+
+        if (dirty) Save();
     }
 
     public void Save()

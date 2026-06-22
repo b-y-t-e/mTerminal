@@ -130,6 +130,9 @@ public partial class SettingsViewModel : ObservableObject
     private string _editProfileScript = "";
 
     [ObservableProperty]
+    private string _editProfileFallbackScript = "";
+
+    [ObservableProperty]
     private ComboOption? _editProfileAiTool;
 
     public ObservableCollection<ComboOption> AiToolOptions { get; } = [];
@@ -314,6 +317,7 @@ public partial class SettingsViewModel : ObservableObject
         EditProfileName = _editingProfile.Name;
         EditProfileShell = FindShellOption(defaultShellName);
         EditProfileScript = "";
+        EditProfileFallbackScript = "";
         EditProfileAiTool = FindAiToolOption(null);
         IsEditingProfile = true;
     }
@@ -325,6 +329,7 @@ public partial class SettingsViewModel : ObservableObject
         EditProfileName = profile.Name;
         EditProfileShell = FindShellOption(profile.ShellName);
         EditProfileScript = profile.StartupScript;
+        EditProfileFallbackScript = profile.FallbackScript;
         EditProfileAiTool = FindAiToolOption(profile.RequiredAiToolBinaryName);
         IsEditingProfile = true;
     }
@@ -347,6 +352,7 @@ public partial class SettingsViewModel : ObservableObject
         _editingProfile.Name = EditProfileName;
         _editingProfile.ShellName = EditProfileShell?.Value ?? "";
         _editingProfile.StartupScript = EditProfileScript;
+        _editingProfile.FallbackScript = EditProfileFallbackScript;
         _editingProfile.RequiredAiToolBinaryName = string.IsNullOrEmpty(EditProfileAiTool?.Value) ? null : EditProfileAiTool.Value;
 
         if (!ShellProfiles.Contains(_editingProfile))

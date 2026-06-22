@@ -34,7 +34,9 @@ public sealed class TileFactory
             return CreateContent(type, workingDir);
 
         var shell = ShellDetector.ResolveFromUserProfile(userProfile, _settingsService.Settings);
-        return new TerminalTileViewModel(workingDir, shell, _settingsService, userProfile.StartupScript, userProfile.Id);
+        var hasFallback = !string.IsNullOrEmpty(userProfile.FallbackScript);
+        return new TerminalTileViewModel(workingDir, shell, _settingsService,
+            userProfile.StartupScript, userProfile.FallbackScript, userProfile.Id, isDirectLaunch: hasFallback);
     }
 
     public ObservableObject? CreateFromDto(TileNode dto, string workingDir, IReadOnlyList<ShellProfile> availableShells,

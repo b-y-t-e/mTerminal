@@ -76,10 +76,18 @@ public partial class LeafTileNodeViewModel : TileNodeViewModel
         tvm.TileId = TileId;
         tc.Kill();
 
-        if (tvm.StartupScript != null)
-            Views.PtyWriter.AttachStartupScript(tc, tvm.StartupScript, TileId);
+        if (tvm.IsDirectLaunch && tvm.StartupScript != null)
+        {
+            var commands = Views.DirectLauncher.BuildCommands(tvm.StartupScript!, tvm.FallbackScript ?? "", TileId);
+            _ = Views.DirectLauncher.LaunchWithFallback(tc, _workingDirectory, commands, tvm.Shell);
+        }
+        else
+        {
+            if (tvm.StartupScript != null)
+                Views.PtyWriter.AttachStartupScript(tc, tvm.StartupScript, TileId);
 
-        _ = tc.LaunchProcess(_workingDirectory, tvm.Shell.ExecutablePath, tvm.Shell.Args);
+            _ = tc.LaunchProcess(_workingDirectory, tvm.Shell.ExecutablePath, tvm.Shell.Args);
+        }
     }
 
     [RelayCommand]

@@ -69,10 +69,18 @@ public partial class TerminalTileView : UserControl
             {
                 vm.IsLaunched = true;
 
-                if (vm.StartupScript != null)
-                    PtyWriter.AttachStartupScript(terminal, vm.StartupScript, vm.TileId);
+                if (vm.IsDirectLaunch && vm.StartupScript != null)
+                {
+                    var commands = DirectLauncher.BuildCommands(vm.StartupScript!, vm.FallbackScript ?? "", vm.TileId);
+                    await DirectLauncher.LaunchWithFallback(terminal, vm.WorkingDirectory, commands, vm.Shell);
+                }
+                else
+                {
+                    if (vm.StartupScript != null)
+                        PtyWriter.AttachStartupScript(terminal, vm.StartupScript, vm.TileId);
 
-                await terminal.LaunchProcess(vm.WorkingDirectory, vm.Shell.ExecutablePath, vm.Shell.Args);
+                    await terminal.LaunchProcess(vm.WorkingDirectory, vm.Shell.ExecutablePath, vm.Shell.Args);
+                }
             }
         }
     }

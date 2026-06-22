@@ -7,7 +7,7 @@ namespace MTerminal.Views;
 
 public static class PtyWriter
 {
-    private static readonly FieldInfo? PtyField =
+    internal static readonly FieldInfo? PtyField =
         typeof(TerminalView).GetField("_ptyConnection", BindingFlags.NonPublic | BindingFlags.Instance);
 
     public static void Write(TerminalControl terminal, string data)
