@@ -2,7 +2,6 @@ using System.ComponentModel;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
-using Iciclecreek.Terminal;
 using MTerminal.ViewModels;
 
 namespace MTerminal.Views;
@@ -60,7 +59,7 @@ public partial class TileNodeView : UserControl
 
         var scope = FindActivationScope();
         var guard = scope?.SuppressActivation();
-        var suspended = SuspendTerminals();
+        var suspended = ControlHelper.SuspendTerminals(this);
         try
         {
             if (_vm is LeafTileNodeViewModel leaf)
@@ -72,7 +71,7 @@ public partial class TileNodeView : UserControl
         }
         finally
         {
-            ResumeTerminals(suspended);
+            ControlHelper.ResumeTerminals(suspended);
             guard?.Dispose();
             _isBuilding = false;
         }
@@ -176,41 +175,5 @@ public partial class TileNodeView : UserControl
         }
     }
 
-    private List<TerminalControl> SuspendTerminals()
-    {
-        var terminals = new List<TerminalControl>();
-        CollectTerminals(this, terminals);
-        foreach (var tc in terminals)
-            tc.BeginReparent();
-        return terminals;
-    }
-
-    private static void ResumeTerminals(List<TerminalControl> terminals)
-    {
-        foreach (var tc in terminals)
-            tc.EndReparent();
-    }
-
-    private static void CollectTerminals(Control control, List<TerminalControl> result)
-    {
-        if (control is TerminalControl tc)
-        {
-            result.Add(tc);
-            return;
-        }
-
-        if (control is ContentControl cc && cc.Content is Control child)
-            CollectTerminals(child, result);
-        else if (control is Decorator dec && dec.Child is Control decChild)
-            CollectTerminals(decChild, result);
-        else if (control is Panel panel)
-        {
-            foreach (var c in panel.Children)
-            {
-                if (c is Control ctrl)
-                    CollectTerminals(ctrl, result);
-            }
-        }
-    }
 
 }

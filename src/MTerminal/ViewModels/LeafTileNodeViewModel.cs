@@ -218,47 +218,12 @@ public partial class LeafTileNodeViewModel : TileNodeViewModel
         if (Content is IDisposable disposable)
             disposable.Dispose();
 
-        if (Parent is not SplitTileNodeViewModel parentSplit)
+        if (!Views.TileDragDrop.DetachFromTree(this))
         {
             RootCleared?.Invoke();
             return;
         }
 
-        var sibling = (this == parentSplit.First) ? parentSplit.Second : parentSplit.First;
-        if (sibling == null) { RootCleared?.Invoke(); return; }
-
-        sibling.Parent = parentSplit.Parent;
-        sibling.LayoutChanged = LayoutChanged;
-        PropagateSiblingCallbacks(sibling);
-
-        if (parentSplit.Parent is SplitTileNodeViewModel grandParent)
-        {
-            if (parentSplit == grandParent.First)
-                grandParent.First = sibling;
-            else
-                grandParent.Second = sibling;
-        }
-        else
-        {
-            RootReplaced?.Invoke(sibling);
-        }
-
         NotifyLayoutChanged();
-    }
-
-    private void PropagateSiblingCallbacks(TileNodeViewModel node)
-    {
-        if (node is LeafTileNodeViewModel leaf)
-        {
-            leaf.RootReplaced = RootReplaced;
-            leaf.RootCleared = RootCleared;
-            leaf.LayoutChanged = LayoutChanged;
-        }
-        else if (node is SplitTileNodeViewModel split)
-        {
-            split.LayoutChanged = LayoutChanged;
-            if (split.First != null) PropagateSiblingCallbacks(split.First);
-            if (split.Second != null) PropagateSiblingCallbacks(split.Second);
-        }
     }
 }
