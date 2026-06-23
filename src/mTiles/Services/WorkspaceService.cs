@@ -30,6 +30,16 @@ public sealed class WorkspaceService
         {
             _workspaces = [];
         }
+
+        var fixed_ = false;
+        foreach (var w in _workspaces)
+        {
+            if (!string.IsNullOrEmpty(w.Name)) continue;
+            w.Name = Path.GetFileName(w.DirectoryPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar))
+                     ?? w.DirectoryPath;
+            fixed_ = true;
+        }
+        if (fixed_) Save();
     }
 
     public Workspace AddWorkspace(string directoryPath, string? name = null)
