@@ -10,6 +10,7 @@ Multiplatformowy terminal manager z systemem kafelkowych paneli. Windows, Linux,
 - **Shell Profiles** — nazwane profile z wyborem shella, skryptem startowym, filtrowaniem po dostępności shella/AI tool, chooser profilu przy tworzeniu terminala
 - **Tile ID** — persystentny identyfikator tile'a, dostępny w startup script jako `${tileId}`, reset z restarem shella
 - **Git tile** — podgląd zmian w stylu GitHub Desktop: diff (unified + side-by-side), commit, stash, push/fetch, tag management, undo last commit, commit message suggestions, historia commitów z tagami i oznaczeniem niepushowanych, context menu (Show in Explorer, Open, Copy path/hash, Discard, Add tag), auto-refresh przy zmianach w worktree
+- **Database tile** — konfiguracja baz danych per workspace, HTTP-to-SQL bridge, auto-discovery SQL Server/PostgreSQL, manual connections, SQL Guard, generowanie claude.local.md
 - **Motywy terminala** — Default Dark, Dracula, Nord, Monokai, Solarized Dark, Catppuccin Mocha
 - **Edytor notatek** — AvaloniaEdit z numeracją linii, auto-zapis do `.mterminal/notes/`
 - **Lista Todo** — inline-editable checklist, Enter dodaje element, checkbox przesuwa na dół, auto-zapis do `.mterminal/todos/`
