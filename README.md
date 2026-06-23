@@ -1,4 +1,4 @@
-# MTerminal
+# mTerminal
 
 Cross-platform terminal manager with a tiling panel system. Windows, Linux, macOS.
 
@@ -36,7 +36,7 @@ Cross-platform terminal manager with a tiling panel system. Windows, Linux, macO
 ```bash
 git clone <repo-url>
 cd mterminal
-dotnet run --project src/MTerminal
+dotnet run --project src/mTerminal
 ```
 
 ## Tech stack

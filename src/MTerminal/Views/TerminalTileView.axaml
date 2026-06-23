@@ -1,7 +1,0 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="using:MTerminal.ViewModels"
-             x:Class="MTerminal.Views.TerminalTileView"
-             x:DataType="vm:TerminalTileViewModel">
-    <!-- TerminalControl created in code-behind for caching -->
-</UserControl>

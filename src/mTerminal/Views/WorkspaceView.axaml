@@ -1,0 +1,11 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:mTerminal.ViewModels"
+             xmlns:views="using:mTerminal.Views"
+             x:Class="mTerminal.Views.WorkspaceView"
+             x:DataType="vm:WorkspaceViewModel"
+             Background="{DynamicResource BgBase}">
+
+    <views:TileNodeView x:Name="RootTileView"
+                        DataContext="{Binding RootTile}" />
+</UserControl>
