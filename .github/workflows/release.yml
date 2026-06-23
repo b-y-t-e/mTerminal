@@ -24,22 +24,22 @@ jobs:
         run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
 
       - name: Publish
-        run: dotnet publish src/MTerminal/MTerminal.csproj -c Release --self-contained -r win-x64 -o ./publish
+        run: dotnet publish src/mTerminal/mTerminal.csproj -c Release --self-contained -r win-x64 -o ./publish
 
       - name: Install Velopack
         run: dotnet tool install -g vpk
 
       - name: Create Velopack package
-        run: vpk pack --packId MTerminal --packVersion ${{ env.VERSION }} --packDir ./publish --mainExe MTerminal.exe
+        run: vpk pack --packId mTerminal --packVersion ${{ env.VERSION }} --packDir ./publish --mainExe mTerminal.exe
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: windows-release
           path: |
-            Releases/MTerminal-win-Setup.exe
-            Releases/MTerminal-win-Portable.zip
-            Releases/MTerminal-*-full.nupkg
+            Releases/mTerminal-win-Setup.exe
+            Releases/mTerminal-win-Portable.zip
+            Releases/mTerminal-*-full.nupkg
             Releases/releases.win.json
             Releases/assets.win.json
             Releases/RELEASES
@@ -60,7 +60,7 @@ jobs:
           sudo apt-get install -y libfuse2
 
       - name: Publish
-        run: dotnet publish src/MTerminal/MTerminal.csproj -c Release --self-contained -r linux-x64 -o ./publish
+        run: dotnet publish src/mTerminal/mTerminal.csproj -c Release --self-contained -r linux-x64 -o ./publish
 
       - name: Create AppImage structure
         run: |
@@ -69,16 +69,16 @@ jobs:
 
           # Copy published files
           cp -r ./publish/* AppDir/usr/bin/
-          chmod +x AppDir/usr/bin/MTerminal
+          chmod +x AppDir/usr/bin/mTerminal
 
           # Copy desktop file and icon
-          cp deploy/linux/MTerminal.desktop AppDir/
+          cp deploy/linux/mTerminal.desktop AppDir/
           cp deploy/linux/AppRun AppDir/
           chmod +x AppDir/AppRun
 
-          # Convert ico to png for AppImage (use the existing png)
-          cp src/MTerminal/Assets/mterminal-icon.png AppDir/mterminal.png
-          cp src/MTerminal/Assets/mterminal-icon.png AppDir/usr/share/icons/hicolor/256x256/apps/mterminal.png
+          # Copy icon for AppImage
+          cp src/mTerminal/Assets/mterminal-icon.png AppDir/mterminal.png
+          cp src/mTerminal/Assets/mterminal-icon.png AppDir/usr/share/icons/hicolor/256x256/apps/mterminal.png
 
       - name: Download appimagetool
         run: |
@@ -89,13 +89,13 @@ jobs:
 
       - name: Build AppImage
         run: |
-          ARCH=x86_64 ./appimagetool AppDir MTerminal-linux-x86_64.AppImage
+          ARCH=x86_64 ./appimagetool AppDir mTerminal-linux-x86_64.AppImage
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: linux-release
-          path: MTerminal-linux-x86_64.AppImage
+          path: mTerminal-linux-x86_64.AppImage
 
   create-release:
     needs: [build-windows, build-linux]
@@ -109,13 +109,13 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          name: MTerminal ${{ github.ref_name }}
+          name: mTerminal ${{ github.ref_name }}
           generate_release_notes: true
           files: |
-            artifacts/windows-release/MTerminal-win-Setup.exe
-            artifacts/windows-release/MTerminal-win-Portable.zip
-            artifacts/windows-release/MTerminal-*-full.nupkg
+            artifacts/windows-release/mTerminal-win-Setup.exe
+            artifacts/windows-release/mTerminal-win-Portable.zip
+            artifacts/windows-release/mTerminal-*-full.nupkg
             artifacts/windows-release/releases.win.json
             artifacts/windows-release/assets.win.json
             artifacts/windows-release/RELEASES
-            artifacts/linux-release/MTerminal-linux-x86_64.AppImage
+            artifacts/linux-release/mTerminal-linux-x86_64.AppImage
