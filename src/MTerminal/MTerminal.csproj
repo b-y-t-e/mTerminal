@@ -6,9 +6,12 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
-    <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
+    <RuntimeIdentifiers>win-x64;linux-x64</RuntimeIdentifiers>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows')) Or '$(RuntimeIdentifier)' == 'win-x64'">
+    <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>mterminal.ico</ApplicationIcon>
   </PropertyGroup>
 
@@ -25,9 +28,9 @@
     <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.1" />
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="9.0.13" />
     <PackageReference Include="Npgsql" Version="10.0.3" />
-    <ProjectReference Include="..\..\..\Iciclecreek.Avalonia.Terminal\src\Iciclecreek.Avalonia.TerminalWindow\Iciclecreek.Avalonia.Terminal.csproj" />
-    <ProjectReference Include="..\..\..\TodoListControl\TodoList.Avalonia\TodoList.Avalonia.csproj" />
-    <ProjectReference Include="..\..\..\Notepad.Avalonia\Notepad.Avalonia\Notepad.Avalonia.csproj" />
+    <PackageReference Include="MTerminal.Avalonia.Terminal" Version="2.1.0" />
+    <PackageReference Include="TodoList.Avalonia" Version="0.2.10" />
+    <PackageReference Include="Notepad.Avalonia" Version="0.1.4" />
     <PackageReference Include="Avalonia.AvaloniaEdit" Version="12.0.*" />
     <PackageReference Include="AvaloniaEdit.TextMate" Version="12.0.*" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.*" />
