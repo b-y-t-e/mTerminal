@@ -6,7 +6,7 @@
 
 Terminal manager built for AI-assisted development. Workspaces, split tiles, database bridge for LLM agents, git — in one window.
 
-![mTiles](assets/screen2.png)
+![mTiles](assets/screen1.png)
 
 ## What makes it different
 
