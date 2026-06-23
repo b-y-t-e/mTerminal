@@ -87,6 +87,12 @@ public static class ShellDetector
             if (match != null) return match;
         }
 
+        if (!OperatingSystem.IsWindows())
+        {
+            var bash = detected.FirstOrDefault(s => s.Name.Equals("bash", StringComparison.OrdinalIgnoreCase));
+            if (bash != null) return bash;
+        }
+
         var fallbackExe = OperatingSystem.IsWindows() ? "powershell.exe" : "bash";
         return detected.FirstOrDefault()
             ?? new ShellProfile { Name = "Default", ExecutablePath = fallbackExe, Type = InferType(fallbackExe) };
