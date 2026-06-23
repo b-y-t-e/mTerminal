@@ -36,7 +36,7 @@ public sealed class WorkspaceService
     {
         var workspace = new Workspace
         {
-            Name = name ?? Path.GetFileName(directoryPath) ?? directoryPath,
+            Name = name ?? Path.GetFileName(directoryPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)) ?? directoryPath,
             DirectoryPath = directoryPath
         };
         _workspaces.Add(workspace);
