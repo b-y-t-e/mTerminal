@@ -10,7 +10,12 @@ Cross-platform terminal manager with a tiling panel system. Windows, Linux, macO
 - **Shell Profiles** — named profiles with shell selection, startup script, filtering by shell/AI tool availability, profile chooser when creating a terminal
 - **Tile ID** — persistent tile identifier, available in startup script as `${tileId}`, reset with shell restart
 - **Git tile** — change viewer in GitHub Desktop style: diff (unified + side-by-side), commit, stash, push/fetch, tag management, undo last commit, commit message suggestions, commit history with tags and unpushed commit markers, context menu (Show in Explorer, Open, Copy path/hash, Discard, Add tag), auto-refresh on worktree changes
-- **Database tile** — per-workspace database configuration, HTTP-to-SQL bridge, auto-discovery of SQL Server/PostgreSQL, manual connections, SQL Guard, claude.local.md generation
+- **Database tile** — lets LLM agents (Claude Code, OpenCode, etc.) query local databases directly without exposing credentials. The tile generates `claude.local.md` so the agent knows what databases are available and how to reach them. A local HTTP server (default port 18090) accepts SQL queries from the agent and returns JSON results. Key features:
+  - **Auto-discovery** — SQL Server via UDP broadcast (SQL Browser), PostgreSQL via port scan; manual connections also supported
+  - **Write protection** — INSERT/UPDATE/DELETE blocked by default (read-only mode); user unlocks per-database with a RW toggle. DROP/TRUNCATE/ALTER always blocked. When the agent sends a write query in read-only mode, a confirmation dialog appears — the user approves or denies in real time
+  - **SQL Guard** — keyword scanning outside string literals and comments (`--`, `/* */`) to prevent injection-style bypass attempts
+  - **Per-workspace access control** — each workspace independently selects which databases the agent can see; databases not selected in any workspace are never exposed
+  - **Settings** — Windows Auth / SQL Auth for SQL Server, credentials for PostgreSQL, configurable ports, scan interval, manual connection CRUD with test connection
 - **Terminal themes** — Default Dark, Dracula, Nord, Monokai, Solarized Dark, Catppuccin Mocha
 - **Note editor** — AvaloniaEdit with line numbering, auto-save to `.mterminal/notes/`
 - **Todo list** — inline-editable checklist, Enter adds an item, checkbox moves it to the bottom, auto-save to `.mterminal/todos/`
