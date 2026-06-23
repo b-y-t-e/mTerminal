@@ -1,217 +1,217 @@
 # MTerminal
 
-Multiplatformowy terminal manager — .NET 10 + Avalonia 12.
+Cross-platform terminal manager — .NET 10 + Avalonia 12.
 
-## Budowanie i uruchamianie
+## Building and running
 
 ```bash
 dotnet build
 dotnet run --project src/MTerminal
 ```
 
-## Struktura
+## Structure
 
-- `src/MTerminal/` — jedyny projekt w solucji
-- `Models/` — DTO i modele danych (Workspace, TileNode, AppSettings, AppDefaults, ShellProfile, UserShellProfile, TerminalTheme, GitFileChange, CommitLogEntry, AiToolInfo, UserAiTool, WorkspaceItemViewModel, DatabaseSettings, DatabaseInstance, WorkspaceDatabaseConfig)
-- `ViewModels/` — MVVM z CommunityToolkit.Mvvm (source generators)
+- `src/MTerminal/` — the only project in the solution
+- `Models/` — DTOs and data models (Workspace, TileNode, AppSettings, AppDefaults, ShellProfile, UserShellProfile, TerminalTheme, GitFileChange, CommitLogEntry, AiToolInfo, UserAiTool, WorkspaceItemViewModel, DatabaseSettings, DatabaseInstance, WorkspaceDatabaseConfig)
+- `ViewModels/` — MVVM with CommunityToolkit.Mvvm (source generators)
 - `Views/` — Avalonia AXAML + code-behind
-- `Styles/` — design tokens (`AppTheme.axaml`) i globalne style kontrolek (`Controls.axaml`, w tym GridSplitter). Kolory UI wyłącznie przez `DynamicResource`, terminal ANSI colors osobno w `TerminalTheme`
-- `Services/` — persystencja JSON (PersistenceService, SettingsService, WorkspaceService), detekcja shelli (ShellDetector), detekcja AI tools (AiToolDetector), ThemeBridge, JsonDefaults, AppPaths, GitService/GitCommandRunner/GitDirectoryWatcher, DiffFormatter, FileHelper, TileFactory, TileTreeSerializer, UpdateService, CrashHandler, FileLogWriter, LogTraceListener
+- `Styles/` — design tokens (`AppTheme.axaml`) and global control styles (`Controls.axaml`, including GridSplitter). UI colors exclusively via `DynamicResource`, terminal ANSI colors separately in `TerminalTheme`
+- `Services/` — JSON persistence (PersistenceService, SettingsService, WorkspaceService), shell detection (ShellDetector), AI tools detection (AiToolDetector), ThemeBridge, JsonDefaults, AppPaths, GitService/GitCommandRunner/GitDirectoryWatcher, DiffFormatter, FileHelper, TileFactory, TileTreeSerializer, UpdateService, CrashHandler, FileLogWriter, LogTraceListener
 - `Services/Database/` — DatabaseServiceManager, DbHttpServer, DiscoveryService, DbRegistry, DbLogger, QueryHandler, SqlGuard, SqlGuardProfile, SqlServerProvider, PostgreSqlProvider, SubnetScanner, IDbProvider
-- `Views/PtyWriter.cs` — statyczny helper do zapisu do PTY przez refleksję (`TerminalView._ptyConnection.WriterStream`). Używany przez `TerminalKeyHandler` i startup script. `AttachStartupScript` podpina ShellReady handler z substitucją `${tileId}`
-- `ViewModels/TileActivationScope.cs` — per-workspace scope aktywacji tile'ów z mechanizmem supresji
+- `Views/PtyWriter.cs` — static helper for writing to PTY via reflection (`TerminalView._ptyConnection.WriterStream`). Used by `TerminalKeyHandler` and startup script. `AttachStartupScript` hooks a ShellReady handler with `${tileId}` substitution
+- `ViewModels/TileActivationScope.cs` — per-workspace tile activation scope with suppression mechanism
 
-## Kluczowe biblioteki
+## Key libraries
 
-- **Iciclecreek.Avalonia.Terminal** — terminal z wbudowanym PTY (Porta.Pty).
-  - `BeginReparent()`/`EndReparent()` zapobiega zabijaniu procesu przy przenoszeniu w visual tree
-  - `Process = string.Empty` blokuje auto-launch domyślnego shella
-  - Class handlery (`OnKeyDown`) ignorują `e.Handled` — nie da się ich zablokować zwykłymi handlerami
-- **AvaloniaEdit** — edytor tekstu. Wymaga `StyleInclude` w App.axaml. Sync tekstu przez `Document.Changed`.
-- **Material.Icons.Avalonia** — ikony Material Design. Wymaga `<MaterialIconStyles />` w `App.axaml` Styles. Użycie: `<mi:MaterialIcon Kind="Close" />`.
+- **Iciclecreek.Avalonia.Terminal** — terminal with built-in PTY (Porta.Pty).
+  - `BeginReparent()`/`EndReparent()` prevents process killing when moving in the visual tree
+  - `Process = string.Empty` blocks auto-launch of the default shell
+  - Class handlers (`OnKeyDown`) ignore `e.Handled` — they cannot be blocked by regular handlers
+- **AvaloniaEdit** — text editor. Requires `StyleInclude` in App.axaml. Text sync via `Document.Changed`.
+- **Material.Icons.Avalonia** — Material Design icons. Requires `<MaterialIconStyles />` in `App.axaml` Styles. Usage: `<mi:MaterialIcon Kind="Close" />`.
 
-## Architektura split tiles
+## Split tiles architecture
 
-Rekurencyjne drzewo binarne: `LeafTileNodeViewModel` (terminal/edytor) lub `SplitTileNodeViewModel` (H/V + dwoje dzieci). `TileNodeView` zarządza widokami ręcznie (nie DataTemplate) i wywołuje `SuspendTerminals()`/`ResumeTerminals()` wokół Rebuild żeby zachować live terminale.
+Recursive binary tree: `LeafTileNodeViewModel` (terminal/editor) or `SplitTileNodeViewModel` (H/V + two children). `TileNodeView` manages views manually (not DataTemplate) and calls `SuspendTerminals()`/`ResumeTerminals()` around Rebuild to preserve live terminals.
 
-`LeafTileNodeViewModel.IsActive` — `TileActivationScope` (instancja per workspace) gwarantuje, że tylko jeden tile jest aktywny. `LeafTileView` reaguje na `IsActive` — kolorowy pasek (`ActiveStrip`, 2px) na górze toolbara + jaśniejsze tło (`BgElevated`).
+`LeafTileNodeViewModel.IsActive` — `TileActivationScope` (per-workspace instance) guarantees that only one tile is active. `LeafTileView` reacts to `IsActive` — colored strip (`ActiveStrip`, 2px) at the top of the toolbar + brighter background (`BgElevated`).
 
-`TileActivationScope.SuppressActivation()` — guard (IDisposable) blokujący kaskadę GotFocus → Activate podczas programmatycznych Focus() i Rebuild. Używany w `LeafTileView.FocusContent()` i `TileNodeView.Rebuild()`.
+`TileActivationScope.SuppressActivation()` — guard (IDisposable) blocking the GotFocus → Activate cascade during programmatic Focus() and Rebuild. Used in `LeafTileView.FocusContent()` and `TileNodeView.Rebuild()`.
 
 ## Tile ID
 
-Każdy tile ma persystentny `TileId` (`Guid.NewGuid().ToString()`, format z myślnikami). Generowany przy tworzeniu, zapisywany w `TileNode.TileId` w workspace JSON. Propagowany do `TerminalTileViewModel.TileId`.
+Each tile has a persistent `TileId` (`Guid.NewGuid().ToString()`, hyphenated format). Generated on creation, saved in `TileNode.TileId` in workspace JSON. Propagated to `TerminalTileViewModel.TileId`.
 
-Przycisk "Reset ID" (ikona `Identifier`) w headerze tile'a — generuje nowy GUID, restartuje shell (po potwierdzeniu dialogiem). Dostępny tylko dla terminali.
+"Reset ID" button (`Identifier` icon) in the tile header — generates a new GUID, restarts the shell (after confirmation dialog). Available only for terminals.
 
-W startup script `${tileId}` jest podmieniane na aktualny `TileId` — zarówno przy pierwszym uruchomieniu jak i przy restarcie.
+In startup script `${tileId}` is replaced with the current `TileId` — both on first launch and on restart.
 
-## Obsługa klawiszy terminala
+## Terminal key handling
 
-`TerminalKeyHandler` (osobna klasa, SRP) obsługuje:
+`TerminalKeyHandler` (separate class, SRP) handles:
 - **Ctrl+V** — paste via `PasteAsync()`
-- **Ctrl+C** — copy zaznaczonego tekstu (pre-captured w `PointerReleased`, bo TerminalView czyści selekcję przy każdym keydown)
-- **Alt+key** — wysyła `ESC+char` bezpośrednio do PTY stream (fix brakującej obsługi Alt w TerminalView)
+- **Ctrl+C** — copy selected text (pre-captured in `PointerReleased`, because TerminalView clears selection on every keydown)
+- **Alt+key** — sends `ESC+char` directly to PTY stream (fix for missing Alt handling in TerminalView)
 
-Refleksja na PTY stream wyekstrahowana do `PtyWriter` (statyczny helper, wspólny dla key handler i startup script).
+PTY stream reflection extracted to `PtyWriter` (static helper, shared between key handler and startup script).
 
 ## Alt-buffer cleanup (TUI apps)
 
-`AttachAltBufferCleanup` w `TerminalTileView` resetuje mouse tracking (refleksja na `XTerm.Terminal._mouseTracker`) gdy `IsAlternateBuffer` zmienia się z `true` na `false`. Bez tego po wyjściu z opencode/vim terminal jest zalewany sekwencjami SGR mouse.
+`AttachAltBufferCleanup` in `TerminalTileView` resets mouse tracking (reflection on `XTerm.Terminal._mouseTracker`) when `IsAlternateBuffer` changes from `true` to `false`. Without this, after exiting opencode/vim the terminal is flooded with SGR mouse sequences.
 
-## ThemeBridge — synchronizacja UI z motywem terminala
+## ThemeBridge — UI synchronization with terminal theme
 
-`ThemeBridge.Apply(TerminalTheme)` w `App.axaml.cs` dynamicznie wyprowadza kolory UI (tła, bordery, tekst, akcenty) z aktywnego motywu terminala. Wywoływany na starcie i przy każdym `SettingsChanged`. Dzięki `DynamicResource` cały UI reaguje natychmiast na zmianę motywu.
+`ThemeBridge.Apply(TerminalTheme)` in `App.axaml.cs` dynamically derives UI colors (backgrounds, borders, text, accents) from the active terminal theme. Called on startup and on every `SettingsChanged`. Thanks to `DynamicResource` the entire UI reacts immediately to theme changes.
 
 ## Shell Profiles
 
-Użytkownik definiuje profile shella w Settings → zakładka Profiles. Każdy `UserShellProfile` ma: `Id` (GUID), `Name`, `ShellName` (referencja do wykrytego shella), `StartupScript` (komendy wysyłane do PTY po starcie), `FallbackScript` (uruchamiany gdy StartupScript zfailuje), `RequiredAiToolBinaryName` (opcjonalny — binary name narzędzia AI wymaganego do wyświetlenia profilu).
+Users define shell profiles in Settings → Profiles tab. Each `UserShellProfile` has: `Id` (GUID), `Name`, `ShellName` (reference to detected shell), `StartupScript` (commands sent to PTY after startup), `FallbackScript` (executed when StartupScript fails), `RequiredAiToolBinaryName` (optional — binary name of the AI tool required to display the profile).
 
-**Seed domyślnych profili:** `SettingsService.SeedDefaultProfiles()` dodaje 4 profile (Claude Code, OpenCode, Codex, Pi Agent) jeśli nie istnieje profil o takiej nazwie (case-insensitive). Nigdy nie nadpisuje istniejących profili.
+**Default profile seeding:** `SettingsService.SeedDefaultProfiles()` adds 4 profiles (Claude Code, OpenCode, Codex, Pi Agent) if no profile with that name exists (case-insensitive). Never overwrites existing profiles.
 
-**Filtrowanie profili:** Profil jest widoczny na empty tile tylko jeśli:
-- `RequiredAiToolBinaryName` jest puste LUB narzędzie AI jest zainstalowane (`AiToolDetector.Detect`)
+**Profile filtering:** A profile is visible on an empty tile only if:
+- `RequiredAiToolBinaryName` is empty OR the AI tool is installed (`AiToolDetector.Detect`)
 
-Filtrowanie realizowane w `WorkspaceViewModel.GetAvailableProfiles()` z cache (30s TTL) na wyniki `AiToolDetector.Detect()`.
+Filtering is implemented in `WorkspaceViewModel.GetAvailableProfiles()` with cache (30s TTL) on `AiToolDetector.Detect()` results.
 
-**DirectLauncher** (`Views/DirectLauncher.cs`): gdy profil ma `FallbackScript` → `IsDirectLaunch = true`. Komendy uruchamiane przez `shell -c "command"` (nie interaktywnie). Chain: startup → fail (<5s) → fallback → fail → normalny interaktywny shell. Jeśli komenda przeżyje >5s → sukces → auto-relaunch po wyjściu (gdy lifetime >10s). Bez `FallbackScript` → klasyczny tryb: shell startuje interaktywnie, startup script wpisywany przez `PtyWriter`.
+**DirectLauncher** (`Views/DirectLauncher.cs`): when a profile has `FallbackScript` → `IsDirectLaunch = true`. Commands are run via `shell -c "command"` (not interactively). Chain: startup → fail (<5s) → fallback → fail → normal interactive shell. If the command survives >5s → success → auto-relaunch on exit (when lifetime >10s). Without `FallbackScript` → classic mode: shell starts interactively, startup script written via `PtyWriter`.
 
-Flow tworzenia terminala z profilem:
-1. Empty tile → klik Terminal → jeśli są profile, pojawia się ProfileChooser (Back / Default / przyciski profili)
-2. Wybór profilu → `TileFactory.CreateContent(..., UserShellProfile)` → `ShellDetector.ResolveFromUserProfile()` → `TerminalTileViewModel` z shellem + startup scriptem
+Terminal creation flow with profile:
+1. Empty tile → click Terminal → if profiles exist, ProfileChooser appears (Back / Default / profile buttons)
+2. Profile selection → `TileFactory.CreateContent(..., UserShellProfile)` → `ShellDetector.ResolveFromUserProfile()` → `TerminalTileViewModel` with shell + startup script
 3. `IsDirectLaunch` → `DirectLauncher.LaunchWithFallback()`, else → `PtyWriter.AttachStartupScript()` + `LaunchProcess`
 
-Persystencja profilu w layout: `TileNode.UserProfileId` → przy deserializacji `TileFactory.CreateTerminalFromDto` szuka profilu po Id w `AppSettings.ShellProfiles`. Jeśli profil usunięty — graceful fallback na `ShellName`.
+Profile persistence in layout: `TileNode.UserProfileId` → during deserialization `TileFactory.CreateTerminalFromDto` looks up the profile by Id in `AppSettings.ShellProfiles`. If the profile was deleted — graceful fallback to `ShellName`.
 
 ## Settings UI
 
-Dialog Settings jako modal overlay z responsywnym rozmiarem (50% szerokości / 80% wysokości okna, min 420×400). Trzy zakładki:
+Settings dialog as a modal overlay with responsive sizing (50% window width / 80% window height, min 420×400). Three tabs:
 - **General** — Default Shell, Appearance (theme, color theme, font), Terminal (font)
-- **Profiles** — CRUD profili shella (lista + inline edit z akcentowym borderem)
-- **AI Tools** — autodetekcja CLI AI coding tools, test wersji, custom tools
+- **Profiles** — Shell profile CRUD (list + inline edit with accent border)
+- **AI Tools** — auto-detection of CLI AI coding tools, version testing, custom tools
 
-`SettingsViewModel.SelectedTab` steruje widocznością zakładek (0=General, 1=Profiles, 2=AI Tools). Style tab-buttons: `settings-tab` / `settings-tab-active` w `Controls.axaml`.
+`SettingsViewModel.SelectedTab` controls tab visibility (0=General, 1=Profiles, 2=AI Tools). Tab button styles: `settings-tab` / `settings-tab-active` in `Controls.axaml`.
 
 ## AI Tools
 
-Zakładka AI Tools w Settings wykrywa zainstalowane CLI AI coding tools i pozwala zarządzać custom tools.
+The AI Tools tab in Settings detects installed CLI AI coding tools and allows managing custom tools.
 
-**Modele:** `AiToolInfo` (runtime DTO z detekcji), `UserAiTool` (persystowany custom tool z Id/Name/BinaryName/VersionArgs/CustomPath).
+**Models:** `AiToolInfo` (runtime DTO from detection), `UserAiTool` (persisted custom tool with Id/Name/BinaryName/VersionArgs/CustomPath).
 
-**AiToolDetector** (statyczny, wzorowany na `ShellDetector`):
-- `Detect(customPaths, userTools)` — skanuje PATH + znane domowe lokalizacje (`~/.local/bin`, `~/go/bin`, `~/.{tool}/bin`, `%APPDATA%/npm`, `~/.cargo/bin`) z rozszerzeniami `.exe`/`.cmd`/`.bat` na Windows. Custom paths mają priorytet nad auto-detect. User tools mergowane z wbudowaną listą 18 narzędzi.
-- `TestAsync(AiToolInfo)` — uruchamia version command z 5s timeout, zwraca pierwszą linię stdout.
-- `FindInHomeDirs` — fallback gdy narzędzie nie jest na systemowym PATH (GUI app nie widzi ścieżek z shell profile).
+**AiToolDetector** (static, modeled after `ShellDetector`):
+- `Detect(customPaths, userTools)` — scans PATH + known home directories (`~/.local/bin`, `~/go/bin`, `~/.{tool}/bin`, `%APPDATA%/npm`, `~/.cargo/bin`) with `.exe`/`.cmd`/`.bat` extensions on Windows. Custom paths take priority over auto-detect. User tools merged with the built-in list of 18 tools.
+- `TestAsync(AiToolInfo)` — runs version command with 5s timeout, returns the first line of stdout.
+- `FindInHomeDirs` — fallback when the tool is not on the system PATH (GUI app does not see paths from shell profile).
 
-**AiToolViewModel** — MVVM wrapper z niezależnymi komendami per narzędzie (TestCommand, OpenFolderCommand, BrowsePathCommand, OpenUrlCommand, DeleteCommand). `BrowseFile` callback podpięty z View (file picker). `OnCustomPathSet` callback zapisuje do settings.
+**AiToolViewModel** — MVVM wrapper with independent commands per tool (TestCommand, OpenFolderCommand, BrowsePathCommand, OpenUrlCommand, DeleteCommand). `BrowseFile` callback wired from View (file picker). `OnCustomPathSet` callback saves to settings.
 
-**Lazy loading:** Detekcja uruchamiana przy pierwszym wejściu na tab AI Tools (`OnSelectedTabChanged`), nie przy starcie aplikacji.
+**Lazy loading:** Detection is triggered on first visit to the AI Tools tab (`OnSelectedTabChanged`), not at application startup.
 
-**Sortowanie:** Zainstalowane narzędzia na górze (alfabetycznie), niewykryte pod spodem (alfabetycznie).
+**Sorting:** Installed tools at the top (alphabetically), undetected below (alphabetically).
 
-**Persystencja w AppSettings:**
-- `CustomAiToolPaths` (Dict<string,string>) — nadpisane ścieżki dla wbudowanych narzędzi
-- `CustomAiTools` (List<UserAiTool>) — user-defined tools z CRUD w UI
+**Persistence in AppSettings:**
+- `CustomAiToolPaths` (Dict<string,string>) — overridden paths for built-in tools
+- `CustomAiTools` (List<UserAiTool>) — user-defined tools with CRUD in UI
 
-**UI karty narzędzia:** Left status strip (3px, zielony/szary), nazwa + wersja, binary w monospace + ścieżka, badge (CUSTOM/NOT FOUND), przyciski (delete/browse/folder/url/test). "Add Custom Tool" jako `add-row` na końcu listy.
+**Tool card UI:** Left status strip (3px, green/gray), name + version, binary in monospace + path, badge (CUSTOM/NOT FOUND), buttons (delete/browse/folder/url/test). "Add Custom Tool" as `add-row` at the end of the list.
 
 ## Database tile
 
-Pasywny tile konfiguracji baz danych per workspace. Nie zarządza serwisem (start/stop/discovery w Settings).
+Passive database configuration tile per workspace. Does not manage the service (start/stop/discovery in Settings).
 
-**Tile UI:** Checkbox `Enabled` (kontroluje zapis do `claude.local.md`), lista wybranych baz z toggle RW/RO, lista wszystkich wykrytych baz z przyciskiem dodania. Tile reaguje na `DatabaseServiceManager.StateChanged` i `SettingsChanged`.
+**Tile UI:** `Enabled` checkbox (controls writing to `claude.local.md`), list of selected databases with RW/RO toggle, list of all discovered databases with add button. Tile reacts to `DatabaseServiceManager.StateChanged` and `SettingsChanged`.
 
-**Architektura:** `DatabaseServiceManager` (singleton w App) zarządza `DbRegistry`, `DbLogger`, `DiscoveryService` i `DbHttpServer`. Tile rejestruje swój workspace w managerze (`RegisterWorkspace`/`UnregisterWorkspace`).
+**Architecture:** `DatabaseServiceManager` (singleton in App) manages `DbRegistry`, `DbLogger`, `DiscoveryService` and `DbHttpServer`. Tile registers its workspace with the manager (`RegisterWorkspace`/`UnregisterWorkspace`).
 
-**Globalny access control:** HTTP server odpytuje tylko bazy wybrane w co najmniej jednym workspace tile z `Enabled = true`. `IsDatabaseAllowed(key)` sprawdza unię grantów ze wszystkich workspace'ów. Baza usunięta ze wszystkich tile'ów jest automatycznie blokowana. `GET /databases` zwraca tylko dozwolone bazy.
+**Global access control:** HTTP server queries only databases selected in at least one workspace tile with `Enabled = true`. `IsDatabaseAllowed(key)` checks the union of grants from all workspaces. A database removed from all tiles is automatically blocked. `GET /databases` returns only allowed databases.
 
-**Detekcja baz:** SQL Server przez UDP broadcast na port 1434 (SQL Browser). PostgreSQL przez skanowanie portów (domyślnie 5432, 5433, 5434) na localhost i w sieci lokalnej. Discovery uruchamiane cyklicznie (domyślnie co 30 min).
+**Database discovery:** SQL Server via UDP broadcast on port 1434 (SQL Browser). PostgreSQL via port scanning (default 5432, 5433, 5434) on localhost and the local network. Discovery runs periodically (default every 30 min).
 
-**HTTP Server:** `DbHttpServer` na konfigurowalnym porcie (domyślnie 18080). Endpointy:
-- `GET /databases` — lista dozwolonych baz (filtrowana przez granty)
-- `GET/POST /query/{server}/{database}?sql=...` — zapytania SQL (tylko dozwolone bazy)
-- `GET/POST /query/{server}/{instance}/{database}` — z instancją
-- Limit body POST: 512KB. Limit wyników: 50k wierszy / 16MB.
+**HTTP Server:** `DbHttpServer` on a configurable port (default 18090). Endpoints:
+- `GET /databases` — list of allowed databases (filtered by grants)
+- `GET/POST /query/{server}/{database}?sql=...` — SQL queries (allowed databases only)
+- `GET/POST /query/{server}/{instance}/{database}` — with instance
+- POST body limit: 512KB. Result limit: 50k rows / 16MB.
 
-**SQL Guard:** Blokada DML (INSERT/UPDATE/DELETE) domyślnie. Odblokowanie per-baza w workspace config. DROP/TRUNCATE/ALTER zawsze zablokowane (nawet z allowModifications). Hasła w settings szyfrowane DPAPI.
+**SQL Guard:** DML blocking (INSERT/UPDATE/DELETE) by default. Unlockable per-database in workspace config. DROP/TRUNCATE/ALTER always blocked (even with allowModifications). Passwords in settings encrypted with DPAPI.
 
-**Workspace config:** `.mterminal/databases.json` — `WorkspaceDatabaseTileConfig` z `Enabled` (bool) i `Databases` (lista). Backward compat: stary format (JSON array) → `Enabled = true`. Przy zmianie konfiguracji generowany jest `claude.local.md` (tylko gdy `Enabled = true`).
+**Workspace config:** `.mterminal/databases.json` — `WorkspaceDatabaseTileConfig` with `Enabled` (bool) and `Databases` (list). Backward compat: old format (JSON array) → `Enabled = true`. On configuration change, `claude.local.md` is generated (only when `Enabled = true`).
 
-**Settings:** Zakładka Database w Settings — włączenie usługi, port HTTP, konfiguracja SQL Server (Windows Auth / SQL Auth) i PostgreSQL (credentials, porty), interwał skanowania, manual connections (CRUD z inline edit form, test connection). Save & Apply restartuje serwis automatycznie.
+**Settings:** Database tab in Settings — enable service, HTTP port, SQL Server configuration (Windows Auth / SQL Auth) and PostgreSQL (credentials, ports), scan interval, manual connections (CRUD with inline edit form, test connection). Save & Apply restarts the service automatically.
 
-**Manual Connections:** `ManualDatabaseConnection` w `DatabaseSettings.ManualConnections` — ręcznie definiowane połączenia (server, instance, database, port, auth). Rejestrowane w `DbRegistry` z `Source = "Manual"` przy starcie serwisu. Chronione przed nadpisaniem przez discovery (`TryRegister` sprawdza `Source == "Manual"`). Hasła szyfrowane DPAPI (`ProtectedStringConverter`).
+**Manual Connections:** `ManualDatabaseConnection` in `DatabaseSettings.ManualConnections` — manually defined connections (server, instance, database, port, auth). Registered in `DbRegistry` with `Source = "Manual"` at service startup. Protected from overwriting by discovery (`TryRegister` checks `Source == "Manual"`). Passwords encrypted with DPAPI (`ProtectedStringConverter`).
 
-**Logi:** `DbLogger` — logi zapytań HTTP i discovery w pamięci (max 500) + pliki dzienne w `%APPDATA%/MTerminal/db-logs/`.
+**Logs:** `DbLogger` — HTTP query and discovery logs in memory (max 500) + daily files in `%APPDATA%/MTerminal/db-logs/`.
 
 **Services:** `Services/Database/` — IDbProvider, SqlServerProvider, PostgreSqlProvider, SqlGuard, SqlGuardProfile, QueryHandler, DbRegistry, DiscoveryService, DbHttpServer, DbLogger, SubnetScanner, DatabaseServiceManager, ClaudeLocalMdWriter.
 
 ## Restart shell
 
-`RestartTerminal` w `LeafTileNodeViewModel` — kill + relaunch PTY. Dostępny przez ikonę Restart w headerze tile'a i Ctrl+Shift+R. Workaround na hang ConPTY po Ctrl+C w TUI apps (znany bug opencode na Windows).
+`RestartTerminal` in `LeafTileNodeViewModel` — kill + relaunch PTY. Available via the Restart icon in the tile header and Ctrl+Shift+R. Workaround for ConPTY hang after Ctrl+C in TUI apps (known opencode bug on Windows).
 
 ## Scrollbar Fluent theme fix
 
-`AppTheme.axaml` nadpisuje `VerticalSmallScrollThumbScaleTransform` / `HorizontalSmallScrollThumbScaleTransform` na `none`. Bez tego Fluent theme skaluje thumb do 12.5% na maszynach z domyślnym Windows "auto-hide scrollbars".
+`AppTheme.axaml` overrides `VerticalSmallScrollThumbScaleTransform` / `HorizontalSmallScrollThumbScaleTransform` to `none`. Without this, the Fluent theme scales the thumb to 12.5% on machines with the default Windows "auto-hide scrollbars" setting.
 
-## Crash handling i logowanie
+## Crash handling and logging
 
-`CrashHandler` przechwytuje wyjątki z trzech źródeł: `AppDomain.UnhandledException`, `TaskScheduler.UnobservedTaskException`, `Dispatcher.UIThread.UnhandledException`. Inicjalizowany w `Program.Main()` przed startem Avalonia.
+`CrashHandler` catches exceptions from three sources: `AppDomain.UnhandledException`, `TaskScheduler.UnobservedTaskException`, `Dispatcher.UIThread.UnhandledException`. Initialized in `Program.Main()` before Avalonia starts.
 
-`FileLogWriter` zapisuje logi do `%APPDATA%/MTerminal/logs/mterminal-YYYY-MM-DD.log` z automatycznym czyszczeniem plików starszych niż 7 dni. `LogTraceListener` przekierowuje `Trace` do plików logów.
+`FileLogWriter` writes logs to `%APPDATA%/MTerminal/logs/mterminal-YYYY-MM-DD.log` with automatic cleanup of files older than 7 days. `LogTraceListener` redirects `Trace` to log files.
 
-## Persystencja
+## Persistence
 
-- `%APPDATA%/MTerminal/` (Windows) lub `~/.config/MTerminal/` (Linux)
-- `settings.json` — ustawienia (fonty, theme terminala, default shell, shell profiles, custom AI tool paths/tools, stan okna)
-- `workspaces.json` — lista workspace'ów (id, nazwa, ścieżka)
-- `workspaces/{id}.json` — layout tile'ów per workspace (shell name, user profile id, tile id, tile name). Backward compat: `RootPane` → `RootTile` migracja w `WorkspaceState`
-- `logs/` — logi aplikacji (dzienne pliki, retencja 7 dni)
-- Auto-save z debounce
+- `%APPDATA%/MTerminal/` (Windows) or `~/.config/MTerminal/` (Linux)
+- `settings.json` — settings (fonts, terminal theme, default shell, shell profiles, custom AI tool paths/tools, window state)
+- `workspaces.json` — list of workspaces (id, name, path)
+- `workspaces/{id}.json` — tile layout per workspace (shell name, user profile id, tile id, tile name). Backward compat: `RootPane` → `RootTile` migration in `WorkspaceState`
+- `logs/` — application logs (daily files, 7-day retention)
+- Auto-save with debounce
 
-## Konwencje
+## Conventions
 
-- **Workspace** (nie "project") — katalog roboczy z tile'ami terminali/edytorów. PPM na workspace → context menu (Show in Explorer, Remove).
-- **Tile** (nie "pane"/"panel") — pojedynczy kafelek w workspace (terminal, notatka lub todo), dzielony w drzewo binarne
-- **Note** (nie "editor") — tile z edytorem tekstu (AvaloniaEdit), TileContentType.Note
-- **Todo** — tile z listą zadań, TileContentType.Todo
-- ViewModele w `ViewModels/`, widoki w `Views/`
-- **Git** — tile z podglądem zmian (diff, commit, stash, push, fetch, tags, undo, context menu, discard), TileContentType.Git
-- **Database** — tile z zarządzaniem bazami danych (SQL Server, PostgreSQL), HTTP bridge, logi zapytań, TileContentType.Database
-- Brak DI container — ręczne wstrzykiwanie w `App.axaml.cs`, `TileFactory` jako fabryka contentu tile'ów
-- **ConfirmAction pattern** — destructive actions (discard, remove workspace, undo commit) używają `Func<string, Task<bool>>? ConfirmAction` w ViewModel, podpięty z View jako `MessageBox.Avalonia` dialog (YesNo)
-- **PromptInput pattern** — `Func<string, string, IEnumerable<string>?, Task<string?>>? PromptInput` w ViewModel, podpięty z View jako `InputDialog` (title + text input + suggestions list). Używany np. przy tworzeniu taga.
-- **ShowError pattern** — `Func<string, string, Task>? ShowError` w ViewModel, podpięty z View jako `MessageBox.Avalonia` (Ok). Używany przy błędach push/fetch/tag/undo.
+- **Workspace** (not "project") — working directory with terminal/editor tiles. Right-click on workspace → context menu (Show in Explorer, Remove).
+- **Tile** (not "pane"/"panel") — a single tile in a workspace (terminal, note, or todo), split into a binary tree
+- **Note** (not "editor") — tile with text editor (AvaloniaEdit), TileContentType.Note
+- **Todo** — tile with task list, TileContentType.Todo
+- ViewModels in `ViewModels/`, views in `Views/`
+- **Git** — tile with change viewer (diff, commit, stash, push, fetch, tags, undo, context menu, discard), TileContentType.Git
+- **Database** — tile with database management (SQL Server, PostgreSQL), HTTP bridge, query logs, TileContentType.Database
+- No DI container — manual injection in `App.axaml.cs`, `TileFactory` as the tile content factory
+- **ConfirmAction pattern** — destructive actions (discard, remove workspace, undo commit) use `Func<string, Task<bool>>? ConfirmAction` in ViewModel, wired from View as `MessageBox.Avalonia` dialog (YesNo)
+- **PromptInput pattern** — `Func<string, string, IEnumerable<string>?, Task<string?>>? PromptInput` in ViewModel, wired from View as `InputDialog` (title + text input + suggestions list). Used e.g. when creating a tag.
+- **ShowError pattern** — `Func<string, string, Task>? ShowError` in ViewModel, wired from View as `MessageBox.Avalonia` (Ok). Used for push/fetch/tag/undo errors.
 
-## Git tile — szczegóły
+## Git tile — details
 
-`GitDirectoryWatcher` obserwuje zarówno `.git/` jak i cały katalog roboczy (worktree). Lista ignorowanych katalogów pobierana z `git ls-files --ignored` i aktualizowana przy każdym refresh. Handlery `Error` na watcherach logują przepełnienie bufora i triggerują refresh.
+`GitDirectoryWatcher` watches both `.git/` and the entire working directory (worktree). The list of ignored directories is retrieved from `git ls-files --ignored` and updated on every refresh. `Error` handlers on watchers log buffer overflow and trigger a refresh.
 
-`ReconcileChanges` w `GitTileViewModel` zachowuje stan checkboxów (`IsChecked`) między refresh'ami na podstawie klucza (FilePath + Status + mtime). Dwupoziomowy cache (currentState + previousState) chroni przed utratą stanu przy "migających" plikach. Przy pierwszym ładowaniu checkboxy = false, przy kolejnych refresh'ach nowe/zmienione pliki = true.
+`ReconcileChanges` in `GitTileViewModel` preserves checkbox state (`IsChecked`) between refreshes based on key (FilePath + Status + mtime). Two-level cache (currentState + previousState) protects against state loss with "flickering" files. On first load checkboxes = false, on subsequent refreshes new/changed files = true.
 
-Context menu (PPM) na liście plików: Show in Explorer, Open in default program, Copy filename/folder/filepath, Discard changes (z dialogiem potwierdzenia). Multi-select: PPM pokazuje tylko Discard z liczbą plików. Space toggle'uje checkboxy zaznaczonych plików.
+Context menu (right-click) on file list: Show in Explorer, Open in default program, Copy filename/folder/filepath, Discard changes (with confirmation dialog). Multi-select: right-click shows only Discard with file count. Space toggles checkboxes of selected files.
 
-Context menu (PPM) na liście commitów: Add tag..., Copy commit hash.
+Context menu (right-click) on commit list: Add tag..., Copy commit hash.
 
-**Push/Fetch/Undo:** Przyciski w tab barze Git tile. Push wykrywa upstream (brak → `push -u origin`). Fetch robi `fetch --all --prune`. Undo = `reset --soft HEAD~1`, dostępny tylko gdy ostatni commit jest lokalny (niepushowany). Wszystkie z error dialog.
+**Push/Fetch/Undo:** Buttons in the Git tile tab bar. Push detects upstream (missing → `push -u origin`). Fetch runs `fetch --all --prune`. Undo = `reset --soft HEAD~1`, available only when the last commit is local (unpushed). All with error dialog.
 
-**Tags:** Wyświetlane w historii commitów (kolor `TagColor`). Tworzenie przez context menu → `InputDialog` z listą ostatnich tagów. Walidacja nazwy regexem `[a-zA-Z0-9._/\-]+`.
+**Tags:** Displayed in commit history (color `TagColor`). Created via context menu → `InputDialog` with list of recent tags. Name validation with regex `[a-zA-Z0-9._/\-]+`.
 
-**Unpushed commits:** Oznaczone `*` (kolor `DangerText`) w historii. Licznik `(N)` przy przycisku Push. Logika: `git log upstream..HEAD`.
+**Unpushed commits:** Marked with `*` (color `DangerText`) in history. Counter `(N)` next to the Push button. Logic: `git log upstream..HEAD`.
 
-**Commit suggestions:** Popup przy polu commit message (ikona zegara). Top-3 najczęstsze + 10 ostatnich unikalnych z `git log --format=%s -50`.
+**Commit suggestions:** Popup at the commit message field (clock icon). Top-3 most frequent + 10 most recent unique from `git log --format=%s -50`.
 
-**`.mterminal/` filtering:** Setting `GitHideMTerminalDir` (default true) ukrywa pliki `.mterminal/` w liście zmian Git tile.
+**`.mterminal/` filtering:** Setting `GitHideMTerminalDir` (default true) hides `.mterminal/` files in the Git tile changes list.
 
-**DiffFontSize:** Panel diff używa 80% rozmiaru fontu (`FontSize * 0.8`).
+**DiffFontSize:** Diff panel uses 80% of font size (`FontSize * 0.8`).
 
 ## Workspace view caching
 
-`MainWindow` cachuje `WorkspaceView` instancje w `Dictionary<string, WorkspaceView>`. Przełączanie workspace'ów przez `IsVisible` toggle zamiast DataTemplate — terminale nie są zabijane/odtwarzane. `WorkspaceRemoved` event czyści cache i usuwa widok z visual tree.
+`MainWindow` caches `WorkspaceView` instances in `Dictionary<string, WorkspaceView>`. Switching workspaces via `IsVisible` toggle instead of DataTemplate — terminals are not killed/recreated. `WorkspaceRemoved` event clears the cache and removes the view from the visual tree.
 
 ## Workspace panel — branch names
 
-`WorkspaceItemViewModel` — wrapper na `Workspace` z `ObservableProperty BranchName`. Panel workspace'ów wyświetla branch name obok ścieżki (ikona SourceBranch + nazwa). `DispatcherTimer` co 30s odpytuje `GitService.GetBranchNameAsync` (statyczna metoda, tworzy tymczasowy `GitCommandRunner`). Dispose w `MainWindowViewModel.OnClosing`.
+`WorkspaceItemViewModel` — wrapper for `Workspace` with `ObservableProperty BranchName`. The workspace panel displays the branch name next to the path (SourceBranch icon + name). `DispatcherTimer` polls `GitService.GetBranchNameAsync` every 30s (static method, creates a temporary `GitCommandRunner`). Dispose in `MainWindowViewModel.OnClosing`.
 
 ## InputDialog
 
-Reusable modal dialog (`Views/InputDialog.axaml`): tytuł, TextBox z placeholder, opcjonalna lista sugestii (ListBox). Enter = OK, Escape = Cancel. Klik na sugestię wpisuje ją do TextBoxa. `ShowDialog<string?>` zwraca trimmed text lub null.
+Reusable modal dialog (`Views/InputDialog.axaml`): title, TextBox with placeholder, optional suggestions list (ListBox). Enter = OK, Escape = Cancel. Clicking a suggestion enters it into the TextBox. `ShowDialog<string?>` returns trimmed text or null.

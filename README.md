@@ -1,32 +1,32 @@
 # MTerminal
 
-Multiplatformowy terminal manager z systemem kafelkowych paneli. Windows, Linux, macOS.
+Cross-platform terminal manager with a tiling panel system. Windows, Linux, macOS.
 
-## Funkcje
+## Features
 
-- **Workspaces** — każdy workspace powiązany z katalogiem, przełączanie jednym kliknięciem, wyświetlanie aktualnego brancha git
-- **Split panes** — dzielenie paneli horyzontalnie/wertykalnie w dowolnych kombinacjach
-- **Terminale** — Git Bash, PowerShell, CMD (auto-detekcja), wybór domyślnego w ustawieniach
-- **Shell Profiles** — nazwane profile z wyborem shella, skryptem startowym, filtrowaniem po dostępności shella/AI tool, chooser profilu przy tworzeniu terminala
-- **Tile ID** — persystentny identyfikator tile'a, dostępny w startup script jako `${tileId}`, reset z restarem shella
-- **Git tile** — podgląd zmian w stylu GitHub Desktop: diff (unified + side-by-side), commit, stash, push/fetch, tag management, undo last commit, commit message suggestions, historia commitów z tagami i oznaczeniem niepushowanych, context menu (Show in Explorer, Open, Copy path/hash, Discard, Add tag), auto-refresh przy zmianach w worktree
-- **Database tile** — konfiguracja baz danych per workspace, HTTP-to-SQL bridge, auto-discovery SQL Server/PostgreSQL, manual connections, SQL Guard, generowanie claude.local.md
-- **Motywy terminala** — Default Dark, Dracula, Nord, Monokai, Solarized Dark, Catppuccin Mocha
-- **Edytor notatek** — AvaloniaEdit z numeracją linii, auto-zapis do `.mterminal/notes/`
-- **Lista Todo** — inline-editable checklist, Enter dodaje element, checkbox przesuwa na dół, auto-zapis do `.mterminal/todos/`
-- **Skróty klawiszowe** — Ctrl+C/V (copy/paste), Alt+key (ESC sequences), Ctrl+Shift+R (restart shell)
-- **Context menu workspace** — PPM → otwórz folder w eksploratorze (Windows/macOS/Linux), usuń workspace
-- **Rename paneli** — double-click na nazwę, auto-numeracja (Terminal #1, Note #1, Todo #1)
-- **Resizable panel** — workspace panel z regulowaną szerokością
-- **Crash logging** — logowanie wyjątków i trace do plików dziennych z automatyczną retencją
-- **AI Tools** — autodetekcja 18+ CLI AI coding tools (Claude Code, Cursor, Copilot CLI...), test wersji, custom tools
-- **Persystencja** — layout, workspaces, ustawienia, stan okna, profil shella
+- **Workspaces** — each workspace is linked to a directory, one-click switching, displays the current git branch
+- **Split panes** — split panels horizontally/vertically in any combination
+- **Terminals** — Git Bash, PowerShell, CMD (auto-detection), default shell selection in settings
+- **Shell Profiles** — named profiles with shell selection, startup script, filtering by shell/AI tool availability, profile chooser when creating a terminal
+- **Tile ID** — persistent tile identifier, available in startup script as `${tileId}`, reset with shell restart
+- **Git tile** — change viewer in GitHub Desktop style: diff (unified + side-by-side), commit, stash, push/fetch, tag management, undo last commit, commit message suggestions, commit history with tags and unpushed commit markers, context menu (Show in Explorer, Open, Copy path/hash, Discard, Add tag), auto-refresh on worktree changes
+- **Database tile** — per-workspace database configuration, HTTP-to-SQL bridge, auto-discovery of SQL Server/PostgreSQL, manual connections, SQL Guard, claude.local.md generation
+- **Terminal themes** — Default Dark, Dracula, Nord, Monokai, Solarized Dark, Catppuccin Mocha
+- **Note editor** — AvaloniaEdit with line numbering, auto-save to `.mterminal/notes/`
+- **Todo list** — inline-editable checklist, Enter adds an item, checkbox moves it to the bottom, auto-save to `.mterminal/todos/`
+- **Keyboard shortcuts** — Ctrl+C/V (copy/paste), Alt+key (ESC sequences), Ctrl+Shift+R (restart shell)
+- **Workspace context menu** — right-click to open folder in file explorer (Windows/macOS/Linux), remove workspace
+- **Panel renaming** — double-click on the name, auto-numbering (Terminal #1, Note #1, Todo #1)
+- **Resizable panel** — workspace panel with adjustable width
+- **Crash logging** — exception and trace logging to daily files with automatic retention
+- **AI Tools** — auto-detection of 18+ CLI AI coding tools (Claude Code, Cursor, Copilot CLI...), version testing, custom tools
+- **Persistence** — layout, workspaces, settings, window state, shell profile
 
-## Wymagania
+## Requirements
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download)
 
-## Uruchomienie
+## Running
 
 ```bash
 git clone <repo-url>
@@ -38,11 +38,11 @@ dotnet run --project src/MTerminal
 
 - .NET 10 + Avalonia 12
 - Iciclecreek.Avalonia.Terminal (PTY)
-- AvaloniaEdit (edytor tekstu)
+- AvaloniaEdit (text editor)
 - CommunityToolkit.Mvvm
 - MessageBox.Avalonia
 - Material.Icons.Avalonia
 
-## Licencja
+## License
 
 MIT
