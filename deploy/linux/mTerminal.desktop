@@ -1,8 +1,0 @@
-[Desktop Entry]
-Name=mTerminal
-Exec=mTerminal
-Icon=mterminal
-Type=Application
-Categories=Development;System;TerminalEmulator;
-Comment=Cross-platform terminal manager
-Terminal=false

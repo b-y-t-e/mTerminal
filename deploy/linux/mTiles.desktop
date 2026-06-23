@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=mTiles
+Exec=mTiles
+Icon=mterminal
+Type=Application
+Categories=Development;System;TerminalEmulator;
+Comment=Cross-platform terminal manager
+Terminal=false

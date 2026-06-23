@@ -1,0 +1,25 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:mTiles.ViewModels"
+             xmlns:todo="using:TodoList.Avalonia.Controls"
+             x:Class="mTiles.Views.TodoTileView"
+             x:DataType="vm:TodoTileViewModel">
+
+    <todo:TodoListEditor x:Name="Editor"
+                         MarkdownText="{Binding MdText, Mode=TwoWay}"
+                         DefaultFontName="{Binding FontFamily}"
+                         DefaultFontSize="{Binding FontSize}"
+                         ColorTheme="None"
+                         BackgroundBrush="{DynamicResource BgBase}"
+                         Foreground="{DynamicResource TextPrimary}"
+                         CheckedForeground="{DynamicResource TextMuted}"
+                         SelectionBrush="{DynamicResource AccentDefault}"
+                         CaretBrush="{DynamicResource TextSecondary}"
+                         CheckboxCheckedBrush="{DynamicResource AccentDefault}"
+                         CheckboxUncheckedBrush="{DynamicResource BgElevated}"
+                         CheckboxBorderBrush="{DynamicResource BorderSubtle}"
+                         CheckmarkBrush="{DynamicResource TextPrimary}"
+                         ScrollTrackBrush="Transparent"
+                         ScrollThumbBrush="{DynamicResource BorderSubtle}"
+                         ImageDisplay="Block" />
+</UserControl>

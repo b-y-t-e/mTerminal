@@ -1,4 +1,4 @@
-# mTerminal
+# mTiles
 
 Cross-platform terminal manager — .NET 10 + Avalonia 12.
 
@@ -6,12 +6,12 @@ Cross-platform terminal manager — .NET 10 + Avalonia 12.
 
 ```bash
 dotnet build
-dotnet run --project src/mTerminal
+dotnet run --project src/mTiles
 ```
 
 ## Structure
 
-- `src/mTerminal/` — the only project in the solution
+- `src/mTiles/` — the only project in the solution
 - `Models/` — DTOs and data models (Workspace, TileNode, AppSettings, AppDefaults, ShellProfile, UserShellProfile, TerminalTheme, GitFileChange, CommitLogEntry, AiToolInfo, UserAiTool, WorkspaceItemViewModel, DatabaseSettings, DatabaseInstance, WorkspaceDatabaseConfig)
 - `ViewModels/` — MVVM with CommunityToolkit.Mvvm (source generators)
 - `Views/` — Avalonia AXAML + code-behind

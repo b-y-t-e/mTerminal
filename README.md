@@ -2,15 +2,15 @@
 ![Linux](https://img.shields.io/badge/Linux-FCC624?style=flat&logo=linux&logoColor=black)
 ![macOS](https://img.shields.io/badge/macOS-000000?style=flat&logo=apple&logoColor=white)
 
-# mTerminal
+# mTiles
 
 Terminal manager built for AI-assisted development. Workspaces, split tiles, database bridge for LLM agents, git — in one window.
 
-![mTerminal](assets/screen2.png)
+![mTiles](assets/screen2.png)
 
 ## What makes it different
 
-Unlike Warp, Wave, or WezTerm — mTerminal doesn't try to be an AI itself. It manages the environment your AI tools run in.
+Unlike Warp, Wave, or WezTerm — mTiles doesn't try to be an AI itself. It manages the environment your AI tools run in.
 
 **Database bridge for LLM agents** — local HTTP server (port 18090) lets Claude Code, OpenCode, or any agent query SQL Server / PostgreSQL directly. The tile auto-generates `claude.local.md` so the agent discovers available databases without manual setup. No credentials are ever exposed to the agent.
 
@@ -29,9 +29,9 @@ Unlike Warp, Wave, or WezTerm — mTerminal doesn't try to be an AI itself. It m
 ## Running
 
 ```
-git clone https://github.com/b-y-t-e/mTerminal.git
-cd mTerminal
-dotnet run --project src/mTerminal
+git clone https://github.com/b-y-t-e/mTiles.git
+cd mTiles
+dotnet run --project src/mTiles
 ```
 
 Requires [.NET 10 SDK](https://dotnet.microsoft.com/download).
