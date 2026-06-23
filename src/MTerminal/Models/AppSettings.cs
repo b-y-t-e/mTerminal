@@ -19,6 +19,8 @@ public sealed class AppSettings
     public Dictionary<string, string> CustomAiToolPaths { get; set; } = [];
     public List<UserAiTool> CustomAiTools { get; set; } = [];
 
+    public DatabaseSettings Database { get; set; } = new();
+
     public bool DiffTrimIndent { get; set; } = true;
     public bool GitHideMTerminalDir { get; set; } = true;
     public string GitPath { get; set; } = "";

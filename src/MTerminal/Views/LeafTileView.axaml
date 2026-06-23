@@ -154,6 +154,24 @@
                                 </StackPanel>
                             </Grid>
                         </Button>
+                        <Button Classes="chooser-card"
+                                Command="{Binding SelectContentTypeCommand}"
+                                CommandParameter="{x:Static m:TileContentType.Database}">
+                            <Grid>
+                                <Border Background="{DynamicResource TileAccentDatabase}"
+                                        Width="3" CornerRadius="2"
+                                        HorizontalAlignment="Left"
+                                        VerticalAlignment="Stretch"
+                                        Margin="-16,0,0,0" />
+                                <StackPanel Spacing="4" HorizontalAlignment="Center">
+                                    <mi:MaterialIcon Kind="DatabaseOutline" Width="22" Height="22"
+                                                     HorizontalAlignment="Center"
+                                                     Foreground="{DynamicResource TileAccentDatabase}" />
+                                    <TextBlock Text="Database" FontSize="{DynamicResource FontSm}"
+                                               HorizontalAlignment="Center" />
+                                </StackPanel>
+                            </Grid>
+                        </Button>
                     </WrapPanel>
 
                     <!-- Profile chooser -->

@@ -6,5 +6,6 @@ public enum TileContentType
     Terminal,
     Note,
     Todo,
-    Git
+    Git,
+    Database
 }

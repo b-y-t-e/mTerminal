@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 using CommunityToolkit.Mvvm.ComponentModel;
 using MTerminal.Models;
 using MTerminal.Services;
+using MTerminal.Services.Database;
 using System.Linq;
 
 namespace MTerminal.ViewModels;
@@ -32,17 +33,19 @@ public partial class WorkspaceViewModel : ObservableObject, IDisposable
     private int _noteCount;
     private int _todoCount;
     private int _gitCount;
+    private int _dbCount;
     private readonly HashSet<string> _usedTerminalNames = new(StringComparer.OrdinalIgnoreCase);
 
     private static readonly Regex TileNumberRegex = new(@"#(\d+)$", RegexOptions.Compiled);
 
-    public WorkspaceViewModel(Workspace workspace, PersistenceService persistenceService, SettingsService settingsService)
+    public WorkspaceViewModel(Workspace workspace, PersistenceService persistenceService, SettingsService settingsService,
+        DatabaseServiceManager? dbManager = null)
     {
         WorkspaceId = workspace.Id;
         WorkingDirectory = workspace.DirectoryPath;
         _persistenceService = persistenceService;
         _settingsService = settingsService;
-        _tileFactory = new TileFactory(settingsService, ScheduleSave);
+        _tileFactory = new TileFactory(settingsService, ScheduleSave, dbManager);
 
         foreach (var shell in ShellDetector.Detect())
             AvailableShells.Add(shell);
@@ -174,7 +177,7 @@ public partial class WorkspaceViewModel : ObservableObject, IDisposable
             _usedTerminalNames.Add(name);
             return name;
         }
-        return TileFactory.AllocateTileName(type, ref _noteCount, ref _todoCount, ref _gitCount);
+        return TileFactory.AllocateTileName(type, ref _noteCount, ref _todoCount, ref _gitCount, ref _dbCount);
     }
 
     private void InitCountersFromDto(TileNode? node)
@@ -200,6 +203,8 @@ public partial class WorkspaceViewModel : ObservableObject, IDisposable
                             _todoCount = Math.Max(_todoCount, num);
                         else if (node.ContentType == TileContentType.Git)
                             _gitCount = Math.Max(_gitCount, num);
+                        else if (node.ContentType == TileContentType.Database)
+                            _dbCount = Math.Max(_dbCount, num);
                     }
                 }
             }

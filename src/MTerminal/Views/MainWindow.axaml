@@ -111,6 +111,11 @@
                                             Command="{Binding Settings.SelectTabCommand}"
                                             CommandParameter="{StaticResource Two}"
                                             Content="AI Tools" />
+                                    <Button Classes="settings-tab"
+                                            Classes.settings-tab-active="{Binding Settings.IsDatabaseTab}"
+                                            Command="{Binding Settings.SelectTabCommand}"
+                                            CommandParameter="{StaticResource Three}"
+                                            Content="Database" />
                                 </StackPanel>
                             </DockPanel>
                         </Border>

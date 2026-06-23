@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MTerminal.Models;
 using MTerminal.Services;
+using MTerminal.Services.Database;
 
 namespace MTerminal.ViewModels;
 
@@ -9,6 +10,7 @@ public partial class MainWindowViewModel : ObservableObject
 {
     private readonly PersistenceService _persistenceService;
     private readonly SettingsService _settingsService;
+    private readonly DatabaseServiceManager? _dbManager;
     private readonly Dictionary<string, WorkspaceViewModel> _workspaceCache = new();
 
     [ObservableProperty]
@@ -27,12 +29,13 @@ public partial class MainWindowViewModel : ObservableObject
     private bool _isSettingsOpen;
 
     public MainWindowViewModel(WorkspaceService workspaceService, PersistenceService persistenceService,
-        SettingsService settingsService)
+        SettingsService settingsService, DatabaseServiceManager? dbManager = null)
     {
         _persistenceService = persistenceService;
         _settingsService = settingsService;
+        _dbManager = dbManager;
         _workspacesPanel = new WorkspacesPanelViewModel(workspaceService, settingsService);
-        _settings = new SettingsViewModel(settingsService);
+        _settings = new SettingsViewModel(settingsService, dbManager);
 
         _workspacesPanel.PropertyChanged += (_, e) =>
         {
@@ -95,7 +98,7 @@ public partial class MainWindowViewModel : ObservableObject
 
         if (!_workspaceCache.TryGetValue(workspace.Id, out var vm))
         {
-            vm = new WorkspaceViewModel(workspace, _persistenceService, _settingsService);
+            vm = new WorkspaceViewModel(workspace, _persistenceService, _settingsService, _dbManager);
             _workspaceCache[workspace.Id] = vm;
         }
 

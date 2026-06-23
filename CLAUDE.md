@@ -12,11 +12,12 @@ dotnet run --project src/MTerminal
 ## Struktura
 
 - `src/MTerminal/` — jedyny projekt w solucji
-- `Models/` — DTO i modele danych (Workspace, TileNode, AppSettings, AppDefaults, ShellProfile, UserShellProfile, TerminalTheme, GitFileChange, CommitLogEntry, AiToolInfo, UserAiTool, WorkspaceItemViewModel)
+- `Models/` — DTO i modele danych (Workspace, TileNode, AppSettings, AppDefaults, ShellProfile, UserShellProfile, TerminalTheme, GitFileChange, CommitLogEntry, AiToolInfo, UserAiTool, WorkspaceItemViewModel, DatabaseSettings, DatabaseInstance, WorkspaceDatabaseConfig)
 - `ViewModels/` — MVVM z CommunityToolkit.Mvvm (source generators)
 - `Views/` — Avalonia AXAML + code-behind
 - `Styles/` — design tokens (`AppTheme.axaml`) i globalne style kontrolek (`Controls.axaml`, w tym GridSplitter). Kolory UI wyłącznie przez `DynamicResource`, terminal ANSI colors osobno w `TerminalTheme`
 - `Services/` — persystencja JSON (PersistenceService, SettingsService, WorkspaceService), detekcja shelli (ShellDetector), detekcja AI tools (AiToolDetector), ThemeBridge, JsonDefaults, AppPaths, GitService/GitCommandRunner/GitDirectoryWatcher, DiffFormatter, FileHelper, TileFactory, TileTreeSerializer, UpdateService, CrashHandler, FileLogWriter, LogTraceListener
+- `Services/Database/` — DatabaseServiceManager, DbHttpServer, DiscoveryService, DbRegistry, DbLogger, QueryHandler, SqlGuard, SqlGuardProfile, SqlServerProvider, PostgreSqlProvider, SubnetScanner, IDbProvider
 - `Views/PtyWriter.cs` — statyczny helper do zapisu do PTY przez refleksję (`TerminalView._ptyConnection.WriterStream`). Używany przez `TerminalKeyHandler` i startup script. `AttachStartupScript` podpina ShellReady handler z substitucją `${tileId}`
 - `ViewModels/TileActivationScope.cs` — per-workspace scope aktywacji tile'ów z mechanizmem supresji
 
@@ -114,6 +115,36 @@ Zakładka AI Tools w Settings wykrywa zainstalowane CLI AI coding tools i pozwal
 
 **UI karty narzędzia:** Left status strip (3px, zielony/szary), nazwa + wersja, binary w monospace + ścieżka, badge (CUSTOM/NOT FOUND), przyciski (delete/browse/folder/url/test). "Add Custom Tool" jako `add-row` na końcu listy.
 
+## Database tile
+
+Pasywny tile konfiguracji baz danych per workspace. Nie zarządza serwisem (start/stop/discovery w Settings).
+
+**Tile UI:** Checkbox `Enabled` (kontroluje zapis do `claude.local.md`), lista wybranych baz z toggle RW/RO, lista wszystkich wykrytych baz z przyciskiem dodania. Tile reaguje na `DatabaseServiceManager.StateChanged` i `SettingsChanged`.
+
+**Architektura:** `DatabaseServiceManager` (singleton w App) zarządza `DbRegistry`, `DbLogger`, `DiscoveryService` i `DbHttpServer`. Tile rejestruje swój workspace w managerze (`RegisterWorkspace`/`UnregisterWorkspace`).
+
+**Globalny access control:** HTTP server odpytuje tylko bazy wybrane w co najmniej jednym workspace tile z `Enabled = true`. `IsDatabaseAllowed(key)` sprawdza unię grantów ze wszystkich workspace'ów. Baza usunięta ze wszystkich tile'ów jest automatycznie blokowana. `GET /databases` zwraca tylko dozwolone bazy.
+
+**Detekcja baz:** SQL Server przez UDP broadcast na port 1434 (SQL Browser). PostgreSQL przez skanowanie portów (domyślnie 5432, 5433, 5434) na localhost i w sieci lokalnej. Discovery uruchamiane cyklicznie (domyślnie co 30 min).
+
+**HTTP Server:** `DbHttpServer` na konfigurowalnym porcie (domyślnie 18080). Endpointy:
+- `GET /databases` — lista dozwolonych baz (filtrowana przez granty)
+- `GET/POST /query/{server}/{database}?sql=...` — zapytania SQL (tylko dozwolone bazy)
+- `GET/POST /query/{server}/{instance}/{database}` — z instancją
+- Limit body POST: 512KB. Limit wyników: 50k wierszy / 16MB.
+
+**SQL Guard:** Blokada DML (INSERT/UPDATE/DELETE) domyślnie. Odblokowanie per-baza w workspace config. DROP/TRUNCATE/ALTER zawsze zablokowane (nawet z allowModifications). Hasła w settings szyfrowane DPAPI.
+
+**Workspace config:** `.mterminal/databases.json` — `WorkspaceDatabaseTileConfig` z `Enabled` (bool) i `Databases` (lista). Backward compat: stary format (JSON array) → `Enabled = true`. Przy zmianie konfiguracji generowany jest `claude.local.md` (tylko gdy `Enabled = true`).
+
+**Settings:** Zakładka Database w Settings — włączenie usługi, port HTTP, konfiguracja SQL Server (Windows Auth / SQL Auth) i PostgreSQL (credentials, porty), interwał skanowania, manual connections (CRUD z inline edit form, test connection). Save & Apply restartuje serwis automatycznie.
+
+**Manual Connections:** `ManualDatabaseConnection` w `DatabaseSettings.ManualConnections` — ręcznie definiowane połączenia (server, instance, database, port, auth). Rejestrowane w `DbRegistry` z `Source = "Manual"` przy starcie serwisu. Chronione przed nadpisaniem przez discovery (`TryRegister` sprawdza `Source == "Manual"`). Hasła szyfrowane DPAPI (`ProtectedStringConverter`).
+
+**Logi:** `DbLogger` — logi zapytań HTTP i discovery w pamięci (max 500) + pliki dzienne w `%APPDATA%/MTerminal/db-logs/`.
+
+**Services:** `Services/Database/` — IDbProvider, SqlServerProvider, PostgreSqlProvider, SqlGuard, SqlGuardProfile, QueryHandler, DbRegistry, DiscoveryService, DbHttpServer, DbLogger, SubnetScanner, DatabaseServiceManager, ClaudeLocalMdWriter.
+
 ## Restart shell
 
 `RestartTerminal` w `LeafTileNodeViewModel` — kill + relaunch PTY. Dostępny przez ikonę Restart w headerze tile'a i Ctrl+Shift+R. Workaround na hang ConPTY po Ctrl+C w TUI apps (znany bug opencode na Windows).
@@ -145,6 +176,7 @@ Zakładka AI Tools w Settings wykrywa zainstalowane CLI AI coding tools i pozwal
 - **Todo** — tile z listą zadań, TileContentType.Todo
 - ViewModele w `ViewModels/`, widoki w `Views/`
 - **Git** — tile z podglądem zmian (diff, commit, stash, push, fetch, tags, undo, context menu, discard), TileContentType.Git
+- **Database** — tile z zarządzaniem bazami danych (SQL Server, PostgreSQL), HTTP bridge, logi zapytań, TileContentType.Database
 - Brak DI container — ręczne wstrzykiwanie w `App.axaml.cs`, `TileFactory` jako fabryka contentu tile'ów
 - **ConfirmAction pattern** — destructive actions (discard, remove workspace, undo commit) używają `Func<string, Task<bool>>? ConfirmAction` w ViewModel, podpięty z View jako `MessageBox.Avalonia` dialog (YesNo)
 - **PromptInput pattern** — `Func<string, string, IEnumerable<string>?, Task<string?>>? PromptInput` w ViewModel, podpięty z View jako `InputDialog` (title + text input + suggestions list). Używany np. przy tworzeniu taga.

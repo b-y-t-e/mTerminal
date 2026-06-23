@@ -33,6 +33,7 @@
     <SolidColorBrush x:Key="TileAccentNote"     Color="#8a6d2d" />
     <SolidColorBrush x:Key="TileAccentTodo"     Color="#2d8a5a" />
     <SolidColorBrush x:Key="TileAccentGit"      Color="#7a3d8a" />
+    <SolidColorBrush x:Key="TileAccentDatabase" Color="#2d7a8a" />
 
     <!-- Danger (close/remove hover) -->
     <SolidColorBrush x:Key="DangerSubtle"  Color="#2e1a24" />
@@ -70,6 +71,7 @@
     <x:Int32 x:Key="Zero">0</x:Int32>
     <x:Int32 x:Key="One">1</x:Int32>
     <x:Int32 x:Key="Two">2</x:Int32>
+    <x:Int32 x:Key="Three">3</x:Int32>
 
     <Thickness x:Key="BorderThin">1</Thickness>
     <Thickness x:Key="BorderBottom">0,0,0,1</Thickness>

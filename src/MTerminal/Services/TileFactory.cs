@@ -1,6 +1,7 @@
 using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
 using MTerminal.Models;
+using MTerminal.Services.Database;
 using MTerminal.ViewModels;
 
 namespace MTerminal.Services;
@@ -9,11 +10,14 @@ public sealed class TileFactory
 {
     private readonly SettingsService _settingsService;
     private readonly Action? _onTileSettingsChanged;
+    private readonly DatabaseServiceManager? _dbManager;
 
-    public TileFactory(SettingsService settingsService, Action? onTileSettingsChanged = null)
+    public TileFactory(SettingsService settingsService, Action? onTileSettingsChanged = null,
+        DatabaseServiceManager? dbManager = null)
     {
         _settingsService = settingsService;
         _onTileSettingsChanged = onTileSettingsChanged;
+        _dbManager = dbManager;
     }
 
     public ObservableObject CreateContent(TileContentType type, string workingDir, ShellProfile? shell = null)
@@ -24,6 +28,9 @@ public sealed class TileFactory
             TileContentType.Note => CreateNote(workingDir),
             TileContentType.Todo => CreateTodo(workingDir),
             TileContentType.Git => new GitTileViewModel(workingDir, _settingsService) { TileSettingsChanged = _onTileSettingsChanged },
+            TileContentType.Database when _dbManager != null =>
+                new DatabaseTileViewModel(workingDir, _settingsService, _dbManager) { TileSettingsChanged = _onTileSettingsChanged },
+            TileContentType.Database => throw new InvalidOperationException("DatabaseServiceManager is not initialized."),
             _ => throw new ArgumentOutOfRangeException(nameof(type))
         };
     }
@@ -53,6 +60,9 @@ public sealed class TileFactory
                 new TodoTileViewModel(dto.TodoFilePath, _settingsService),
             TileContentType.Git =>
                 CreateGitFromDto(workingDir, dto.Settings, scheduleSave),
+            TileContentType.Database when _dbManager != null =>
+                new DatabaseTileViewModel(workingDir, _settingsService, _dbManager) { TileSettingsChanged = scheduleSave },
+            TileContentType.Database => null,
             TileContentType.Terminal =>
                 CreateTerminalFromDto(workingDir, dto.ShellName, dto.UserProfileId, availableShells),
             _ => CreateContent(dto.ContentType, workingDir)
@@ -73,13 +83,14 @@ public sealed class TileFactory
             git.ShowDiffPanel = el.GetBoolean();
     }
 
-    public static string AllocateTileName(TileContentType type, ref int noteCount, ref int todoCount, ref int gitCount)
+    public static string AllocateTileName(TileContentType type, ref int noteCount, ref int todoCount, ref int gitCount, ref int dbCount)
     {
         return type switch
         {
             TileContentType.Note => $"Note#{++noteCount}",
             TileContentType.Todo => $"Todo#{++todoCount}",
             TileContentType.Git => $"Git#{++gitCount}",
+            TileContentType.Database => $"DB#{++dbCount}",
             TileContentType.Empty => "",
             _ => type.ToString()
         };

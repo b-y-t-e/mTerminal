@@ -320,6 +320,32 @@
         <Setter Property="BorderThickness" Value="{DynamicResource BorderThin}" />
     </Style>
 
+    <!-- ======== TEXTBOX: inline filter (borderless, transparent) ======== -->
+    <Style Selector="TextBox.inline-filter">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondary}" />
+        <Setter Property="FontFamily" Value="{DynamicResource UiFontFamily}" />
+        <Setter Property="FontSize" Value="{DynamicResource UiFontSize}" />
+        <Setter Property="CaretBrush" Value="{DynamicResource TextMuted}" />
+        <Setter Property="SelectionBrush" Value="{DynamicResource AccentDefault}" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="TextBox.inline-filter /template/ Border#PART_BorderElement">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+    <Style Selector="TextBox.inline-filter:focus /template/ Border#PART_BorderElement">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+    <Style Selector="TextBox.inline-filter:pointerover /template/ Border#PART_BorderElement">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+
     <!-- ======== SCROLLBAR: force always-visible regardless of Windows overlay setting ======== -->
     <Style Selector="ScrollBar">
         <Setter Property="AllowAutoHide" Value="False" />

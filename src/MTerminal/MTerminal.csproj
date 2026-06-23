@@ -22,6 +22,9 @@
     <PackageReference Include="Avalonia.Themes.Fluent" Version="12.0.*" />
     <PackageReference Include="Avalonia.Fonts.Inter" Version="12.0.*" />
     <PackageReference Include="DiffPlex" Version="1.9.0" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.1" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="9.0.13" />
+    <PackageReference Include="Npgsql" Version="10.0.3" />
     <ProjectReference Include="..\..\..\Iciclecreek.Avalonia.Terminal\src\Iciclecreek.Avalonia.TerminalWindow\Iciclecreek.Avalonia.Terminal.csproj" />
     <ProjectReference Include="..\..\..\TodoListControl\TodoList.Avalonia\TodoList.Avalonia.csproj" />
     <ProjectReference Include="..\..\..\Notepad.Avalonia\Notepad.Avalonia\Notepad.Avalonia.csproj" />

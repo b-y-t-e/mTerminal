@@ -5,6 +5,7 @@ using Avalonia.Media;
 using Avalonia.Styling;
 using MTerminal.Models;
 using MTerminal.Services;
+using MTerminal.Services.Database;
 using MTerminal.ViewModels;
 using MTerminal.Views;
 
@@ -13,6 +14,7 @@ namespace MTerminal;
 public partial class App : Application
 {
     private SettingsService _settingsService = null!;
+    private DatabaseServiceManager? _dbManager;
 
     public override void Initialize()
     {
@@ -25,7 +27,11 @@ public partial class App : Application
         var workspaceService = new WorkspaceService();
         var persistenceService = new PersistenceService();
 
-        var mainVm = new MainWindowViewModel(workspaceService, persistenceService, _settingsService);
+        _dbManager = new DatabaseServiceManager(_settingsService);
+        if (_settingsService.Settings.Database.Enabled)
+            _dbManager.Start();
+
+        var mainVm = new MainWindowViewModel(workspaceService, persistenceService, _settingsService, _dbManager);
 
         _settingsService.SettingsChanged += () =>
         {
@@ -49,6 +55,8 @@ public partial class App : Application
             var mainWindow = new MainWindow { DataContext = mainVm };
             mainWindow.BindWindowState(_settingsService);
             desktop.MainWindow = mainWindow;
+
+            desktop.ShutdownRequested += (_, _) => _dbManager?.Dispose();
 
             var updateService = new UpdateService();
             _ = Task.Run(() => updateService.CheckAndPromptAsync(desktop));

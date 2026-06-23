@@ -1,5 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
+using MsgBox = MsBox.Avalonia.MessageBoxManager;
+using MsBox.Avalonia.Enums;
 using MTerminal.ViewModels;
 
 namespace MTerminal.Views;
@@ -16,6 +18,14 @@ public partial class SettingsView : UserControl
     {
         if (DataContext is SettingsViewModel vm)
         {
+            vm.ConfirmAction = async message =>
+            {
+                var window = TopLevel.GetTopLevel(this) as Window;
+                if (window == null) return true;
+                var box = MsgBox.GetMessageBoxStandard("Confirm", message, ButtonEnum.YesNo, Icon.Question);
+                var result = await box.ShowWindowDialogAsync(window);
+                return result == ButtonResult.Yes;
+            };
             vm.BrowseAiToolFile = async () =>
             {
                 var topLevel = TopLevel.GetTopLevel(this);
