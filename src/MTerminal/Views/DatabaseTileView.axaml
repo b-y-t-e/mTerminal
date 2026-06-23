@@ -123,28 +123,25 @@
             </DockPanel>
         </Border>
 
-        <!-- Service not running — empty state -->
-        <StackPanel IsVisible="{Binding !IsServiceRunning}"
-                    VerticalAlignment="Center" HorizontalAlignment="Center"
-                    Spacing="6" Margin="0,24">
-            <mi:MaterialIcon Kind="DatabaseOffOutline"
-                             Width="28" Height="28"
-                             Foreground="{DynamicResource TextFaint}"
-                             HorizontalAlignment="Center" />
-            <TextBlock Text="Database service is stopped"
-                       Foreground="{DynamicResource TextMuted}"
-                       FontFamily="{DynamicResource UiFontFamily}"
-                       FontSize="{DynamicResource UiFontSize}"
-                       HorizontalAlignment="Center" />
-            <TextBlock Text="Enable in Settings → Database"
-                       Foreground="{DynamicResource TextFaint}"
-                       FontFamily="{DynamicResource UiFontFamily}"
-                       FontSize="{DynamicResource UiFontSizeSm}"
-                       HorizontalAlignment="Center" />
-        </StackPanel>
+        <!-- Content area: empty state overlays tabs -->
+        <Panel>
+            <!-- Service not running — empty state -->
+            <StackPanel IsVisible="{Binding !IsServiceRunning}"
+                        VerticalAlignment="Center" HorizontalAlignment="Center"
+                        Spacing="6">
+                <mi:MaterialIcon Kind="DatabaseOffOutline"
+                                 Width="28" Height="28"
+                                 Foreground="{DynamicResource TextFaint}"
+                                 HorizontalAlignment="Center" />
+                <TextBlock Text="Enable in Settings → Database"
+                           Foreground="{DynamicResource TextFaint}"
+                           FontFamily="{DynamicResource UiFontFamily}"
+                           FontSize="{DynamicResource UiFontSizeSm}"
+                           HorizontalAlignment="Center" />
+            </StackPanel>
 
-        <!-- ===== Tab 0: Config (Databases) ===== -->
-        <DockPanel IsVisible="{Binding IsServiceRunning}">
+            <!-- ===== Tab 0: Config (Databases) ===== -->
+            <DockPanel IsVisible="{Binding IsServiceRunning}">
             <Panel>
                 <DockPanel IsVisible="{Binding IsConfigTab}">
 
@@ -434,7 +431,8 @@
                     </ScrollViewer>
                 </DockPanel>
             </Panel>
-        </DockPanel>
+            </DockPanel>
+        </Panel>
 
     </DockPanel>
 </UserControl>

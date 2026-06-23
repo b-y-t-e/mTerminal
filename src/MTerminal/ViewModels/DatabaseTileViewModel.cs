@@ -229,7 +229,7 @@ public partial class DatabaseTileViewModel : ObservableObject, IDisposable
 
         StatusText = _dbManager.IsRunning
             ? $"{_dbManager.Registry.Count} detected, {WorkspaceDatabases.Count} selected"
-            : "Service not running — enable in Settings → Database";
+            : "Databases";
 
         ApplyDetectedFilter();
     }
