@@ -11,7 +11,6 @@ namespace mTerminal.ViewModels;
 
 public partial class SettingsViewModel : ObservableObject
 {
-    public static string[] Themes { get; } = ["Dark", "Light"];
     public static string CustomShellOption => "Custom...";
     public static string[] ColorThemeNames { get; } = TerminalTheme.BuiltIn.Select(t => t.Name).ToArray();
     private static readonly string[] KnownShellNames = ["Git Bash", "PowerShell", "CMD", "bash", "zsh", "fish"];
@@ -90,9 +89,6 @@ public partial class SettingsViewModel : ObservableObject
 
     [ObservableProperty]
     private double _fontSize;
-
-    [ObservableProperty]
-    private string _theme;
 
     [ObservableProperty]
     private string _selectedShell;
@@ -238,7 +234,6 @@ public partial class SettingsViewModel : ObservableObject
         _terminalFontSize = s.TerminalFontSize;
         _fontFamily = s.FontFamily;
         _fontSize = s.FontSize;
-        _theme = s.Theme;
         _customShellPath = s.CustomShellPath;
         _customShellArgs = s.CustomShellArgs;
         _customShellType = s.CustomShellType.ToString();
@@ -285,7 +280,6 @@ public partial class SettingsViewModel : ObservableObject
     partial void OnTerminalFontSizeChanged(double value) { _settingsService.Settings.TerminalFontSize = value; _settingsService.NotifyChanged(); }
     partial void OnFontFamilyChanged(string value) { _settingsService.Settings.FontFamily = value; _settingsService.NotifyChanged(); }
     partial void OnFontSizeChanged(double value) { _settingsService.Settings.FontSize = value; _settingsService.NotifyChanged(); }
-    partial void OnThemeChanged(string value) { _settingsService.Settings.Theme = value; _settingsService.NotifyChanged(); }
     partial void OnGitHideMTerminalDirChanged(bool value) { _settingsService.Settings.GitHideMTerminalDir = value; _settingsService.NotifyChanged(); }
     partial void OnGitPathChanged(string value) { _settingsService.Settings.GitPath = value; _settingsService.NotifyChanged(); _ = DetectGitAsync(); }
 

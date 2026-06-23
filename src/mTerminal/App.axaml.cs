@@ -35,19 +35,15 @@ public partial class App : Application
 
         _settingsService.SettingsChanged += () =>
         {
-            var theme = _settingsService.Settings.Theme;
-            RequestedThemeVariant = theme == "Light"
-                ? ThemeVariant.Light
-                : ThemeVariant.Dark;
-            ThemeBridge.Apply(TerminalTheme.GetByName(_settingsService.Settings.ColorThemeName));
+            var colorTheme = TerminalTheme.GetByName(_settingsService.Settings.ColorThemeName);
+            RequestedThemeVariant = colorTheme.IsDark ? ThemeVariant.Dark : ThemeVariant.Light;
+            ThemeBridge.Apply(colorTheme);
             ApplyFontResources();
         };
 
-        RequestedThemeVariant = _settingsService.Settings.Theme == "Light"
-            ? ThemeVariant.Light
-            : ThemeVariant.Dark;
-
-        ThemeBridge.Apply(TerminalTheme.GetByName(_settingsService.Settings.ColorThemeName));
+        var initialColorTheme = TerminalTheme.GetByName(_settingsService.Settings.ColorThemeName);
+        RequestedThemeVariant = initialColorTheme.IsDark ? ThemeVariant.Dark : ThemeVariant.Light;
+        ThemeBridge.Apply(initialColorTheme);
         ApplyFontResources();
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)

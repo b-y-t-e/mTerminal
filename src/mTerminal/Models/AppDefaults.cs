@@ -4,7 +4,6 @@ public static class AppDefaults
 {
     public const string FontFamily = "Cascadia Mono, Consolas, monospace";
     public const double FontSize = 14;
-    public const string Theme = "Dark";
     public const string ColorThemeName = "Monokai";
 
     public const double FontSizeEpsilon = 0.01;

@@ -6,8 +6,6 @@ public sealed class AppSettings
     public double TerminalFontSize { get; set; } = AppDefaults.FontSize;
     public string FontFamily { get; set; } = AppDefaults.FontFamily;
     public double FontSize { get; set; } = AppDefaults.FontSize;
-    public string Theme { get; set; } = AppDefaults.Theme;
-
     public string ColorThemeName { get; set; } = AppDefaults.ColorThemeName;
     public string DefaultShellName { get; set; } = "";
     public string CustomShellPath { get; set; } = "";

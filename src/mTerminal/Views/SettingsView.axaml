@@ -85,13 +85,6 @@
                             <Border Padding="12,10">
                                 <StackPanel Spacing="10">
                                     <DockPanel>
-                                        <TextBlock Text="Theme" Classes="label"
-                                                   VerticalAlignment="Center" Width="90" />
-                                        <ComboBox Classes="setting"
-                                                  SelectedItem="{Binding Theme}"
-                                                  ItemsSource="{x:Static vm:SettingsViewModel.Themes}" />
-                                    </DockPanel>
-                                    <DockPanel>
                                         <TextBlock Text="Color Theme" Classes="label"
                                                    VerticalAlignment="Center" Width="90" />
                                         <ComboBox Classes="setting"
