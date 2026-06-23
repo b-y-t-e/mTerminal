@@ -2,18 +2,19 @@ using System.Diagnostics;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Threading;
 using Velopack;
+using Velopack.Sources;
 
 namespace MTerminal.Services;
 
 public sealed class UpdateService
 {
+    private const string GithubRepo = "https://github.com/b-y-t-e/mTerminal";
+
     public async Task CheckAndPromptAsync(IClassicDesktopStyleApplicationLifetime desktop)
     {
         try
         {
-            var updateUrl = Environment.GetEnvironmentVariable("MTERMINAL_UPDATE_URL")
-                            ?? "https://else.net.pl/mterminal/";
-            var mgr = new UpdateManager(updateUrl);
+            var mgr = new UpdateManager(new GithubSource(GithubRepo, null, false));
             var newVersion = mgr.CheckForUpdates();
             if (newVersion == null)
                 return;
