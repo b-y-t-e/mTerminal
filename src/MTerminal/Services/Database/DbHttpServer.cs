@@ -68,6 +68,30 @@ public sealed class DbHttpServer : IDisposable
         {
             var request = context.Request;
             var response = context.Response;
+
+            var rawHost = request.Headers["Host"]?.Trim() ?? "";
+            string host;
+            if (rawHost.StartsWith('['))
+            {
+                // IPv6: "Host: [::1]:18090" — extract address without brackets
+                var closeBracket = rawHost.IndexOf(']');
+                if (closeBracket < 0)
+                {
+                    RespondError(response, sw, 400, "Invalid Host header", clientIp, "-", null);
+                    return;
+                }
+                host = rawHost[1..closeBracket].ToLowerInvariant();
+            }
+            else
+            {
+                host = rawHost.Split(':')[0].ToLowerInvariant();
+            }
+            if (host != "localhost" && host != "127.0.0.1" && host != "::1")
+            {
+                RespondError(response, sw, 400, "Invalid Host header", clientIp, "-", null);
+                return;
+            }
+
             string path = request.Url!.AbsolutePath.TrimEnd('/');
 
             if (path.Equals("/databases", StringComparison.OrdinalIgnoreCase))

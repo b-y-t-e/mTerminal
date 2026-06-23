@@ -109,6 +109,25 @@ public static class SqlGuard
                 continue;
             }
 
+            // Skip line comments before checking for string delimiters —
+            // a bare ' inside -- comment would otherwise corrupt inSingle state
+            if (c == '-' && i + 1 < sql.Length && sql[i + 1] == '-')
+            {
+                while (i < sql.Length && sql[i] != '\n') i++;
+                continue;
+            }
+
+            // Skip block comments before checking for string delimiters —
+            // e.g. SELECT /* ' */ 1; DELETE would bypass ContainsSemicolonOutsideStrings
+            if (c == '/' && i + 1 < sql.Length && sql[i + 1] == '*')
+            {
+                i += 2;
+                while (i + 1 < sql.Length && !(sql[i] == '*' && sql[i + 1] == '/'))
+                    i++;
+                if (i + 1 < sql.Length) i++;
+                continue;
+            }
+
             if (c == '\'')
             {
                 inSingle = true;
