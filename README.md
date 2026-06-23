@@ -12,7 +12,7 @@ Terminal manager built for AI-assisted development. Workspaces, split tiles, dat
 
 Unlike Warp, Wave, or WezTerm — mTiles doesn't try to be an AI itself. It manages the environment your AI tools run in.
 
-**Database bridge for LLM agents** — local HTTP server (port 18090) lets Claude Code, OpenCode, or any agent query SQL Server / PostgreSQL directly. The tile auto-generates `claude.local.md` so the agent discovers available databases without manual setup. No credentials are ever exposed to the agent.
+**Database bridge for LLM agents** — lets Claude Code, OpenCode, or any agent query SQL Server / PostgreSQL directly via a local HTTP server. No credentials are ever exposed to the agent.
 
 **SQL Guard** — write protection enabled by default. INSERT/UPDATE/DELETE require explicit per-database unlock. DROP/TRUNCATE/ALTER always blocked. If the agent attempts a write in read-only mode, a real-time confirmation dialog appears. Keyword scanning strips comments to prevent bypass.
 
