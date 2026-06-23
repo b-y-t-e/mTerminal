@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <AvaloniaResource Include="Assets\mterminal-icon.png" />
+    <AvaloniaResource Include="Assets\mTerminal-logo.png" />
   </ItemGroup>
 
   <ItemGroup>

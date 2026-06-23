@@ -24,10 +24,10 @@
                             ToolTip.Tip="Toggle Workspaces Panel">
                         <mi:MaterialIcon Kind="Menu" Width="18" Height="18" />
                     </Button>
-                    <TextBlock Text="mTerminal" VerticalAlignment="Center"
-                               Foreground="{DynamicResource TextSecondary}"
-                               FontFamily="{DynamicResource UiFontFamily}"
-                               FontWeight="SemiBold" FontSize="{DynamicResource LogoFontSize}" Margin="8,0" />
+                    <!--
+                    <Image Source="avares://mTerminal/Assets/mTerminal-logo.png"
+                           Height="18" VerticalAlignment="Center" Margin="8,0" />
+                    -->
                 </StackPanel>
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="2">
                     <Button Classes="toolbar"
