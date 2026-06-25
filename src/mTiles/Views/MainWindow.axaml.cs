@@ -63,6 +63,14 @@ public partial class MainWindow : Window
             };
             vm.WorkspacesPanel.FocusWorkspaceRequested += () =>
                 vm.CurrentWorkspace?.FocusActiveTile();
+            vm.ConfirmAction = async message =>
+            {
+                var box = MsBox.Avalonia.MessageBoxManager.GetMessageBoxStandard(
+                    "Update Available", message,
+                    MsBox.Avalonia.Enums.ButtonEnum.YesNo, MsBox.Avalonia.Enums.Icon.Info);
+                var result = await box.ShowWindowDialogAsync(this);
+                return result == MsBox.Avalonia.Enums.ButtonResult.Yes;
+            };
             SwitchWorkspaceView(vm.CurrentWorkspace);
         }
     }

@@ -7,70 +7,133 @@
              x:DataType="vm:WorkspacesPanelViewModel"
              Background="{DynamicResource BgSurface}">
 
-    <DockPanel>
-        <!-- Settings button at bottom -->
-        <Button DockPanel.Dock="Bottom"
-                Classes="toolbar"
-                Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).ToggleSettingsCommand}"
-                HorizontalAlignment="Left"
-                Margin="8,4,8,6"
-                ToolTip.Tip="Settings">
-            <mi:MaterialIcon Kind="CogOutline" Width="18" Height="18" />
-        </Button>
+    <Panel>
+        <!-- ═══ EXPANDED MODE ═══ -->
+        <DockPanel x:Name="ExpandedPanel">
+            <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="2" Margin="8,4,8,6">
+                <Button Classes="toolbar"
+                        Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).ToggleSettingsCommand}"
+                        ToolTip.Tip="Settings">
+                    <mi:MaterialIcon Kind="CogOutline" Width="18" Height="18" />
+                </Button>
+                <Button Classes="toolbar"
+                        Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).ApplyUpdateCommand}"
+                        ToolTip.Tip="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).UpdateVersion, StringFormat='Update to {0}'}"
+                        IsVisible="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).IsUpdateAvailable}"
+                        Foreground="{DynamicResource AccentDefault}">
+                    <mi:MaterialIcon Kind="ArrowUpBoldCircleOutline" Width="18" Height="18" />
+                </Button>
+            </StackPanel>
 
-        <ScrollViewer HorizontalScrollBarVisibility="Disabled"
-                      VerticalScrollBarVisibility="Auto">
-            <StackPanel>
-                <ItemsControl x:Name="WorkspaceList"
-                              ItemsSource="{Binding Workspaces}"
-                              Margin="3, 4">
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                          VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <ItemsControl x:Name="WorkspaceList"
+                                  ItemsSource="{Binding Workspaces}"
+                                  Margin="3, 4">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="vm:WorkspaceItemViewModel">
+                                <Border Classes="workspace-item"
+                                        Classes.workspace-item-selected="{Binding IsSelected}"
+                                        Padding="10,6"
+                                        Margin="4,2"
+                                        CornerRadius="{DynamicResource RadiusLg}"
+                                        Cursor="Hand"
+                                        PointerPressed="WorkspaceItem_PointerPressed">
+                                    <StackPanel Spacing="1">
+                                        <TextBlock Text="{Binding Name}" FontWeight="Medium"
+                                                   Foreground="{DynamicResource TextPrimary}" />
+                                        <DockPanel>
+                                            <StackPanel DockPanel.Dock="Right"
+                                                        Orientation="Horizontal" Spacing="3"
+                                                        IsVisible="{Binding BranchName, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                                        VerticalAlignment="Center"
+                                                        Margin="6,0,0,0">
+                                                <mi:MaterialIcon Kind="SourceBranch" Width="10" Height="10"
+                                                                 Foreground="{DynamicResource AccentDefault}" />
+                                                <TextBlock Text="{Binding BranchName}"
+                                                           FontSize="{DynamicResource FontXs}"
+                                                           Foreground="{DynamicResource AccentDefault}" />
+                                            </StackPanel>
+                                            <TextBlock Text="{Binding DirectoryPath}"
+                                                       Foreground="{DynamicResource TextMuted}"
+                                                       FontSize="{DynamicResource UiFontSizeSm}"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       Opacity="0.8" />
+                                        </DockPanel>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <Button Classes="add-workspace"
+                            Command="{Binding AddWorkspaceCommand}"
+                            Margin="8,0, 8, 2"
+                            HorizontalAlignment="Stretch"
+                            Cursor="Hand">
+                        <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
+                            <mi:MaterialIcon Kind="Plus" Width="16" Height="16" />
+                            <TextBlock Text="Workspace" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </ScrollViewer>
+        </DockPanel>
+
+        <!-- ═══ COLLAPSED MODE (icon strip) ═══ -->
+        <DockPanel x:Name="CollapsedPanel" IsVisible="False">
+            <StackPanel DockPanel.Dock="Bottom" Spacing="2" HorizontalAlignment="Center" Margin="0,4,0,6">
+                <Button Classes="toolbar"
+                        Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).ApplyUpdateCommand}"
+                        ToolTip.Tip="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).UpdateVersion, StringFormat='Update to {0}'}"
+                        IsVisible="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).IsUpdateAvailable}"
+                        Foreground="{DynamicResource AccentDefault}"
+                        HorizontalAlignment="Center">
+                    <mi:MaterialIcon Kind="ArrowUpBoldCircleOutline" Width="16" Height="16" />
+                </Button>
+                <Button Classes="toolbar"
+                        Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).ToggleSettingsCommand}"
+                        HorizontalAlignment="Center"
+                        ToolTip.Tip="Settings">
+                    <mi:MaterialIcon Kind="CogOutline" Width="16" Height="16" />
+                </Button>
+            </StackPanel>
+
+            <Button DockPanel.Dock="Bottom"
+                    Classes="toolbar"
+                    Command="{Binding AddWorkspaceCommand}"
+                    HorizontalAlignment="Center"
+                    Margin="0,2,0,0"
+                    ToolTip.Tip="Add Workspace">
+                <mi:MaterialIcon Kind="Plus" Width="16" Height="16" />
+            </Button>
+
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                          VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding Workspaces}" Margin="0,4">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate DataType="vm:WorkspaceItemViewModel">
-                            <Border Classes="workspace-item"
-                                    Classes.workspace-item-selected="{Binding IsSelected}"
-                                    Padding="10,6"
-                                    Margin="4,2"
-                                    CornerRadius="{DynamicResource RadiusLg}"
+                            <Border Width="32" Height="32"
+                                    Margin="0,2"
+                                    CornerRadius="6"
+                                    HorizontalAlignment="Center"
                                     Cursor="Hand"
-                                    PointerPressed="WorkspaceItem_PointerPressed">
-                                <StackPanel Spacing="1">
-                                    <TextBlock Text="{Binding Name}" FontWeight="Medium"
-                                               Foreground="{DynamicResource TextPrimary}" />
-                                    <DockPanel>
-                                        <StackPanel DockPanel.Dock="Right"
-                                                    Orientation="Horizontal" Spacing="3"
-                                                    IsVisible="{Binding BranchName, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-                                                    VerticalAlignment="Center"
-                                                    Margin="6,0,0,0">
-                                            <mi:MaterialIcon Kind="SourceBranch" Width="10" Height="10"
-                                                             Foreground="{DynamicResource AccentDefault}" />
-                                            <TextBlock Text="{Binding BranchName}"
-                                                       FontSize="{DynamicResource FontXs}"
-                                                       Foreground="{DynamicResource AccentDefault}" />
-                                        </StackPanel>
-                                        <TextBlock Text="{Binding DirectoryPath}"
-                                                   Foreground="{DynamicResource TextMuted}"
-                                                   FontSize="{DynamicResource UiFontSizeSm}"
-                                                   TextTrimming="CharacterEllipsis"
-                                                   Opacity="0.8" />
-                                    </DockPanel>
-                                </StackPanel>
+                                    Background="Transparent"
+                                    ToolTip.Tip="{Binding Name}"
+                                    PointerPressed="CollapsedItem_PointerPressed"
+                                    Classes.workspace-icon-selected="{Binding IsSelected}">
+                                <TextBlock Text="{Binding Initials}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextMuted}" />
                             </Border>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-
-                <Button Classes="add-workspace"
-                        Command="{Binding AddWorkspaceCommand}"
-                        Margin="8,0, 8, 2"
-                        HorizontalAlignment="Stretch"
-                        Cursor="Hand">
-                    <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
-                        <mi:MaterialIcon Kind="Plus" Width="16" Height="16" />
-                        <TextBlock Text="Workspace" VerticalAlignment="Center" />
-                    </StackPanel>
-                </Button>
-            </StackPanel>
-        </ScrollViewer>
-    </DockPanel>
+            </ScrollViewer>
+        </DockPanel>
+    </Panel>
 </UserControl>

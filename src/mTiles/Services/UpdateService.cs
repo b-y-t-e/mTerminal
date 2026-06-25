@@ -1,46 +1,68 @@
 using System.Diagnostics;
-using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Threading;
 using Velopack;
 using Velopack.Sources;
 
 namespace mTiles.Services;
 
-public sealed class UpdateService
+public sealed class UpdateService : IDisposable
 {
     private const string GithubRepo = "https://github.com/b-y-t-e/mTiles";
+    private static readonly TimeSpan CheckInterval = TimeSpan.FromMinutes(10);
 
-    public async Task CheckAndPromptAsync(IClassicDesktopStyleApplicationLifetime desktop)
+    private readonly DispatcherTimer _timer;
+    private readonly UpdateManager _mgr = new(new GithubSource(GithubRepo, null, false));
+    private volatile UpdateInfo? _pendingUpdate;
+    private int _checking;
+
+    public event Action? UpdateAvailable;
+    public bool HasUpdate => _pendingUpdate != null;
+    public string? NewVersion => _pendingUpdate?.TargetFullRelease.Version.ToString();
+
+    public UpdateService()
     {
+        _timer = new DispatcherTimer { Interval = CheckInterval };
+        _timer.Tick += (_, _) => _ = Task.Run(() => CheckSilently());
+    }
+
+    public void StartPeriodicCheck()
+    {
+        _timer.Start();
+        _ = Task.Run(() => CheckSilently());
+    }
+
+    private void CheckSilently()
+    {
+        if (_pendingUpdate != null) return;
+        if (Interlocked.CompareExchange(ref _checking, 1, 0) != 0) return;
         try
         {
-            var mgr = new UpdateManager(new GithubSource(GithubRepo, null, false));
-            var newVersion = mgr.CheckForUpdates();
-            if (newVersion == null)
-                return;
-
-            mgr.DownloadUpdates(newVersion);
-
-            var shouldUpdate = await Dispatcher.UIThread.InvokeAsync(async () =>
+            var info = _mgr.CheckForUpdates();
+            if (info != null)
             {
-                var window = desktop.MainWindow;
-                if (window == null) return false;
-
-                var box = MsBox.Avalonia.MessageBoxManager.GetMessageBoxStandard(
-                    "Update Available",
-                    $"A new version ({newVersion.TargetFullRelease.Version}) is ready to install. Restart now to update?",
-                    MsBox.Avalonia.Enums.ButtonEnum.YesNo,
-                    MsBox.Avalonia.Enums.Icon.Info);
-                var result = await box.ShowWindowDialogAsync(window);
-                return result == MsBox.Avalonia.Enums.ButtonResult.Yes;
-            });
-
-            if (shouldUpdate)
-                mgr.ApplyUpdatesAndRestart(newVersion);
+                _mgr.DownloadUpdates(info);
+                _pendingUpdate = info;
+                Dispatcher.UIThread.Post(() => UpdateAvailable?.Invoke());
+            }
         }
         catch (Exception ex)
         {
             Debug.WriteLine($"Update check failed: {ex.Message}");
         }
+        finally
+        {
+            Interlocked.Exchange(ref _checking, 0);
+        }
+    }
+
+    public void ApplyUpdate()
+    {
+        if (_pendingUpdate == null) return;
+        _mgr.ApplyUpdatesAndRestart(_pendingUpdate);
+    }
+
+    public void Dispose()
+    {
+        _timer.Stop();
     }
 }

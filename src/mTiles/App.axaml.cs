@@ -53,9 +53,6 @@ public partial class App : Application
             desktop.MainWindow = mainWindow;
 
             desktop.ShutdownRequested += (_, _) => _dbManager?.Dispose();
-
-            var updateService = new UpdateService();
-            _ = Task.Run(() => updateService.CheckAndPromptAsync(desktop));
         }
 
         base.OnFrameworkInitializationCompleted();

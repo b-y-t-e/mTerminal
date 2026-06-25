@@ -11,6 +11,7 @@ public partial class MainWindowViewModel : ObservableObject
     private readonly PersistenceService _persistenceService;
     private readonly SettingsService _settingsService;
     private readonly DatabaseServiceManager? _dbManager;
+    private readonly UpdateService _updateService;
     private readonly Dictionary<string, WorkspaceViewModel> _workspaceCache = new();
 
     [ObservableProperty]
@@ -25,14 +26,28 @@ public partial class MainWindowViewModel : ObservableObject
     [ObservableProperty]
     private bool _isSettingsOpen;
 
+    [ObservableProperty]
+    private bool _isUpdateAvailable;
+
+    [ObservableProperty]
+    private string _updateVersion = "";
+
     public MainWindowViewModel(WorkspaceService workspaceService, PersistenceService persistenceService,
         SettingsService settingsService, DatabaseServiceManager? dbManager = null)
     {
         _persistenceService = persistenceService;
         _settingsService = settingsService;
         _dbManager = dbManager;
+        _updateService = new UpdateService();
         _workspacesPanel = new WorkspacesPanelViewModel(workspaceService, settingsService);
         _settings = new SettingsViewModel(settingsService, dbManager);
+
+        _updateService.UpdateAvailable += () =>
+        {
+            IsUpdateAvailable = true;
+            UpdateVersion = _updateService.NewVersion ?? "";
+        };
+        _updateService.StartPeriodicCheck();
 
         _workspacesPanel.PropertyChanged += (_, e) =>
         {
@@ -65,10 +80,26 @@ public partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     private void ToggleSettings() => IsSettingsOpen = !IsSettingsOpen;
 
+    public Func<string, Task<bool>>? ConfirmAction { get; set; }
+
+    [RelayCommand]
+    private async Task ApplyUpdateAsync()
+    {
+        if (!_updateService.HasUpdate) return;
+        var confirm = ConfirmAction;
+        if (confirm != null)
+        {
+            var accepted = await confirm($"Version {_updateService.NewVersion} is ready. Restart now to update?");
+            if (!accepted) return;
+        }
+        _updateService.ApplyUpdate();
+    }
+
     public event Action<string>? WorkspaceRemoved;
 
     public void DisposeAll()
     {
+        _updateService.Dispose();
         foreach (var vm in _workspaceCache.Values)
             vm.Dispose();
         _workspaceCache.Clear();
