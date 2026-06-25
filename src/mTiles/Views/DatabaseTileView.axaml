@@ -280,12 +280,6 @@
                                                                    Foreground="{DynamicResource TextMuted}" />
                                                     </Border>
                                                 </StackPanel>
-                                                <TextBlock Text="{Binding Server}"
-                                                           FontFamily="{DynamicResource UiFontFamily}"
-                                                           FontSize="{DynamicResource FontXs}"
-                                                           Foreground="{DynamicResource TextFaint}"
-                                                           TextTrimming="CharacterEllipsis"
-                                                           IsVisible="{Binding HasAlias}" />
                                             </StackPanel>
                                         </DockPanel>
                                     </Border>
