@@ -73,6 +73,7 @@ public partial class DatabaseTileViewModel : ObservableObject, IDisposable
 
     private void OnLogEntryLogged(DbLogEntry entry)
     {
+        if (entry.Category != "Http") return;
         Dispatcher.UIThread.Post(() =>
         {
             LogEntries.Add(entry);

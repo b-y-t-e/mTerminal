@@ -36,7 +36,7 @@ public static class ClaudeLocalMdWriter
         var sb = new StringBuilder();
         sb.AppendLine("# Database access");
         sb.AppendLine();
-        sb.AppendLine("SQL queries via local HTTP bridge. SELECT always allowed. DROP/TRUNCATE/ALTER always blocked.");
+        sb.AppendLine("SQL queries via local HTTP bridge. Always use plain SQL (SELECT/INSERT/UPDATE/DELETE) — never use EXEC sp_executesql or dynamic SQL wrappers. SELECT always allowed. DROP/TRUNCATE/ALTER always blocked.");
         sb.AppendLine();
 
         foreach (var (config, info) in resolvedDbs)
@@ -45,7 +45,7 @@ public static class ClaudeLocalMdWriter
                 ? info.Alias
                 : string.Join("/", config.DatabaseKey.Split('/'));
             var rw = config.AllowModifications ? "read-write" : "read-only";
-            sb.AppendLine($"- **{info.DisplayName}** ({info.Provider}, {rw}): `{baseUrl}/query/{urlPath}?sql=...` or POST sql body");
+            sb.AppendLine($"- **{info.DisplayName}** ({info.Provider}, {rw}): `GET {baseUrl}/query/{urlPath}?sql=SELECT+col+FROM+table`");
         }
 
         return sb.ToString();

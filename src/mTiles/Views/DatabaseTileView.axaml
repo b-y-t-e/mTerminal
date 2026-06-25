@@ -388,7 +388,7 @@
                                                                    FontWeight="Bold" />
                                                     </StackPanel>
                                                 </DockPanel>
-                                                <!-- Row 2: SQL or error -->
+                                                <!-- Row 2: SQL -->
                                                 <TextBlock Text="{Binding Sql}"
                                                            FontFamily="{DynamicResource UiFontFamily}"
                                                            FontSize="{DynamicResource FontXs}"
@@ -396,7 +396,8 @@
                                                            TextWrapping="Wrap"
                                                            MaxLines="3"
                                                            Margin="0,1,0,0"
-                                                           IsVisible="{Binding Error, Converter={x:Static StringConverters.IsNullOrEmpty}}" />
+                                                           IsVisible="{Binding Sql, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                                                <!-- Row 3: error -->
                                                 <TextBlock Text="{Binding Error}"
                                                            FontFamily="{DynamicResource UiFontFamily}"
                                                            FontSize="{DynamicResource FontXs}"
