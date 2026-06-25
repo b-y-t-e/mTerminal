@@ -46,43 +46,6 @@
         </Style>
 
         <!-- ── Commit message fields ── -->
-        <Style Selector="TextBox.commit-summary">
-            <Setter Property="FontFamily" Value="{DynamicResource UiFontFamily}" />
-            <Setter Property="FontSize" Value="{DynamicResource UiFontSizeSm}" />
-            <Setter Property="Background" Value="{DynamicResource BgElevated}" />
-            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
-            <Setter Property="CaretBrush" Value="{DynamicResource TextSecondary}" />
-            <Setter Property="SelectionBrush" Value="{DynamicResource AccentDefault}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtle}" />
-            <Setter Property="BorderThickness" Value="{DynamicResource BorderThin}" />
-            <Setter Property="CornerRadius" Value="{DynamicResource RadiusMd}" />
-            <Setter Property="MinHeight" Value="0" />
-            <Setter Property="Padding" Value="8,5" />
-            <Setter Property="AcceptsReturn" Value="False" />
-        </Style>
-        <Style Selector="TextBox.commit-summary:focus /template/ Border#PART_BorderElement">
-            <Setter Property="BorderBrush" Value="{DynamicResource AccentDefault}" />
-        </Style>
-
-        <Style Selector="TextBox.commit-desc">
-            <Setter Property="FontFamily" Value="{DynamicResource UiFontFamily}" />
-            <Setter Property="FontSize" Value="{DynamicResource UiFontSizeSm}" />
-            <Setter Property="Background" Value="{DynamicResource BgElevated}" />
-            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
-            <Setter Property="CaretBrush" Value="{DynamicResource TextSecondary}" />
-            <Setter Property="SelectionBrush" Value="{DynamicResource AccentDefault}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtle}" />
-            <Setter Property="BorderThickness" Value="{DynamicResource BorderThin}" />
-            <Setter Property="CornerRadius" Value="{DynamicResource RadiusMd}" />
-            <Setter Property="MinHeight" Value="32" />
-            <Setter Property="MaxHeight" Value="60" />
-            <Setter Property="Padding" Value="8,4" />
-            <Setter Property="AcceptsReturn" Value="True" />
-            <Setter Property="TextWrapping" Value="Wrap" />
-        </Style>
-        <Style Selector="TextBox.commit-desc:focus /template/ Border#PART_BorderElement">
-            <Setter Property="BorderBrush" Value="{DynamicResource AccentDefault}" />
-        </Style>
 
         <!-- ── Compact action button ── -->
         <Style Selector="Button.git-compact">

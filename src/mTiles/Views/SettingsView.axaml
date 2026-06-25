@@ -1051,7 +1051,7 @@
                 <!-- Filter -->
                 <TextBox Classes="inline-filter"
                          Text="{Binding DbFilterText, Mode=TwoWay}"
-                         Watermark="Filter databases..."
+                         PlaceholderText="Filter databases..."
                          IsVisible="{Binding !!DiscoveredDatabases.Count}" />
 
                 <!-- Scanning indicator -->

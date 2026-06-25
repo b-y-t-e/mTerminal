@@ -68,8 +68,6 @@
                                  Text="{Binding TileName}"
                                  IsVisible="False"
                                  Classes="inline-editor"
-                                 FontFamily="{DynamicResource UiFontFamily}"
-                                 FontSize="{DynamicResource UiFontSize}"
                                  LostFocus="TileNameEditor_Confirm"
                                  KeyDown="TileNameEditor_KeyDown" />
                     </DockPanel>

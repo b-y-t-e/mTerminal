@@ -62,15 +62,7 @@
                          DockPanel.Dock="Top"
                          FontFamily="{DynamicResource UiFontFamily}"
                          FontSize="{DynamicResource UiFontSizeSm}"
-                         Background="{DynamicResource BgSurface}"
-                         Foreground="{DynamicResource TextPrimary}"
-                         CaretBrush="{DynamicResource TextSecondary}"
-                         SelectionBrush="{DynamicResource AccentDefault}"
-                         BorderBrush="{DynamicResource BorderSubtle}"
-                         BorderThickness="1"
                          CornerRadius="{DynamicResource RadiusMd}"
-                         Padding="8,5"
-                         MinHeight="0"
                          AcceptsReturn="False" />
 
                 <TextBlock x:Name="SuggestionsLabel"

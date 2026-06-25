@@ -113,15 +113,10 @@
                 </StackPanel>
                 <TextBox x:Name="InputBox"
                          Text="{Binding InputText}"
-                         Watermark="Type a goal or answer..."
+                         PlaceholderText="Type a goal or answer..."
                          FontSize="{DynamicResource FontSm}"
                          FontFamily="{DynamicResource UiFontFamily}"
-                         BorderThickness="1"
-                         BorderBrush="{DynamicResource BorderSubtle}"
-                         Background="{DynamicResource BgBase}"
                          Padding="6,3"
-                         MinHeight="0"
-                         CornerRadius="{DynamicResource RadiusSm}"
                          KeyDown="InputBox_KeyDown" />
             </DockPanel>
         </Border>

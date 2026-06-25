@@ -275,11 +275,43 @@
         <Setter Property="Foreground" Value="{DynamicResource TextMuted}" />
     </Style>
 
-    <!-- ======== FORM: setting controls ======== -->
-    <Style Selector="TextBox.setting">
-        <Setter Property="FontSize" Value="{DynamicResource FontMd}" />
+    <!-- ======== TEXTBOX: global base ======== -->
+    <Style Selector="TextBox">
         <Setter Property="Background" Value="{DynamicResource BgSurface}" />
         <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+        <Setter Property="CaretBrush" Value="{DynamicResource TextSecondary}" />
+        <Setter Property="SelectionBrush" Value="{DynamicResource AccentDefault}" />
+        <Setter Property="SelectionForegroundBrush" Value="{DynamicResource TextHover}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtle}" />
+        <Setter Property="BorderThickness" Value="{DynamicResource BorderThin}" />
+        <Setter Property="CornerRadius" Value="{DynamicResource RadiusSm}" />
+        <Setter Property="FontSize" Value="{DynamicResource FontMd}" />
+        <Setter Property="Padding" Value="8,5" />
+        <Setter Property="MinHeight" Value="0" />
+    </Style>
+    <Style Selector="TextBox /template/ Border#PART_BorderElement">
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtle}" />
+        <Setter Property="BorderThickness" Value="{DynamicResource BorderThin}" />
+        <Setter Property="CornerRadius" Value="{DynamicResource RadiusSm}" />
+        <Setter Property="Background" Value="{DynamicResource BgSurface}" />
+    </Style>
+    <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderStrong}" />
+    </Style>
+    <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+        <Setter Property="BorderBrush" Value="{DynamicResource AccentDefault}" />
+        <Setter Property="BorderThickness" Value="{DynamicResource BorderThin}" />
+    </Style>
+    <Style Selector="TextBox /template/ TextBlock#PART_Watermark">
+        <Setter Property="Foreground" Value="{DynamicResource TextMuted}" />
+        <Setter Property="Opacity" Value="0.7" />
+    </Style>
+    <Style Selector="TextBox /template/ TextBlock#PART_FloatingWatermark">
+        <Setter Property="IsVisible" Value="False" />
+    </Style>
+
+    <!-- ======== FORM: setting controls ======== -->
+    <Style Selector="TextBox.setting">
         <Setter Property="CornerRadius" Value="{DynamicResource RadiusMd}" />
     </Style>
     <Style Selector="ComboBox.setting">
@@ -298,16 +330,8 @@
 
     <!-- ======== TEXTBOX: inline editor (tile name) ======== -->
     <Style Selector="TextBox.inline-editor">
-        <Setter Property="FontSize" Value="{DynamicResource FontMd}" />
         <Setter Property="FontWeight" Value="Medium" />
-        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
-        <Setter Property="Background" Value="{DynamicResource BgSurface}" />
-        <Setter Property="SelectionBrush" Value="{DynamicResource AccentDefault}" />
-        <Setter Property="SelectionForegroundBrush" Value="{DynamicResource TextHover}" />
-        <Setter Property="CaretBrush" Value="{DynamicResource TextSecondary}" />
         <Setter Property="BorderBrush" Value="{DynamicResource AccentDefault}" />
-        <Setter Property="BorderThickness" Value="{DynamicResource BorderThin}" />
-        <Setter Property="CornerRadius" Value="{DynamicResource RadiusSm}" />
         <Setter Property="Padding" Value="4,1" />
         <Setter Property="Margin" Value="0" />
         <Setter Property="Height" Value="22" />
@@ -315,9 +339,38 @@
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="MinWidth" Value="60" />
     </Style>
-    <Style Selector="TextBox.inline-editor:focus /template/ Border#PART_BorderElement">
+    <Style Selector="TextBox.inline-editor /template/ Border#PART_BorderElement">
         <Setter Property="BorderBrush" Value="{DynamicResource AccentDefault}" />
-        <Setter Property="BorderThickness" Value="{DynamicResource BorderThin}" />
+    </Style>
+
+    <!-- ======== TEXTBOX: commit summary (single line) ======== -->
+    <Style Selector="TextBox.commit-summary">
+        <Setter Property="Background" Value="{DynamicResource BgElevated}" />
+        <Setter Property="CornerRadius" Value="{DynamicResource RadiusMd}" />
+        <Setter Property="AcceptsReturn" Value="False" />
+    </Style>
+    <Style Selector="TextBox.commit-summary /template/ Border#PART_BorderElement">
+        <Setter Property="Background" Value="{DynamicResource BgElevated}" />
+    </Style>
+    <Style Selector="TextBox.commit-summary:focus /template/ Border#PART_BorderElement">
+        <Setter Property="BorderBrush" Value="{DynamicResource AccentDefault}" />
+    </Style>
+
+    <!-- ======== TEXTBOX: commit description (multiline) ======== -->
+    <Style Selector="TextBox.commit-desc">
+        <Setter Property="Background" Value="{DynamicResource BgElevated}" />
+        <Setter Property="CornerRadius" Value="{DynamicResource RadiusMd}" />
+        <Setter Property="MinHeight" Value="32" />
+        <Setter Property="MaxHeight" Value="60" />
+        <Setter Property="Padding" Value="8,4" />
+        <Setter Property="AcceptsReturn" Value="True" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+    <Style Selector="TextBox.commit-desc /template/ Border#PART_BorderElement">
+        <Setter Property="Background" Value="{DynamicResource BgElevated}" />
+    </Style>
+    <Style Selector="TextBox.commit-desc:focus /template/ Border#PART_BorderElement">
+        <Setter Property="BorderBrush" Value="{DynamicResource AccentDefault}" />
     </Style>
 
     <!-- ======== TEXTBOX: inline filter (borderless, transparent) ======== -->
@@ -325,10 +378,7 @@
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Foreground" Value="{DynamicResource TextSecondary}" />
-        <Setter Property="FontFamily" Value="{DynamicResource UiFontFamily}" />
-        <Setter Property="FontSize" Value="{DynamicResource UiFontSize}" />
         <Setter Property="CaretBrush" Value="{DynamicResource TextMuted}" />
-        <Setter Property="SelectionBrush" Value="{DynamicResource AccentDefault}" />
         <Setter Property="Padding" Value="0" />
         <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
