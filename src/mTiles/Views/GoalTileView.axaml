@@ -85,13 +85,6 @@
                               MinHeight="0" Padding="4,1"
                               BorderThickness="0"
                               Background="Transparent" />
-                    <ComboBox ItemsSource="{Binding AvailableModels}"
-                              SelectedItem="{Binding SelectedModel}"
-                              FontSize="{DynamicResource FontXs}"
-                              FontFamily="{DynamicResource UiFontFamily}"
-                              MinHeight="0" Padding="4,1"
-                              BorderThickness="0"
-                              Background="Transparent" />
                     <Ellipse x:Name="PhaseDot" Width="6" Height="6"
                              VerticalAlignment="Center"
                              Margin="8,0,0,0" />

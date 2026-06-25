@@ -81,14 +81,13 @@ public sealed class GoalWorkflowEngine
             _ => $"Resumed at {CurrentPhase} phase."
         };
 
-    public GoalTileState ToState(List<GoalMessage> messages, string toolName, string model) => new()
+    public GoalTileState ToState(List<GoalMessage> messages, string toolName) => new()
     {
         OriginalGoal = OriginalGoal,
         ClarificationHistory = [..ClarificationHistory],
         ApprovedPlan = ApprovedPlan,
         CurrentPhase = CurrentPhase,
         SelectedToolName = toolName,
-        SelectedModel = model,
         IterationCount = IterationCount,
         IsPaused = IsPaused,
         LastReviewFeedback = LastReviewFeedback,

@@ -23,7 +23,6 @@ public partial class GoalTileViewModel : ObservableObject, IDisposable
     [ObservableProperty] private GoalPhase _currentPhase = GoalPhase.Goal;
     [ObservableProperty] private bool _isRunning;
     [ObservableProperty] private string _selectedToolName = "Claude Code";
-    [ObservableProperty] private string _selectedModel = "claude-opus-4-6";
     [ObservableProperty] private string _phaseLabel = "Waiting for goal...";
     [ObservableProperty] private bool _isPaused;
 
@@ -32,14 +31,6 @@ public partial class GoalTileViewModel : ObservableObject, IDisposable
     public Action? ScrollToEnd { get; set; }
     public Action? TileSettingsChanged { get; set; }
     public Func<string, Task<bool>>? ConfirmAction { get; set; }
-
-    public List<string> AvailableModels { get; } =
-    [
-        "claude-opus-4-6",
-        "claude-sonnet-4-6",
-        "claude-haiku-4-5-20251001",
-        "claude-fable-5"
-    ];
 
     private AiToolInfo? _resolvedTool;
 
@@ -54,7 +45,6 @@ public partial class GoalTileViewModel : ObservableObject, IDisposable
         _filePath = Path.Combine(goalsDir, $"{Guid.NewGuid():N}.json");
 
         DetectTools();
-        LoadDefaultModel();
     }
 
     public GoalTileViewModel(string filePath, string workingDirectory, SettingsService settingsService)
@@ -64,7 +54,6 @@ public partial class GoalTileViewModel : ObservableObject, IDisposable
         _filePath = filePath;
 
         DetectTools();
-        LoadDefaultModel();
         _isLoading = true;
         LoadState();
         _isLoading = false;
@@ -98,30 +87,10 @@ public partial class GoalTileViewModel : ObservableObject, IDisposable
             SelectedToolName = _resolvedTool.Name;
     }
 
-    private void LoadDefaultModel()
-    {
-        var defaults = _settingsService.Settings.GoalDefaultModels;
-        var toolBinary = _resolvedTool?.BinaryName;
-        if (toolBinary != null && defaults.TryGetValue(toolBinary, out var model))
-            SelectedModel = model;
-    }
-
     partial void OnSelectedToolNameChanged(string value)
     {
         var tools = GetCachedTools();
         _resolvedTool = tools.FirstOrDefault(t => t.Name == value && t.IsInstalled);
-        LoadDefaultModel();
-    }
-
-    partial void OnSelectedModelChanged(string value)
-    {
-        if (_isLoading) return;
-        var toolBinary = _resolvedTool?.BinaryName;
-        if (toolBinary != null)
-        {
-            _settingsService.Settings.GoalDefaultModels[toolBinary] = value;
-            _settingsService.Save();
-        }
     }
 
     // ── Phase dispatch ──────────────────────────────────
@@ -304,7 +273,6 @@ public partial class GoalTileViewModel : ObservableObject, IDisposable
                 _resolvedTool.ExecutablePath,
                 prompt,
                 _workingDirectory,
-                SelectedModel,
                 runner,
                 ct: _cts.Token);
 
@@ -446,7 +414,7 @@ public partial class GoalTileViewModel : ObservableObject, IDisposable
             else
                 messagesCopy = Dispatcher.UIThread.Invoke(() => Messages.ToList());
 
-            var state = _engine.ToState(messagesCopy, SelectedToolName, SelectedModel);
+            var state = _engine.ToState(messagesCopy, SelectedToolName);
             _persistence.Save(_filePath, state);
         }
         catch (Exception ex)
@@ -465,7 +433,6 @@ public partial class GoalTileViewModel : ObservableObject, IDisposable
             _engine.LoadFrom(state);
             CurrentPhase = state.CurrentPhase;
             SelectedToolName = state.SelectedToolName;
-            SelectedModel = state.SelectedModel;
             IsPaused = state.IsPaused;
 
             foreach (var m in state.Messages)

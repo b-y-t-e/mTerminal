@@ -13,18 +13,19 @@ public sealed class AiOutputChunk
 
 public interface IAiToolRunner
 {
-    void ConfigureProcess(ProcessStartInfo psi, string prompt, string model, int maxTurns, bool streaming);
+    // No model parameter — each tool uses its own default model.
+    // Tools support many providers so there's no way to build a universal model list.
+    // If tools add a model listing command in the future, we can re-add model selection.
+    void ConfigureProcess(ProcessStartInfo psi, string prompt, int maxTurns, bool streaming);
     AiOutputChunk? ParseLine(string line);
 }
 
 public sealed class ClaudeToolRunner : IAiToolRunner
 {
-    public void ConfigureProcess(ProcessStartInfo psi, string prompt, string model, int maxTurns, bool streaming)
+    public void ConfigureProcess(ProcessStartInfo psi, string prompt, int maxTurns, bool streaming)
     {
         psi.ArgumentList.Add("-p");
         psi.ArgumentList.Add(prompt);
-        psi.ArgumentList.Add("--model");
-        psi.ArgumentList.Add(model);
         psi.ArgumentList.Add("--output-format");
         psi.ArgumentList.Add(streaming ? "stream-json" : "text");
         psi.ArgumentList.Add("--max-turns");
@@ -77,11 +78,53 @@ public sealed class ClaudeToolRunner : IAiToolRunner
     }
 }
 
+public sealed class CodexToolRunner : IAiToolRunner
+{
+    public void ConfigureProcess(ProcessStartInfo psi, string prompt, int maxTurns, bool streaming)
+    {
+        psi.ArgumentList.Add("exec");
+        psi.ArgumentList.Add(prompt);
+    }
+
+    public AiOutputChunk? ParseLine(string line) =>
+        string.IsNullOrWhiteSpace(line) ? null : new AiOutputChunk { Content = line };
+}
+
+public sealed class OpenCodeToolRunner : IAiToolRunner
+{
+    public void ConfigureProcess(ProcessStartInfo psi, string prompt, int maxTurns, bool streaming)
+    {
+        psi.ArgumentList.Add("run");
+        psi.ArgumentList.Add(prompt);
+    }
+
+    public AiOutputChunk? ParseLine(string line) =>
+        string.IsNullOrWhiteSpace(line) ? null : new AiOutputChunk { Content = line };
+}
+
+public sealed class PiToolRunner : IAiToolRunner
+{
+    public void ConfigureProcess(ProcessStartInfo psi, string prompt, int maxTurns, bool streaming)
+    {
+        psi.ArgumentList.Add("-p");
+        psi.ArgumentList.Add(prompt);
+        psi.ArgumentList.Add("--mode");
+        psi.ArgumentList.Add("text");
+    }
+
+    public AiOutputChunk? ParseLine(string line) =>
+        string.IsNullOrWhiteSpace(line) ? null : new AiOutputChunk { Content = line };
+}
+
 public static class AiProcessRunner
 {
     private static readonly ConcurrentDictionary<string, IAiToolRunner> Runners = new(StringComparer.OrdinalIgnoreCase)
     {
-        ["claude"] = new ClaudeToolRunner()
+        ["claude"] = new ClaudeToolRunner(),
+        ["openclaude"] = new ClaudeToolRunner(),
+        ["codex"] = new CodexToolRunner(),
+        ["opencode"] = new OpenCodeToolRunner(),
+        ["pi"] = new PiToolRunner()
     };
 
     public static void RegisterRunner(string toolBinary, IAiToolRunner runner) =>
@@ -96,13 +139,12 @@ public static class AiProcessRunner
         string executablePath,
         string prompt,
         string workingDirectory,
-        string model,
         IAiToolRunner runner,
         int maxTurns = 20,
         [EnumeratorCancellation] CancellationToken ct = default)
     {
         var psi = CreateProcessStartInfo(executablePath, workingDirectory);
-        runner.ConfigureProcess(psi, prompt, model, maxTurns, streaming: true);
+        runner.ConfigureProcess(psi, prompt, maxTurns, streaming: true);
 
         using var process = new Process { StartInfo = psi };
         process.Start();
@@ -132,13 +174,12 @@ public static class AiProcessRunner
         string executablePath,
         string prompt,
         string workingDirectory,
-        string model,
         IAiToolRunner runner,
         int maxTurns = 20,
         CancellationToken ct = default)
     {
         var psi = CreateProcessStartInfo(executablePath, workingDirectory);
-        runner.ConfigureProcess(psi, prompt, model, maxTurns, streaming: false);
+        runner.ConfigureProcess(psi, prompt, maxTurns, streaming: false);
 
         using var process = new Process { StartInfo = psi };
         process.Start();
