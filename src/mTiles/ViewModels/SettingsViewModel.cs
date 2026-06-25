@@ -204,6 +204,7 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private bool _isDiscoveryRunning;
     [ObservableProperty] private string _dbFilterText = "";
     partial void OnDbFilterTextChanged(string value) => ApplyDbFilter();
+    [RelayCommand] private void ClearDbFilter() => DbFilterText = "";
 
     // Manual connections
     public ObservableCollection<ManualConnectionViewModel> ManualConnections { get; } = [];

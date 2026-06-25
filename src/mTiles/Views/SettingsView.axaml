@@ -1049,10 +1049,21 @@
                 </DockPanel>
 
                 <!-- Filter -->
-                <TextBox Classes="inline-filter"
-                         Text="{Binding DbFilterText, Mode=TwoWay}"
+                <TextBox Text="{Binding DbFilterText, Mode=TwoWay}"
                          PlaceholderText="Filter databases..."
-                         IsVisible="{Binding !!DiscoveredDatabases.Count}" />
+                         IsVisible="{Binding !!DiscoveredDatabases.Count}"
+                         Padding="6,3"
+                         FontSize="{DynamicResource FontSm}">
+                    <TextBox.InnerRightContent>
+                        <Button Classes="ghost"
+                                Command="{Binding ClearDbFilterCommand}"
+                                IsVisible="{Binding DbFilterText.Length}"
+                                Padding="2" Margin="0,0,2,0"
+                                MinWidth="16" MinHeight="16">
+                            <mi:MaterialIcon Kind="Close" Width="10" Height="10" />
+                        </Button>
+                    </TextBox.InnerRightContent>
+                </TextBox>
 
                 <!-- Scanning indicator -->
                 <TextBlock Text="Scanning..."

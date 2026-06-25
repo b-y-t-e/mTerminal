@@ -17,13 +17,27 @@ public partial class WorkspacesPanelViewModel : ObservableObject, IDisposable
 
     public ObservableCollection<WorkspaceItemViewModel> Workspaces { get; } = [];
 
+    public ObservableCollection<WorkspaceItemViewModel> FilteredWorkspaces { get; } = [];
+
+    [ObservableProperty]
+    private string _filterText = string.Empty;
+
+    [ObservableProperty]
+    private bool _showFilter;
+
     [ObservableProperty]
     private WorkspaceItemViewModel? _selectedWorkspace;
+
+    partial void OnFilterTextChanged(string value) => ApplyFilter();
+
+    [RelayCommand]
+    private void ClearFilter() => FilterText = string.Empty;
 
     partial void OnSelectedWorkspaceChanged(WorkspaceItemViewModel? oldValue, WorkspaceItemViewModel? newValue)
     {
         if (oldValue != null) oldValue.IsSelected = false;
         if (newValue != null) newValue.IsSelected = true;
+        ApplyFilter();
     }
 
     [ObservableProperty]
@@ -47,6 +61,13 @@ public partial class WorkspacesPanelViewModel : ObservableObject, IDisposable
 
         if (_settingsService != null)
             _settingsService.SettingsChanged += OnSettingsChanged;
+
+        Workspaces.CollectionChanged += (_, _) =>
+        {
+            ShowFilter = Workspaces.Count > 3;
+            if (!ShowFilter) FilterText = string.Empty;
+            ApplyFilter();
+        };
 
         foreach (var w in workspaceService.Workspaces.OrderBy(w => w.Name, StringComparer.OrdinalIgnoreCase))
             Workspaces.Add(new WorkspaceItemViewModel(w));
@@ -139,6 +160,29 @@ public partial class WorkspacesPanelViewModel : ObservableObject, IDisposable
         Workspaces.Remove(item);
         if (SelectedWorkspace == item)
             SelectedWorkspace = Workspaces.FirstOrDefault();
+    }
+
+    private void ApplyFilter()
+    {
+        var filter = FilterText.Trim();
+        var tokens = filter.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        FilteredWorkspaces.Clear();
+        foreach (var w in Workspaces)
+        {
+            if (tokens.Length == 0 || w == SelectedWorkspace || MatchesAllTokens(w, tokens))
+                FilteredWorkspaces.Add(w);
+        }
+    }
+
+    private static bool MatchesAllTokens(WorkspaceItemViewModel w, string[] tokens)
+    {
+        var haystack = $"{w.Name} {w.DirectoryPath}";
+        foreach (var token in tokens)
+        {
+            if (!haystack.Contains(token, StringComparison.OrdinalIgnoreCase))
+                return false;
+        }
+        return true;
     }
 
     public void Dispose()

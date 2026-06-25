@@ -231,11 +231,22 @@
                                        Classes="section" Margin="0"
                                        VerticalAlignment="Center" />
                             <TextBox DockPanel.Dock="Right"
-                                     Classes="inline-filter"
                                      Text="{Binding DetectedFilterText, Mode=TwoWay}"
                                      PlaceholderText="Filter..."
                                      MaxWidth="160"
-                                     Margin="8,0,0,0" />
+                                     Margin="8,0,0,0"
+                                     Padding="6,3"
+                                     FontSize="{DynamicResource FontSm}">
+                                <TextBox.InnerRightContent>
+                                    <Button Classes="ghost"
+                                            Command="{Binding ClearDetectedFilterCommand}"
+                                            IsVisible="{Binding DetectedFilterText.Length}"
+                                            Padding="2" Margin="0,0,2,0"
+                                            MinWidth="16" MinHeight="16">
+                                        <mi:MaterialIcon Kind="Close" Width="10" Height="10" />
+                                    </Button>
+                                </TextBox.InnerRightContent>
+                            </TextBox>
                         </DockPanel>
                     </Border>
 

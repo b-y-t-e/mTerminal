@@ -39,6 +39,7 @@ public partial class DatabaseTileViewModel : ObservableObject, IDisposable
 
     [ObservableProperty] private string _detectedFilterText = "";
     partial void OnDetectedFilterTextChanged(string value) => ApplyDetectedFilter();
+    [RelayCommand] private void ClearDetectedFilter() => DetectedFilterText = "";
 
     public Action? TileSettingsChanged { get; set; }
     public Func<string, Task<bool>>? ConfirmAction { get; set; }

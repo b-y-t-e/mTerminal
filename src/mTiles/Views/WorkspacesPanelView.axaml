@@ -25,11 +25,29 @@
                 </Button>
             </StackPanel>
 
+            <TextBox DockPanel.Dock="Top"
+                     Text="{Binding FilterText, Mode=TwoWay}"
+                     PlaceholderText="Filter..."
+                     IsVisible="{Binding ShowFilter}"
+                     Margin="8,6,8,0"
+                     Padding="9,6"
+                     FontSize="{DynamicResource FontSm}">
+                <TextBox.InnerRightContent>
+                    <Button Classes="ghost"
+                            Command="{Binding ClearFilterCommand}"
+                            IsVisible="{Binding FilterText.Length}"
+                            Padding="2" Margin="0,0,2,0"
+                            MinWidth="16" MinHeight="16">
+                        <mi:MaterialIcon Kind="Close" Width="10" Height="10" />
+                    </Button>
+                </TextBox.InnerRightContent>
+            </TextBox>
+
             <ScrollViewer HorizontalScrollBarVisibility="Disabled"
                           VerticalScrollBarVisibility="Auto">
                 <StackPanel>
                     <ItemsControl x:Name="WorkspaceList"
-                                  ItemsSource="{Binding Workspaces}"
+                                  ItemsSource="{Binding FilteredWorkspaces}"
                                   Margin="3, 4">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="vm:WorkspaceItemViewModel">
