@@ -29,6 +29,8 @@ public partial class ManualConnectionViewModel : ObservableObject
     }
 
     public string ProviderShort => Provider == DbProviderType.PostgreSQL ? "PG" : "SQL";
+    public bool HasAlias => !string.IsNullOrWhiteSpace(Alias);
+    public string Label => HasAlias ? Alias : Database;
 
     public ManualConnectionViewModel(ManualDatabaseConnection mc)
     {

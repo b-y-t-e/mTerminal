@@ -54,8 +54,8 @@ public sealed partial class GitService(string workingDirectory, string gitPath =
 
         var decoratedLog = commitLog.Select(e =>
         {
+            var entryTags = FindTagsForHash(tagsMap, e.Hash);
             var shortHash = e.Hash[..Math.Min(7, e.Hash.Length)];
-            var entryTags = tagsMap.TryGetValue(shortHash, out var t) ? t : [];
             return new CommitLogEntry
             {
                 Hash = e.Hash,
@@ -195,6 +195,20 @@ public sealed partial class GitService(string workingDirectory, string gitPath =
                 : new CommitLogEntry { Hash = line, Message = "" });
         }
         return entries;
+    }
+
+    private static List<string> FindTagsForHash(Dictionary<string, List<string>> tagsMap, string commitHash)
+    {
+        if (tagsMap.TryGetValue(commitHash, out var exact))
+            return exact;
+
+        foreach (var (key, tags) in tagsMap)
+        {
+            var matchLen = Math.Min(key.Length, commitHash.Length);
+            if (matchLen >= 7 && key.AsSpan(0, matchLen).Equals(commitHash.AsSpan(0, matchLen), StringComparison.OrdinalIgnoreCase))
+                return tags;
+        }
+        return [];
     }
 
     private async Task<Dictionary<string, List<string>>> GetTagsMapInternalAsync(CancellationToken ct)

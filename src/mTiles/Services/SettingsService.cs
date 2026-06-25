@@ -49,6 +49,14 @@ public sealed class SettingsService
             },
             new()
             {
+                Name = "Pi Agent",
+                ShellName = "",
+                RequiredAiToolBinaryName = "pi",
+                StartupScript = "pi --session-id ${tileId}",
+                FallbackScript = "pi --session-id ${tileId}"
+            },
+            new()
+            {
                 Name = "OpenCode",
                 ShellName = "",
                 RequiredAiToolBinaryName = "opencode",
@@ -62,14 +70,6 @@ public sealed class SettingsService
                 RequiredAiToolBinaryName = "codex",
                 StartupScript = "codex resume ${tileId}",
                 FallbackScript = "codex"
-            },
-            new()
-            {
-                Name = "Pi Agent",
-                ShellName = "",
-                RequiredAiToolBinaryName = "pi",
-                StartupScript = "pi --session ${tileId}",
-                FallbackScript = "pi"
             }
         };
 

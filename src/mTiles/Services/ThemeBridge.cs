@@ -29,6 +29,7 @@ public static class ThemeBridge
         var textFaint = borderStrong;
         var textHover = Lerp(fg, Colors.White, 0.25);
 
+        var green = Color.Parse(theme.Green);
         var dangerSubtle = WithAlpha(red, 0.12, bg);
         var dangerText = brightRed;
 
@@ -52,6 +53,7 @@ public static class ThemeBridge
 
         Set(app, "DangerSubtle", dangerSubtle);
         Set(app, "DangerText", dangerText);
+        Set(app, "TagColor", green);
     }
 
     private static void Set(Application app, string key, Color color)

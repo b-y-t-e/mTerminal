@@ -2,7 +2,8 @@ namespace mTiles.Models;
 
 public static class AppDefaults
 {
-    public const string FontFamily = "Cascadia Mono, JetBrains Mono, Fira Code, Consolas, Liberation Mono, DejaVu Sans Mono, Noto Sans Mono, monospace";
+    public const string FontFamily = "Inter, Segoe UI, sans-serif";
+    public const string TerminalFontFamily = "Cascadia Mono, JetBrains Mono, Fira Code, Consolas, Liberation Mono, DejaVu Sans Mono, Noto Sans Mono, monospace";
     public const double FontSize = 14;
     public const string ColorThemeName = "Monokai";
 
