@@ -236,7 +236,7 @@
                     BorderThickness="0,1,0,0"
                     Padding="8,8"
                     IsVisible="{Binding IsGitRepo}">
-                <StackPanel Spacing="4"
+                <StackPanel Spacing="5"
                             IsVisible="{Binding !ShowHistory}">
                     <Grid>
                         <TextBox x:Name="CommitSummaryBox"
@@ -288,9 +288,10 @@
                              PlaceholderText="Description" />
                     <DockPanel>
                         <StackPanel DockPanel.Dock="Right"
-                                    Orientation="Horizontal" Spacing="3"
-                                    VerticalAlignment="Center">
+                                    Orientation="Horizontal" Spacing="5"
+                                    VerticalAlignment="Stretch">
                             <Button Classes="git-compact"
+                                    VerticalAlignment="Stretch"
                                     Command="{Binding UndoLastCommitCommand}"
                                     ToolTip.Tip="Undo last commit (soft reset)"
                                     IsVisible="{Binding CanUndoLastCommit}">
@@ -300,6 +301,7 @@
                                 </StackPanel>
                             </Button>
                             <Button Classes="git-compact"
+                                    VerticalAlignment="Stretch"
                                     Command="{Binding StashCommand}"
                                     ToolTip.Tip="Stash all changes">
                                 <StackPanel Orientation="Horizontal" Spacing="3">
@@ -308,6 +310,7 @@
                                 </StackPanel>
                             </Button>
                             <Button Classes="git-compact"
+                                    VerticalAlignment="Stretch"
                                     Command="{Binding StashPopCommand}"
                                     ToolTip.Tip="Pop latest stash">
                                 <StackPanel Orientation="Horizontal" Spacing="3">
@@ -324,13 +327,14 @@
                         <Button Classes="accent"
                                 HorizontalAlignment="Stretch"
                                 HorizontalContentAlignment="Center"
+                                VerticalAlignment="Stretch"
                                 Padding="0,5"
                                 MinHeight="0"
                                 Command="{Binding CommitCommand}"
-                                Margin="0,0,6,0">
+                                Margin="0,0,5,0">
                             <StackPanel Orientation="Horizontal" Spacing="5">
                                 <mi:MaterialIcon Kind="Check" Width="13" Height="13" />
-                                <TextBlock Text="{Binding BranchName, StringFormat='Commit to {0}'}"
+                                <TextBlock Text="Commit"
                                            FontFamily="{DynamicResource UiFontFamily}"
                                            FontSize="{DynamicResource UiFontSizeSm}" />
                             </StackPanel>
