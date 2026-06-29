@@ -700,9 +700,17 @@
                                     <DockPanel>
                                         <TextBlock Text="HTTP Port" Classes="label"
                                                    VerticalAlignment="Center" Width="120" />
-                                        <NumericUpDown Classes="setting"
-                                                       Value="{Binding DbHttpPort}"
-                                                       Minimum="1024" Maximum="65535" Increment="1" />
+                                        <StackPanel>
+                                            <NumericUpDown Classes="setting"
+                                                           Value="{Binding DbHttpPort}"
+                                                           Minimum="1024" Maximum="65535" Increment="1" />
+                                            <TextBlock Text="{Binding DbPortError}"
+                                                       IsVisible="{Binding DbPortError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                                       FontFamily="{DynamicResource UiFontFamily}"
+                                                       FontSize="{DynamicResource FontXs}"
+                                                       Foreground="{DynamicResource DangerText}"
+                                                       Margin="0,2,0,0" />
+                                        </StackPanel>
                                     </DockPanel>
                                     <DockPanel>
                                         <TextBlock Text="Scan Interval" Classes="label"

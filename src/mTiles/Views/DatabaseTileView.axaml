@@ -93,14 +93,18 @@
                                        Foreground="{DynamicResource StatusSuccessText}" />
                         </StackPanel>
                     </Border>
-                    <Border CornerRadius="{DynamicResource RadiusSm}" Padding="5,1"
+                    <Button CornerRadius="{DynamicResource RadiusSm}" Padding="5,1"
                             Background="{DynamicResource DangerSubtle}"
-                            IsVisible="{Binding !IsServiceRunning}">
-                        <TextBlock Text="Stopped"
+                            BorderThickness="0" MinHeight="0" MinWidth="0"
+                            Cursor="Hand"
+                            IsVisible="{Binding !IsServiceRunning}"
+                            Command="{Binding RequestOpenDatabaseSettingsCommand}"
+                            ToolTip.Tip="{Binding ServiceError}">
+                        <TextBlock Text="{Binding StoppedLabel}"
                                    FontSize="{DynamicResource FontXs}"
                                    FontWeight="SemiBold"
                                    Foreground="{DynamicResource DangerText}" />
-                    </Border>
+                    </Button>
                 </StackPanel>
 
                 <!-- Left: icon + label -->
@@ -122,19 +126,23 @@
         <!-- Content area: empty state overlays tabs -->
         <Panel>
             <!-- Service not running — empty state -->
-            <StackPanel IsVisible="{Binding !IsServiceRunning}"
-                        VerticalAlignment="Center" HorizontalAlignment="Center"
-                        Spacing="6">
-                <mi:MaterialIcon Kind="DatabaseOffOutline"
-                                 Width="28" Height="28"
-                                 Foreground="{DynamicResource TextFaint}"
-                                 HorizontalAlignment="Center" />
-                <TextBlock Text="Enable in Settings → Database"
-                           Foreground="{DynamicResource TextFaint}"
-                           FontFamily="{DynamicResource UiFontFamily}"
-                           FontSize="{DynamicResource UiFontSizeSm}"
-                           HorizontalAlignment="Center" />
-            </StackPanel>
+            <Button IsVisible="{Binding !IsServiceRunning}"
+                    VerticalAlignment="Center" HorizontalAlignment="Center"
+                    Background="Transparent" BorderThickness="0"
+                    Cursor="Hand" Padding="12,8"
+                    Command="{Binding RequestOpenDatabaseSettingsCommand}">
+                <StackPanel Spacing="6" HorizontalAlignment="Center">
+                    <mi:MaterialIcon Kind="DatabaseOffOutline"
+                                     Width="28" Height="28"
+                                     Foreground="{DynamicResource TextFaint}"
+                                     HorizontalAlignment="Center" />
+                    <TextBlock Text="{Binding EmptyStateMessage}"
+                               Foreground="{DynamicResource TextFaint}"
+                               FontFamily="{DynamicResource UiFontFamily}"
+                               FontSize="{DynamicResource UiFontSizeSm}"
+                               HorizontalAlignment="Center" />
+                </StackPanel>
+            </Button>
 
             <!-- ===== Tab 0: Config (Databases) ===== -->
             <DockPanel IsVisible="{Binding IsServiceRunning}">

@@ -20,6 +20,7 @@ public sealed class DatabaseServiceManager : IDisposable
     public DbRegistry Registry => _registry;
     public DbLogger Logger => _logger;
     public bool IsRunning => _started;
+    public string? LastError { get; private set; }
 
     public event Action? StateChanged;
     public event Func<string, string, Task<bool>>? WriteAccessRequested;
@@ -50,18 +51,22 @@ public sealed class DatabaseServiceManager : IDisposable
             RegisterManualConnections(settings);
 
             _started = true;
+            LastError = null;
             _logger.Write("Database service started", "System");
             StateChanged?.Invoke();
         }
         catch (Exception ex)
         {
-            _logger.Write($"Failed to start: {ex.Message}", "System");
+            LastError = DetectPortConflict(settings.HttpPort) ?? ex.Message;
+            _logger.Write($"Failed to start: {LastError}", "System");
             Stop();
         }
     }
 
     public void Stop()
     {
+        var wasRunning = _started;
+
         _discovery?.Stop();
         _discovery?.Dispose();
         _discovery = null;
@@ -71,6 +76,8 @@ public sealed class DatabaseServiceManager : IDisposable
         _httpServer = null;
 
         _started = false;
+        if (wasRunning)
+            LastError = null;
         StateChanged?.Invoke();
     }
 
@@ -261,6 +268,63 @@ public sealed class DatabaseServiceManager : IDisposable
         _stateChangedDebounce?.Dispose();
         Stop();
         _logger.Dispose();
+    }
+
+    private static string? DetectPortConflict(int port)
+    {
+        try
+        {
+            var listeners = System.Net.NetworkInformation.IPGlobalProperties
+                .GetIPGlobalProperties().GetActiveTcpListeners();
+            if (!listeners.Any(ep => ep.Port == port))
+                return null;
+
+            var processName = FindProcessOnPort(port);
+            return processName != null
+                ? $"Port {port} is used by {processName}"
+                : $"Port {port} is already in use";
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static string? FindProcessOnPort(int port)
+    {
+        if (!System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
+                System.Runtime.InteropServices.OSPlatform.Windows))
+            return null;
+
+        try
+        {
+            var psi = new System.Diagnostics.ProcessStartInfo("netstat", $"-ano -p TCP")
+            {
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+            using var proc = System.Diagnostics.Process.Start(psi);
+            if (proc == null) return null;
+            var output = proc.StandardOutput.ReadToEnd();
+            proc.WaitForExit(3000);
+
+            var portSuffix = $":{port} ";
+            foreach (var line in output.Split('\n'))
+            {
+                if (!line.Contains(portSuffix) || !line.Contains("LISTENING")) continue;
+                var parts = line.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length < 5 || !int.TryParse(parts[^1], out var pid)) continue;
+                try
+                {
+                    using var p = System.Diagnostics.Process.GetProcessById(pid);
+                    return p.ProcessName;
+                }
+                catch { return null; }
+            }
+        }
+        catch { }
+        return null;
     }
 
     private sealed record WorkspaceGrant(IReadOnlyList<WorkspaceDatabaseConfig> Databases);

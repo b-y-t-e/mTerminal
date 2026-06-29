@@ -20,6 +20,15 @@ public partial class DatabaseTileViewModel : ObservableObject, IDisposable
     [ObservableProperty] private double _fontSize;
     [ObservableProperty] private bool _isServiceRunning;
     [ObservableProperty] private string _statusText = "";
+    [ObservableProperty] private string? _serviceError;
+    public string StoppedLabel => ServiceError != null ? "Error" : "Stopped";
+    public string EmptyStateMessage => ServiceError != null ? ServiceError : "Enable in Settings → Database";
+    partial void OnServiceErrorChanged(string? value)
+    {
+        OnPropertyChanged(nameof(StoppedLabel));
+        OnPropertyChanged(nameof(EmptyStateMessage));
+    }
+
     [ObservableProperty] private int _httpPort;
     [ObservableProperty] private int _selectedTab;
 
@@ -43,6 +52,10 @@ public partial class DatabaseTileViewModel : ObservableObject, IDisposable
 
     public Action? TileSettingsChanged { get; set; }
     public Func<string, Task<bool>>? ConfirmAction { get; set; }
+    public Action? OpenDatabaseSettings { get; set; }
+
+    [RelayCommand]
+    private void RequestOpenDatabaseSettings() => OpenDatabaseSettings?.Invoke();
 
     private List<WorkspaceDatabaseConfig> _workspaceConfigs = [];
     private const int MaxWorkspaceDatabases = 10;
@@ -59,6 +72,7 @@ public partial class DatabaseTileViewModel : ObservableObject, IDisposable
         _fontSize = s.FontSize;
         _httpPort = s.Database.HttpPort;
         _isServiceRunning = dbManager.IsRunning;
+        _serviceError = dbManager.LastError;
 
         settingsService.SettingsChanged += OnSettingsChanged;
         dbManager.StateChanged += OnDbStateChanged;
@@ -117,6 +131,7 @@ public partial class DatabaseTileViewModel : ObservableObject, IDisposable
             if (Math.Abs(s.FontSize - FontSize) > AppDefaults.FontSizeEpsilon) FontSize = s.FontSize;
             HttpPort = s.Database.HttpPort;
             IsServiceRunning = _dbManager.IsRunning;
+            ServiceError = _dbManager.LastError;
         });
     }
 
@@ -125,6 +140,7 @@ public partial class DatabaseTileViewModel : ObservableObject, IDisposable
         Dispatcher.UIThread.Post(() =>
         {
             IsServiceRunning = _dbManager.IsRunning;
+            ServiceError = _dbManager.LastError;
             RefreshDatabaseList();
         });
     }

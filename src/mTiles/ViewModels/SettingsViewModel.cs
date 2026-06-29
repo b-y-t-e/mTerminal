@@ -197,6 +197,7 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private string _dbPostgreSqlPassword = "";
     [ObservableProperty] private string _dbPostgreSqlPorts = "";
     [ObservableProperty] private int _dbDiscoveryInterval;
+    public string? DbPortError => _dbManager is { IsRunning: false, LastError: not null } ? _dbManager.LastError : null;
 
     // Detected databases (all sources)
     public ObservableCollection<DatabaseItemViewModel> DiscoveredDatabases { get; } = [];
@@ -577,7 +578,11 @@ public partial class SettingsViewModel : ObservableObject
 
     private void OnDbManagerStateChanged()
     {
-        Dispatcher.UIThread.Post(RefreshDiscoveredDatabases);
+        Dispatcher.UIThread.Post(() =>
+        {
+            RefreshDiscoveredDatabases();
+            OnPropertyChanged(nameof(DbPortError));
+        });
     }
 
     private void RefreshDiscoveredDatabases()

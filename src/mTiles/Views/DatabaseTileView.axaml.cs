@@ -37,6 +37,14 @@ public partial class DatabaseTileView : UserControl
         };
 
         vm.GetClipboard = () => TopLevel.GetTopLevel(this)?.Clipboard;
+
+        vm.OpenDatabaseSettings = () =>
+        {
+            var mainVm = (TopLevel.GetTopLevel(this) as Window)?.DataContext as MainWindowViewModel;
+            if (mainVm == null) return;
+            mainVm.Settings.SelectedTab = 3;
+            mainVm.IsSettingsOpen = true;
+        };
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
