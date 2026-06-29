@@ -14,6 +14,8 @@ public partial class WorkspacesPanelViewModel : ObservableObject, IDisposable
     private readonly WorkspaceService _workspaceService;
     private readonly SettingsService? _settingsService;
     private readonly DispatcherTimer _branchTimer;
+    private readonly Dictionary<string, (FileSystemWatcher watcher, Timer? debounce)> _headWatchers = new();
+    private readonly object _headWatcherLock = new();
 
     public ObservableCollection<WorkspaceItemViewModel> Workspaces { get; } = [];
 
@@ -81,6 +83,9 @@ public partial class WorkspacesPanelViewModel : ObservableObject, IDisposable
         _branchTimer.Start();
 
         _ = RefreshAllBranchesAsync();
+
+        foreach (var item in Workspaces)
+            StartWatchingHead(item);
     }
 
     private async Task RefreshAllBranchesAsync()
@@ -96,6 +101,87 @@ public partial class WorkspacesPanelViewModel : ObservableObject, IDisposable
             }
             catch (Exception ex) { Trace.TraceWarning("Branch lookup failed for {0}: {1}", item.DirectoryPath, ex.Message); }
         }
+    }
+
+    private static string? ResolveGitDir(string workingDirectory)
+    {
+        var gitPath = Path.Combine(workingDirectory, ".git");
+        if (Directory.Exists(gitPath)) return gitPath;
+        if (!File.Exists(gitPath)) return null;
+
+        try
+        {
+            var content = File.ReadAllText(gitPath).Trim();
+            if (content.StartsWith("gitdir:", StringComparison.OrdinalIgnoreCase))
+            {
+                var target = content["gitdir:".Length..].Trim();
+                var resolved = Path.IsPathRooted(target) ? target : Path.GetFullPath(Path.Combine(workingDirectory, target));
+                return Directory.Exists(resolved) ? resolved : null;
+            }
+        }
+        catch { }
+        return null;
+    }
+
+    private void StartWatchingHead(WorkspaceItemViewModel item)
+    {
+        var gitDir = ResolveGitDir(item.DirectoryPath);
+        if (gitDir == null) return;
+
+        try
+        {
+            var watcher = new FileSystemWatcher(gitDir, "HEAD")
+            {
+                NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.Size,
+                EnableRaisingEvents = true
+            };
+            watcher.Changed += (_, _) => OnHeadChanged(item.Id);
+            watcher.Error += (_, e) => Trace.TraceWarning("HEAD watcher error for {0}: {1}", item.DirectoryPath, e.GetException().Message);
+            lock (_headWatcherLock)
+                _headWatchers[item.Id] = (watcher, null);
+        }
+        catch (Exception ex)
+        {
+            Trace.TraceWarning("HEAD watcher start failed for {0}: {1}", item.DirectoryPath, ex.Message);
+        }
+    }
+
+    private void OnHeadChanged(string workspaceId)
+    {
+        lock (_headWatcherLock)
+        {
+            if (!_headWatchers.TryGetValue(workspaceId, out var entry)) return;
+            entry.debounce?.Dispose();
+            var debounce = new Timer(_ => Dispatcher.UIThread.Post(() => _ = RefreshBranchAsync(workspaceId)),
+                null, AppDefaults.WatcherDebounceMs, Timeout.Infinite);
+            _headWatchers[workspaceId] = (entry.watcher, debounce);
+        }
+    }
+
+    private async Task RefreshBranchAsync(string workspaceId)
+    {
+        var item = Workspaces.FirstOrDefault(w => w.Id == workspaceId);
+        if (item == null) return;
+        try
+        {
+            var gitPath = GitService.ResolveGitPath(_settingsService?.Settings.GitPath);
+            var branch = await GitService.GetBranchNameAsync(item.DirectoryPath, gitPath);
+            if (branch != item.BranchName)
+                item.BranchName = branch;
+        }
+        catch (Exception ex) { Trace.TraceWarning("Branch refresh failed for {0}: {1}", item.DirectoryPath, ex.Message); }
+    }
+
+    private void StopWatchingHead(string workspaceId)
+    {
+        (FileSystemWatcher watcher, Timer? debounce) entry;
+        lock (_headWatcherLock)
+        {
+            if (!_headWatchers.Remove(workspaceId, out entry)) return;
+        }
+        entry.debounce?.Dispose();
+        entry.watcher.EnableRaisingEvents = false;
+        entry.watcher.Dispose();
     }
 
     private void OnSettingsChanged()
@@ -131,6 +217,8 @@ public partial class WorkspacesPanelViewModel : ObservableObject, IDisposable
         var gitPath = GitService.ResolveGitPath(_settingsService?.Settings.GitPath);
         try { item.BranchName = await GitService.GetBranchNameAsync(item.DirectoryPath, gitPath); }
         catch (Exception ex) { Trace.TraceWarning("Branch lookup failed: {0}", ex.Message); }
+
+        StartWatchingHead(item);
     }
 
     [RelayCommand]
@@ -156,6 +244,7 @@ public partial class WorkspacesPanelViewModel : ObservableObject, IDisposable
             if (!confirmed) return;
         }
 
+        StopWatchingHead(item.Id);
         _workspaceService.RemoveWorkspace(item.Id);
         Workspaces.Remove(item);
         if (SelectedWorkspace == item)
@@ -188,6 +277,8 @@ public partial class WorkspacesPanelViewModel : ObservableObject, IDisposable
     public void Dispose()
     {
         _branchTimer.Stop();
+        foreach (var id in _headWatchers.Keys.ToList())
+            StopWatchingHead(id);
         if (_settingsService != null)
             _settingsService.SettingsChanged -= OnSettingsChanged;
     }
