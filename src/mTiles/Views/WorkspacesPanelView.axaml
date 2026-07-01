@@ -7,6 +7,28 @@
              x:DataType="vm:WorkspacesPanelViewModel"
              Background="{DynamicResource BgSurface}">
 
+    <UserControl.Styles>
+        <Style Selector="ScrollViewer.scroll-left">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="*,Auto" ColumnSpacing="0" RowSpacing="0">
+                        <ScrollBar Name="PART_VerticalScrollBar" Margin="3, 0, 0, 0" 
+                                   Grid.Column="0" Grid.Row="0" Padding="0" 
+                                   Orientation="Vertical" />
+                        <ScrollContentPresenter Name="PART_ContentPresenter"
+                                                Grid.Column="1" Grid.Row="0" 
+                                                Background="{TemplateBinding Background}"
+                                                Margin="0"
+                                                Padding="{TemplateBinding Padding}" />
+                        <ScrollBar Name="PART_HorizontalScrollBar" Margin="0"
+                                   Grid.Column="1" Grid.Row="1"
+                                   Orientation="Horizontal" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+    </UserControl.Styles>
+
     <Panel>
         <!-- ═══ EXPANDED MODE ═══ -->
         <DockPanel x:Name="ExpandedPanel">
@@ -29,7 +51,7 @@
                      Text="{Binding FilterText, Mode=TwoWay}"
                      PlaceholderText="Filter..."
                      IsVisible="{Binding ShowFilter}"
-                     Margin="8,6,8,0"
+                     Margin="5,5,5,7"
                      Padding="9,6"
                      FontSize="{DynamicResource FontSm}">
                 <TextBox.InnerRightContent>
@@ -43,19 +65,20 @@
                 </TextBox.InnerRightContent>
             </TextBox>
 
-            <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+            <ScrollViewer Classes="scroll-left"
+                          HorizontalScrollBarVisibility="Disabled"
                           VerticalScrollBarVisibility="Auto"
-                          FlowDirection="RightToLeft">
-                <StackPanel FlowDirection="LeftToRight">
+                          Margin="1, 0, 0, 0">
+                <StackPanel Margin="0">
                     <ItemsControl x:Name="WorkspaceList"
                                   ItemsSource="{Binding FilteredWorkspaces}"
-                                  Margin="3, 4">
+                                  Margin="3, 0 , 4 , 4">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="vm:WorkspaceItemViewModel">
                                 <Border Classes="workspace-item"
                                         Classes.workspace-item-selected="{Binding IsSelected}"
                                         Padding="10,6"
-                                        Margin="4,2"
+                                        Margin="2,0 , 2 , 4"
                                         CornerRadius="{DynamicResource RadiusLg}"
                                         Cursor="Hand"
                                         PointerPressed="WorkspaceItem_PointerPressed">
@@ -128,11 +151,10 @@
                 <mi:MaterialIcon Kind="Plus" Width="16" Height="16" />
             </Button>
 
-            <ScrollViewer HorizontalScrollBarVisibility="Disabled"
-                          VerticalScrollBarVisibility="Auto"
-                          FlowDirection="RightToLeft">
-                <ItemsControl ItemsSource="{Binding Workspaces}" Margin="0,4"
-                              FlowDirection="LeftToRight">
+            <ScrollViewer Classes="scroll-left"
+                          HorizontalScrollBarVisibility="Disabled"
+                          VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding Workspaces}" Margin="0,4">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate DataType="vm:WorkspaceItemViewModel">
                             <Border Width="32" Height="32"
