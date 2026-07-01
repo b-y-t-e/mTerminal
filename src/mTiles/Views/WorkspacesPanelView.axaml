@@ -44,8 +44,9 @@
             </TextBox>
 
             <ScrollViewer HorizontalScrollBarVisibility="Disabled"
-                          VerticalScrollBarVisibility="Auto">
-                <StackPanel>
+                          VerticalScrollBarVisibility="Auto"
+                          FlowDirection="RightToLeft">
+                <StackPanel FlowDirection="LeftToRight">
                     <ItemsControl x:Name="WorkspaceList"
                                   ItemsSource="{Binding FilteredWorkspaces}"
                                   Margin="3, 4">
@@ -128,8 +129,10 @@
             </Button>
 
             <ScrollViewer HorizontalScrollBarVisibility="Disabled"
-                          VerticalScrollBarVisibility="Auto">
-                <ItemsControl ItemsSource="{Binding Workspaces}" Margin="0,4">
+                          VerticalScrollBarVisibility="Auto"
+                          FlowDirection="RightToLeft">
+                <ItemsControl ItemsSource="{Binding Workspaces}" Margin="0,4"
+                              FlowDirection="LeftToRight">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate DataType="vm:WorkspaceItemViewModel">
                             <Border Width="32" Height="32"
